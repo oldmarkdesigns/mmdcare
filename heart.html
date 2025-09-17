@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hjärta - MMDConnect Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="Assets/mmdconnect.png" alt="MMDConnect" class="logo">
+                <span class="logo-text">MMDConnect</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <img src="Assets/översikt.png" alt="Översikt" class="nav-icon">
+                        <span class="nav-text">Översikt</span>
+                    </li>
+                    <li class="nav-item journaldata">
+                        <img src="Assets/journaldata.png" alt="Journaldata" class="nav-icon">
+                        <span class="nav-text">Journaldata</span>
+                    </li>
+                    <li class="nav-item">
+                        <img src="Assets/hälsa+gpt.png" alt="Hälsa+ GPT" class="nav-icon">
+                        <span class="nav-text">Hälsa+ GPT</span>
+                    </li>
+                </ul>
+                
+                <ul class="nav-list-bottom">
+                    <li class="nav-item">
+                        <img src="Assets/hjälp.png" alt="Hjälp" class="nav-icon">
+                        <span class="nav-text">Hjälp</span>
+                    </li>
+                    <li class="nav-item">
+                        <img src="Assets/inställningar.png" alt="Inställningar" class="nav-icon">
+                        <span class="nav-text">Inställningar</span>
+                    </li>
+                    <li class="nav-item">
+                        <img src="Assets/avsluta.png" alt="Avsluta" class="nav-icon">
+                        <span class="nav-text">Avsluta</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="content-header">
+                <div class="patient-info">
+                    <h1>Patient: Samuel Oldmark</h1>
+                    <div class="organ-title-header">
+                        <h2>Hjärta</h2>
+                        <div class="icon-container">
+                            <img src="Assets/heart.png" alt="Hjärta" class="organ-page-icon">
+                            <div class="status-indicator good"></div>
+                        </div>
+                        <p class="organ-subtitle">Hjärtfunktion och kardiovaskulär hälsa</p>
+                    </div>
+                </div>
+                <div class="user-info">
+                    <span class="user-name">Dr. Anna Andersson</span>
+                    <div class="user-avatar">AA</div>
+                </div>
+            </div>
+
+            <!-- Back Button and Summarize Button -->
+            <div class="back-button-container" style="display: flex; justify-content: space-between; align-items: center;">
+                <button class="back-button" onclick="window.location.href='index.html'">
+                    ← Tillbaka till översikt
+                </button>
+                <button class="summarize-button" onclick="summarizeHeartData()">
+                    <img src="Assets/hälsa+gpt.png" alt="Hälsa+GPT" class="button-icon">
+                    Analysera med Hälsa+GPT
+                </button>
+            </div>
+
+            <!-- Health Metrics Cards -->
+            <div class="metrics-grid">
+                <div class="metric-card">
+                    <h3 class="metric-title">Hjärtfrekvens</h3>
+                    <div class="metric-value">72</div>
+                    <div class="metric-unit">bpm</div>
+                    <div class="metric-status good">Normal</div>
+                </div>
+
+                <div class="metric-card">
+                    <h3 class="metric-title">Systoliskt blodtryck</h3>
+                    <div class="metric-value">120</div>
+                    <div class="metric-unit">mmHg</div>
+                    <div class="metric-status good">Optimalt</div>
+                </div>
+
+                <div class="metric-card">
+                    <h3 class="metric-title">Diastoliskt blodtryck</h3>
+                    <div class="metric-value">80</div>
+                    <div class="metric-unit">mmHg</div>
+                    <div class="metric-status good">Optimalt</div>
+                </div>
+
+
+                <div class="metric-card">
+                    <h3 class="metric-title">Kolesterol (LDL)</h3>
+                    <div class="metric-value">2.8</div>
+                    <div class="metric-unit">mmol/L</div>
+                    <div class="metric-status good">Optimalt</div>
+                </div>
+            </div>
+
+            <!-- Health Data Charts -->
+            <div class="charts-grid">
+                <!-- Heart Rate Chart -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Hjärtfrekvens över tid</h3>
+                    <div class="chart-container">
+                        <canvas id="heartRateChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Blood Pressure Chart -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Blodtryck</h3>
+                    <div class="chart-container">
+                        <canvas id="bloodPressureChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- ECG Data Chart -->
+                <div class="chart-card">
+                    <h3 class="chart-title">EKG-data</h3>
+                    <div class="chart-container">
+                        <canvas id="ecgChart"></canvas>
+                    </div>
+                </div>
+
+                <!-- Heart Rate Variability Chart -->
+                <div class="chart-card">
+                    <h3 class="chart-title">Hjärtfrekvensvariabilitet</h3>
+                    <div class="chart-container">
+                        <canvas id="hrvChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+    <script src="script.js"></script>
+    <script>
+        // Ensure navigation works on heart page
+        document.addEventListener('DOMContentLoaded', function() {
+            const navItems = document.querySelectorAll('.nav-item');
+            navItems.forEach(item => {
+                item.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const navText = this.querySelector('.nav-text').textContent.trim();
+                    console.log('Clicked nav item:', navText); // Debug log
+                    
+                    switch(navText) {
+                        case 'Översikt':
+                            window.location.href = 'index.html';
+                            break;
+                        case 'Hälsa+ GPT':
+                            window.location.href = 'gpt-chat.html';
+                            break;
+                        case 'Journaldata':
+                            // Journaldata doesn't have a separate page yet
+                            break;
+                        case 'Hjälp':
+                            // Help page doesn't exist yet
+                            break;
+                        case 'Inställningar':
+                            // Settings page doesn't exist yet
+                            break;
+                        case 'Avsluta':
+                            // Logout functionality could be added here
+                            break;
+                    }
+                });
+            });
+        });
+    </script>
+    <script>
+        // Heart Rate Chart
+        const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
+        new Chart(heartRateCtx, {
+            type: 'line',
+            data: {
+                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                datasets: [{
+                    label: 'Hjärtfrekvens (bpm)',
+                    data: [65, 72, 78, 85, 82, 70],
+                    borderColor: '#00E100',
+                    backgroundColor: 'rgba(0, 225, 0, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: false,
+                        min: 50,
+                        max: 100
+                    }
+                }
+            }
+        });
+
+        // Blood Pressure Chart
+        const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
+        new Chart(bloodPressureCtx, {
+            type: 'bar',
+            data: {
+                labels: ['Systoliskt', 'Diastoliskt'],
+                datasets: [{
+                    data: [120, 80],
+                    backgroundColor: ['#F6A000', '#00E100'],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        max: 140
+                    }
+                }
+            }
+        });
+
+        // ECG Chart
+        const ecgCtx = document.getElementById('ecgChart').getContext('2d');
+        new Chart(ecgCtx, {
+            type: 'line',
+            data: {
+                labels: Array.from({length: 50}, (_, i) => i),
+                datasets: [{
+                    label: 'EKG-signal',
+                    data: generateECGData(),
+                    borderColor: '#FF4400',
+                    backgroundColor: 'rgba(255, 68, 0, 0.1)',
+                    tension: 0.1,
+                    pointRadius: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        // HRV Chart
+        const hrvCtx = document.getElementById('hrvChart').getContext('2d');
+        new Chart(hrvCtx, {
+            type: 'line',
+            data: {
+                labels: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
+                datasets: [{
+                    label: 'HRV (ms)',
+                    data: [45, 52, 38, 61, 48, 55, 42],
+                    borderColor: '#00E100',
+                    backgroundColor: 'rgba(0, 225, 0, 0.1)',
+                    tension: 0.4,
+                    fill: true
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    y: {
+                        beginAtZero: true
+                    }
+                }
+            }
+        });
+
+        function generateECGData() {
+            const data = [];
+            for (let i = 0; i < 50; i++) {
+                if (i % 8 === 0) {
+                    data.push(Math.random() * 20 + 10); // QRS complex
+                } else if (i % 8 === 2) {
+                    data.push(Math.random() * 15 + 5); // T wave
+                } else {
+                    data.push(Math.random() * 2); // Baseline
+                }
+            }
+            return data;
+        }
+
+        // Summarize heart data with GPT
+        function summarizeHeartData() {
+            const button = document.querySelector('.summarize-button');
+            const originalText = button.textContent;
+            
+            // Show loading state
+            button.textContent = 'Analyserar...';
+            button.disabled = true;
+            
+            // Collect heart data
+            const heartData = {
+                title: 'Hjärtdata - Samuel Oldmark',
+                content: `Hjärtfrekvens: 72 bpm (Normal)
+Systoliskt blodtryck: 120 mmHg (Optimalt)
+Diastoliskt blodtryck: 80 mmHg (Optimalt)
+Kolesterol (LDL): 2.8 mmol/L (Optimalt)
+
+Hjärtfrekvens över tid visar normal variation mellan 65-85 bpm.
+Blodtryck är optimalt med 120/80 mmHg.
+EKG-data visar normal hjärtrytm.
+Hjärtfrekvensvariabilitet är inom normala gränser.
+
+Sammanfattning: Patientens hjärtdata visar optimala värden med inga avvikelser. Alla vitala parametrar är inom normala gränser och indikerar god hjärtkärlhälsa.`,
+                timestamp: new Date().toISOString()
+            };
+            
+            // Store data for GPT chat
+            localStorage.setItem('pendingJournalSummary', JSON.stringify(heartData));
+            
+            // Simulate processing time
+            setTimeout(() => {
+                // Reset button
+                button.textContent = originalText;
+                button.disabled = false;
+                
+                // Redirect to GPT chat
+                window.location.href = 'gpt-chat.html';
+            }, 1500);
+        }
+    </script>
+</body>
+</html>

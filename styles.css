@@ -1,0 +1,972 @@
+/* Reset and base styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+    background-color: #ECECEC;
+    color: #333;
+    line-height: 1.6;
+}
+
+/* Dashboard layout */
+.dashboard {
+    display: flex;
+    min-height: 100vh;
+}
+
+/* Sidebar */
+.sidebar {
+    width: 280px;
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    position: fixed;
+    height: 100vh;
+    left: 0;
+    top: 0;
+    z-index: 1000;
+}
+
+.sidebar-header {
+    padding: 24px 20px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.logo {
+    height: 40px;
+    width: auto;
+}
+
+.logo-text {
+    font-size: 20px;
+    font-weight: 600;
+    color: white;
+}
+
+/* Navigation */
+.sidebar-nav {
+    flex: 1;
+    padding: 20px 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.nav-list {
+    list-style: none;
+}
+
+.nav-list-bottom {
+    list-style: none;
+    margin-top: auto;
+    margin-bottom: 24px;
+}
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 16px 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border-left: 3px solid transparent;
+    gap: 12px;
+}
+
+.nav-item.journaldata {
+    display: none;
+}
+
+.nav-item:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+.nav-item.active {
+    background-color: rgba(255, 255, 255, 0.1);
+    border-left-color: white;
+}
+
+.nav-icon {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) invert(1);
+}
+
+.nav-item.active .nav-icon {
+    filter: brightness(0) invert(1);
+}
+
+.nav-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* Main content */
+.main-content {
+    flex: 1;
+    margin-left: 280px;
+    padding: 32px;
+    background-color: #F0F2F5;
+}
+
+.main-content:has(.chat-container) {
+    padding: 0;
+    background: transparent;
+}
+
+.content-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 32px;
+}
+
+.patient-info h1 {
+    font-size: 22px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.patient-id {
+    font-size: 18px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.patient-date {
+    font-size: 16px;
+    color: #888;
+    margin-bottom: 0;
+}
+
+.user-info {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.user-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #161B27, #1D212B);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+/* Overview grid */
+.overview-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    width: 100%;
+}
+
+.cards-row {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+}
+
+.health-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+}
+
+.journal-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.card-title {
+    font-size: 20px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 16px;
+}
+
+.organ-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.organ-item {
+    padding: 8px 12px 4px 12px;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    transition: border-color 0.4s ease;
+    background: #F0F2F5;
+}
+
+.organ-item:last-child {
+    margin-bottom: 0;
+}
+
+.organ-item:hover {
+    border-color: #1D212B;
+    border-radius: 8px;
+    background: #F0F2F5;
+}
+
+.organ-item-link {
+    text-decoration: none;
+    color: inherit;
+    display: block;
+}
+
+.organ-item-link:hover .organ-item {
+    background: #F0F2F5;
+}
+
+.journal-content {
+    flex: 1;
+    padding: 0 0 20px 0;
+    display: flex;
+    flex-direction: column;
+}
+
+.journal-entry {
+    margin-bottom: 12px;
+    padding: 12px 24px;
+    background: #F0F2F5;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.4s ease;
+}
+
+.journal-entry:last-child {
+    margin-bottom: 0;
+}
+
+.journal-entry:hover {
+    border-color: #1D212B;
+    border-radius: 8px;
+    background: #F0F2F5;
+}
+
+.journal-entry.expanded {
+    border-color: #1D212B;
+    border-radius: 8px;
+}
+
+.journal-details {
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid #e9ecef;
+}
+
+.journal-content-detail h4 {
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin: 16px 0 8px 0;
+}
+
+.journal-content-detail h4:first-child {
+    margin-top: 0;
+}
+
+.journal-content-detail ul {
+    margin: 8px 0 16px 0;
+    padding-left: 20px;
+}
+
+.journal-content-detail li {
+    font-size: 13px;
+    color: #666;
+    margin-bottom: 4px;
+}
+
+.journal-content-detail p {
+    font-size: 13px;
+    color: #666;
+    line-height: 1.5;
+    margin: 8px 0 16px 0;
+}
+
+.journal-actions {
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+}
+
+.gpt-summarize-btn {
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.gpt-summarize-btn:hover {
+    background: linear-gradient(180deg, #1E2430 0%, #252B3A 100%);
+}
+
+.journal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+}
+
+.journal-info {
+    flex: 1;
+}
+
+.journal-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 2px 0;
+}
+
+.journal-doctor {
+    font-size: 14px;
+    color: #666;
+    margin: 0 0 1px 0;
+}
+
+.journal-date {
+    font-size: 12px;
+    color: #999;
+    margin: 0 0 8px 0;
+}
+
+.journal-summary {
+    font-size: 13px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+    font-style: italic;
+}
+
+/* Organ Page Styles */
+.back-button-container {
+    margin-bottom: 24px;
+}
+
+.back-button {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 14px;
+    color: #666;
+    cursor: pointer;
+    transition: border-color 0.4s ease;
+}
+
+.back-button:hover {
+    border-color: #1D212B;
+    border-radius: 6px;
+}
+
+.summarize-button {
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    color: white;
+    border: none;
+    border-radius: 6px;
+    padding: 12px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.summarize-button:hover {
+    background: linear-gradient(180deg, #1E2430 0%, #252B3A 100%);
+}
+
+.button-icon {
+    width: 16px;
+    height: 16px;
+    margin-top: -2px;
+}
+
+.organ-page-title {
+    margin-bottom: 32px;
+}
+
+.organ-title-header {
+    margin-bottom: 8px;
+}
+
+.organ-title-header h2 {
+    display: inline;
+    margin: 0 8px 0 0;
+}
+
+.organ-title-header .icon-container {
+    display: inline-block;
+    vertical-align: middle;
+    margin-right: 0;
+    margin-top: 2px;
+}
+
+.organ-title-header .organ-subtitle {
+    display: block;
+    margin: 4px 0 0 0;
+}
+
+.organ-page-icon {
+    width: 40px;
+    height: 40px;
+}
+
+.organ-page-title h1 {
+    font-size: 28px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.organ-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+    margin-left: 56px;
+}
+
+.charts-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(400px, 1fr));
+    gap: 24px;
+    width: 100%;
+}
+
+.chart-card {
+    background: #fcfcfc;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: none;
+    border: none;
+}
+
+.chart-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 16px 0;
+}
+
+.chart-container {
+    height: 200px;
+    position: relative;
+}
+
+/* Metrics Cards */
+.metrics-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    width: 100%;
+}
+
+.metric-card {
+    background: #fcfcfc;
+    border-radius: 8px;
+    padding: 16px 12px;
+    box-shadow: none;
+    border: none;
+    text-align: center;
+    transition: transform 0.2s ease;
+}
+
+.metric-card:hover {
+    transform: none;
+    box-shadow: none !important;
+}
+
+.metric-title {
+    font-size: 12px;
+    font-weight: 500;
+    color: #666;
+    margin: 0 0 6px 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-value {
+    font-size: 28px;
+    font-weight: 700;
+    color: #333;
+    margin: 0 0 2px 0;
+    line-height: 1;
+}
+
+.metric-unit {
+    font-size: 12px;
+    color: #999;
+    margin: 0 0 8px 0;
+}
+
+.metric-status {
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.metric-status.good {
+    background: rgba(0, 225, 0, 0.1);
+    color: #00E100;
+}
+
+.metric-status.warning {
+    background: rgba(246, 160, 0, 0.1);
+    color: #F6A000;
+}
+
+.metric-status.danger {
+    background: rgba(255, 68, 0, 0.1);
+    color: #FF4400;
+}
+
+
+.organ-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 8px;
+    justify-content: space-between;
+}
+
+.icon-container {
+    position: relative;
+    flex-shrink: 0;
+}
+
+.organ-icon {
+    width: 28px;
+    height: 28px;
+    margin-top: 6px;
+}
+
+.status-indicator {
+    position: absolute;
+    top: 4px;
+    right: -2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 2px solid white;
+}
+
+.status-indicator.good {
+    background-color: #00E100;
+}
+
+.status-indicator.warning {
+    background-color: #F6A000;
+}
+
+.status-indicator.danger {
+    background-color: #FF4400;
+}
+
+.organ-name {
+    font-size: 16px;
+    font-weight: 500;
+    color: #333;
+    margin: 0;
+    flex: 1;
+}
+
+.data-count {
+    font-size: 12px;
+    color: #666;
+    font-weight: 400;
+}
+
+.chevron {
+    font-size: 20px;
+    color: #999;
+    font-weight: 300;
+}
+
+.organ-data {
+    width: 100%;
+}
+
+.data-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f5f5f5;
+}
+
+.data-row:last-child {
+    border-bottom: none;
+}
+
+.data-label {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+.data-value {
+    font-size: 16px;
+    color: #333;
+    font-weight: 600;
+}
+
+
+/* Mobile menu button */
+.mobile-menu-button {
+    display: none;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    padding: 8px;
+    margin-right: 16px;
+    color: #333;
+    transition: color 0.3s ease;
+}
+
+.mobile-menu-button:hover {
+    color: #F6A000;
+}
+
+/* Card hover effects */
+.health-indicators {
+    transition: transform 0.3s ease;
+}
+
+/* Responsive design */
+@media (max-width: 1024px) {
+    .overview-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: 100%;
+        transform: translateX(-100%);
+        transition: transform 0.3s ease;
+    }
+    
+    .sidebar.open {
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-left: 0;
+        padding: 20px;
+    }
+    
+    .content-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+}
+
+/* Chat Interface Styles */
+
+.chat-container {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background: #F0F2F5;
+    color: #333;
+}
+
+.chat-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 32px;
+    background: white;
+}
+
+.chat-title-section {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.chat-title {
+    font-size: 28px;
+    font-weight: 700;
+    margin: 0;
+    color: #333;
+}
+
+.chat-subtitle {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.chat-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+}
+
+.notification-icon {
+    position: relative;
+    cursor: pointer;
+}
+
+.notification-bell {
+    width: 24px;
+    height: 24px;
+    filter: invert(1);
+}
+
+.notification-badge {
+    position: absolute;
+    top: -6px;
+    right: -6px;
+    background: #00E100;
+    color: white;
+    border-radius: 50%;
+    width: 18px;
+    height: 18px;
+    font-size: 12px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.user-avatar {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 14px;
+}
+
+.chat-messages {
+    flex: 1;
+    padding: 0;
+    overflow-y: auto;
+    background: #F0F2F5;
+    position: relative;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 2px;
+    gap: 12px;
+    padding: 24px 32px 4px 32px;
+}
+
+.message:first-child {
+    padding-top: 36px;
+}
+
+
+.ai-message {
+    align-items: center;
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+}
+
+.user-message {
+    flex-direction: row-reverse;
+    align-items: center;
+}
+
+.message-avatar {
+    flex-shrink: 0;
+}
+
+.ai-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(169deg) brightness(95%) contrast(88%);
+}
+
+.user-avatar-small {
+    width: 32px;
+    height: 32px;
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 600;
+    font-size: 12px;
+}
+
+.message-content {
+    background: linear-gradient(135deg, #D1D9E0 0%, #E0E6ED 100%);
+    padding: 12px 20px;
+    border-radius: 12px;
+    width: fit-content;
+    max-width: 70%;
+}
+
+.user-message .message-content {
+    background: linear-gradient(135deg, #D1D9E0 0%, #E0E6ED 100%);
+}
+
+.message-content p {
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+    color: #333;
+}
+
+.message-content p:last-child {
+    margin-bottom: 0;
+}
+
+.capabilities-list {
+    margin: 12px 0;
+    padding-left: 20px;
+}
+
+.capabilities-list li {
+    margin-bottom: 8px;
+    color: #666;
+    line-height: 1.4;
+}
+
+.chat-input-container {
+    display: flex;
+    align-items: center;
+    padding: 24px 32px;
+    background: #F0F2F5;
+    gap: 12px;
+}
+
+.chat-input {
+    flex: 1;
+    background: #F2F4F6;
+    border: 1px solid #e0e0e0;
+    border-radius: 24px;
+    padding: 12px 20px;
+    color: #333;
+    font-size: 14px;
+    outline: none;
+    transition: all 0.3s ease;
+}
+
+.chat-input:focus {
+    border-color: #1D212B;
+    background: white;
+}
+
+.chat-input::placeholder {
+    color: #888;
+}
+
+.send-button {
+    width: 48px;
+    height: 48px;
+    background: #1D212B;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background-color 0.3s ease;
+}
+
+.send-button:hover {
+    background: #161B27;
+}
+
+.send-icon {
+    width: 20px;
+    height: 20px;
+    color: white;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    text-decoration: none;
+    color: inherit;
+    width: 100%;
+}
+
+/* Welcome message animation */
+.welcome-message {
+    transition: opacity 0.1s ease;
+    opacity: 1;
+}
+
+.welcome-message.fade-out {
+    opacity: 0;
+}
+
+/* User message slide-in animation */
+.user-message {
+    transform: translateY(20px);
+    opacity: 0;
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    align-items: center;
+}
+
+.user-message.slide-in {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.ai-message.slide-in {
+    transform: translateY(0);
+    opacity: 1;
+}

@@ -1,0 +1,183 @@
+// Mobile menu functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Add mobile menu toggle button
+    const contentHeader = document.querySelector('.content-header');
+    const sidebar = document.querySelector('.sidebar');
+    
+    // Create mobile menu button
+    const mobileMenuButton = document.createElement('button');
+    mobileMenuButton.className = 'mobile-menu-button';
+    mobileMenuButton.innerHTML = '☰';
+    mobileMenuButton.style.cssText = `
+        display: none;
+        background: none;
+        border: none;
+        font-size: 24px;
+        cursor: pointer;
+        padding: 8px;
+        margin-right: 16px;
+    `;
+    
+    // Insert mobile menu button
+    const headerTitle = contentHeader.querySelector('h1');
+    contentHeader.insertBefore(mobileMenuButton, headerTitle);
+    
+    // Toggle sidebar on mobile
+    mobileMenuButton.addEventListener('click', function() {
+        sidebar.classList.toggle('open');
+    });
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+            if (!sidebar.contains(event.target) && !mobileMenuButton.contains(event.target)) {
+                sidebar.classList.remove('open');
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('open');
+            mobileMenuButton.style.display = 'none';
+        } else {
+            mobileMenuButton.style.display = 'block';
+        }
+    });
+    
+    // Initial check for mobile
+    if (window.innerWidth <= 768) {
+        mobileMenuButton.style.display = 'block';
+    }
+    
+    // Navigation item click handlers
+    const navItems = document.querySelectorAll('.nav-item');
+    navItems.forEach(item => {
+        item.addEventListener('click', function() {
+            // Remove active class from all items
+            navItems.forEach(nav => nav.classList.remove('active'));
+            // Add active class to clicked item
+            this.classList.add('active');
+            
+            // Close mobile menu after selection
+            if (window.innerWidth <= 768) {
+                sidebar.classList.remove('open');
+            }
+            
+            // Navigate to appropriate page based on nav text
+            const navText = this.querySelector('.nav-text').textContent.trim();
+            switch(navText) {
+                case 'Översikt':
+                    window.location.href = 'index.html';
+                    break;
+                case 'Journaldata':
+                    // Journaldata doesn't have a separate page yet, could add one
+                    break;
+                case 'Hälsa+ GPT':
+                    window.location.href = 'gpt-chat.html';
+                    break;
+                case 'Hjälp':
+                    // Help page doesn't exist yet, could add one
+                    break;
+                case 'Inställningar':
+                    // Settings page doesn't exist yet, could add one
+                    break;
+                case 'Avsluta':
+                    // Logout functionality could be added here
+                    break;
+            }
+        });
+    });
+    
+    // Add smooth scrolling for better UX
+    document.documentElement.style.scrollBehavior = 'smooth';
+    
+    // Add loading animation for organ items
+    const organItems = document.querySelectorAll('.organ-item');
+    organItems.forEach((item, index) => {
+        item.style.opacity = '0';
+        item.style.transform = 'translateY(20px)';
+        
+        setTimeout(() => {
+            item.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
+            item.style.opacity = '1';
+            item.style.transform = 'translateY(0)';
+        }, index * 150);
+    });
+    
+});
+
+// Journal entry expansion functionality
+function toggleJournalEntry(entry) {
+    const details = entry.querySelector('.journal-details');
+    const chevron = entry.querySelector('.chevron');
+    
+    if (details.style.display === 'none') {
+        details.style.display = 'block';
+        entry.classList.add('expanded');
+        chevron.textContent = '‹';
+        chevron.style.transform = 'rotate(-90deg)';
+    } else {
+        details.style.display = 'none';
+        entry.classList.remove('expanded');
+        chevron.textContent = '›';
+        chevron.style.transform = 'rotate(0deg)';
+    }
+}
+
+// GPT summarization functionality
+function summarizeWithGPT(button) {
+    const entry = button.closest('.journal-entry');
+    const title = entry.querySelector('.journal-title').textContent;
+    const doctor = entry.querySelector('.journal-doctor').textContent;
+    const date = entry.querySelector('.journal-date').textContent;
+    const summary = entry.querySelector('.journal-summary').textContent;
+    
+    // Extract detailed content
+    const details = entry.querySelector('.journal-content-detail');
+    let detailedContent = '';
+    if (details) {
+        const sections = details.querySelectorAll('h4');
+        sections.forEach(section => {
+            const sectionTitle = section.textContent;
+            const sectionContent = section.nextElementSibling;
+            if (sectionContent) {
+                detailedContent += `\n\n**${sectionTitle}**\n`;
+                if (sectionContent.tagName === 'UL') {
+                    const items = sectionContent.querySelectorAll('li');
+                    items.forEach(item => {
+                        detailedContent += `• ${item.textContent}\n`;
+                    });
+                } else {
+                    detailedContent += sectionContent.textContent + '\n';
+                }
+            }
+        });
+    }
+    
+    // Create the full journal content for summarization
+    const journalContent = `**${title}**\nDoktor: ${doctor}\nDatum: ${date}\n\nSammanfattning: ${summary}${detailedContent}`;
+    
+    // Show loading state
+    const originalText = button.textContent;
+    button.textContent = 'Summerar...';
+    button.disabled = true;
+    
+    // Store the journal content in localStorage for the GPT chat
+    localStorage.setItem('pendingJournalSummary', JSON.stringify({
+        title: title,
+        content: journalContent,
+        timestamp: new Date().toISOString()
+    }));
+    
+    // Simulate API call and redirect
+    setTimeout(() => {
+        // Reset button
+        button.textContent = originalText;
+        button.disabled = false;
+        
+        // Redirect to GPT chat
+        window.location.href = 'gpt-chat.html';
+    }, 1500);
+}

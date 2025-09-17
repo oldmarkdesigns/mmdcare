@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="sv">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hälsa+GPT - AI-Powered Healthcare Assistant</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="dashboard">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <div class="sidebar-header">
+                <img src="Assets/mmdconnect.png" alt="MMDConnect" class="logo">
+                <span class="logo-text">MMDConnect</span>
+            </div>
+            
+            <nav class="sidebar-nav">
+                <ul class="nav-list">
+                    <li class="nav-item">
+                        <a href="index.html" class="nav-link">
+                            <img src="Assets/översikt.png" alt="Översikt" class="nav-icon">
+                            <span class="nav-text">Översikt</span>
+                        </a>
+                    </li>
+                    <li class="nav-item journaldata">
+                        <img src="Assets/journaldata.png" alt="Journaldata" class="nav-icon">
+                        <span class="nav-text">Journaldata</span>
+                    </li>
+                    <li class="nav-item active">
+                        <img src="Assets/hälsa+gpt.png" alt="Hälsa+ GPT" class="nav-icon">
+                        <span class="nav-text">Hälsa+ GPT</span>
+                    </li>
+                </ul>
+                
+                <ul class="nav-list-bottom">
+                    <li class="nav-item">
+                        <img src="Assets/hjälp.png" alt="Hjälp" class="nav-icon">
+                        <span class="nav-text">Hjälp</span>
+                    </li>
+                    <li class="nav-item">
+                        <img src="Assets/inställningar.png" alt="Inställningar" class="nav-icon">
+                        <span class="nav-text">Inställningar</span>
+                    </li>
+                    <li class="nav-item">
+                        <img src="Assets/avsluta.png" alt="Avsluta" class="nav-icon">
+                        <span class="nav-text">Avsluta</span>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <div class="chat-container">
+                <!-- Chat Header -->
+                <div class="chat-header">
+                    <div class="chat-title-section">
+                        <h1 class="chat-title">Hälsa+GPT</h1>
+                        <p class="chat-subtitle">AI-Powered Healthcare & Medical Support</p>
+                    </div>
+                    <div class="chat-header-actions">
+                        <span class="user-name">Dr. Anna Andersson</span>
+                        <div class="user-avatar">AA</div>
+                    </div>
+                </div>
+
+                <!-- Chat Messages -->
+                <div class="chat-messages">
+                    <div class="message ai-message welcome-message" id="welcomeMessage">
+                        <div class="message-avatar">
+                            <img src="Assets/hälsa+gpt.png" alt="Hälsa+GPT" class="ai-avatar">
+                        </div>
+                        <div class="message-content">
+                            <p>Hej! Jag är Hälsa+GPT, din AI-drivna vårdassistent. Jag kan hjälpa dig med:</p>
+                            <ul class="capabilities-list">
+                                <li>Medicinska bedömningar och rekommendationer</li>
+                                <li>Patientöversikt och journalanalys</li>
+                                <li>Behandlingsplaner och följupp</li>
+                                <li>Diagnostisk vägledning och best practices</li>
+                                <li>Medicinsk utrustning och logistik</li>
+                                <li>Akuta vårdsituationer och protokoll</li>
+                            </ul>
+                            <p>Hur kan jag hjälpa dig idag?</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chat Input -->
+                <div class="chat-input-container">
+                    <input type="text" class="chat-input" placeholder="Fråga mig om vård, patienter eller medicin..." id="chatInput">
+                    <button class="send-button" onclick="sendMessage()">
+                        <span class="send-icon">→</span>
+                    </button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // Check for pending journal summary on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const pendingSummary = localStorage.getItem('pendingJournalSummary');
+            if (pendingSummary) {
+                try {
+                    const summaryData = JSON.parse(pendingSummary);
+                    // Clear the pending summary
+                    localStorage.removeItem('pendingJournalSummary');
+                    
+                    // Hide welcome message immediately
+                    hideWelcomeMessage();
+                    
+                    // Auto-load the journal summary
+                    setTimeout(() => {
+                        loadJournalSummary(summaryData);
+                    }, 500); // Reduced wait time since welcome message is already hidden
+                } catch (e) {
+                    console.error('Error parsing pending journal summary:', e);
+                }
+            }
+        });
+
+        function loadJournalSummary(summaryData) {
+            // Add user message asking for summary
+            addUserMessage(`Kan du sammanfatta denna journalanteckning: "${summaryData.title}"`);
+            
+            // Add AI response with the summary after user message is visible
+            setTimeout(() => {
+                addAIMessage(`Här är min sammanfattning av "${summaryData.title}":\n\n${summaryData.content}\n\nVill du att jag ska analysera något specifikt från denna journalanteckning?`);
+            }, 600);
+        }
+
+        // Chat functionality
+        function sendMessage() {
+            const input = document.getElementById('chatInput');
+            const message = input.value.trim();
+            
+            if (message) {
+                // Start animation sequence
+                startAnimationSequence(message);
+                input.value = '';
+            }
+        }
+
+        function startAnimationSequence(message) {
+            // Step 1: Dissolve welcome message
+            hideWelcomeMessage();
+            
+            // Step 2: Add user message (will animate itself)
+            addUserMessage(message);
+            
+            // Step 3: Add AI response after user message is visible
+            setTimeout(() => {
+                addAIMessage("Tack för din fråga! Jag analyserar informationen och kommer med ett svar snart.");
+            }, 600);
+        }
+
+        function addUserMessage(message) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message user-message';
+            messageDiv.innerHTML = `
+                <div class="message-content">
+                    <p>${message}</p>
+                </div>
+                <div class="message-avatar">
+                    <div class="user-avatar-small">AA</div>
+                </div>
+            `;
+            
+            // Always append to the end of messages
+            messagesContainer.appendChild(messageDiv);
+            
+            // Make the user message visible after a brief delay
+            setTimeout(() => {
+                messageDiv.classList.add('slide-in');
+            }, 50);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function addAIMessage(message) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai-message';
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <img src="Assets/hälsa+gpt.png" alt="Hälsa+GPT" class="ai-avatar">
+                </div>
+                <div class="message-content">
+                    <p>${message}</p>
+                </div>
+            `;
+            
+            // Always append to the end
+            messagesContainer.appendChild(messageDiv);
+            
+            // Add slide-in animation after a brief delay
+            setTimeout(() => {
+                messageDiv.classList.add('slide-in');
+            }, 50);
+            
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        // Allow Enter key to send message
+        document.getElementById('chatInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        // Hide welcome message when user sends first message
+        function hideWelcomeMessage() {
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage && !welcomeMessage.classList.contains('fade-out')) {
+                welcomeMessage.classList.add('fade-out');
+                // Remove the element after animation completes
+                setTimeout(() => {
+                    if (welcomeMessage.parentNode) {
+                        welcomeMessage.parentNode.removeChild(welcomeMessage);
+                    }
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>
