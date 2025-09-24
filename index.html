@@ -3,167 +3,156 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMDConnect Platform - Care Provider Dashboard</title>
+    <title>MMDConnect - BankID Login</title>
     <link rel="stylesheet" href="styles.css">
+    <style>
+        /* Login page specific styles */
+        .login-container {
+            min-height: 100vh;
+            background-color: #F5F5F5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 40px 20px;
+        }
+
+        .login-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+            max-width: 400px;
+            width: 100%;
+        }
+
+        /* MMDConnect Logo Section */
+        .login-logo-section {
+            margin-bottom: 60px;
+        }
+
+        .login-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+
+        .login-logo {
+            height: 50px;
+            width: auto;
+            filter: brightness(0) saturate(100%) invert(8%) sepia(8%) saturate(2000%) hue-rotate(200deg) brightness(0.9) contrast(1.1);
+        }
+
+        .login-logo-text {
+            font-size: 28px;
+            font-weight: 600;
+            color: #1A1D28;
+        }
+
+        /* QR Code Section */
+        .qr-section {
+            margin-bottom: 30px;
+        }
+
+        /* BankID Section */
+        .bankid-section {
+            margin-bottom: 60px;
+        }
+
+        .bankid-logo-container {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            margin-bottom: 16px;
+        }
+
+        .bankid-logo {
+            height: 40px;
+            width: auto;
+        }
+
+        .identify-text {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+            margin-bottom: 8px;
+        }
+
+        .instruction-text {
+            font-size: 14px;
+            color: #666;
+            font-weight: 400;
+        }
+
+
+        .qr-code {
+            width: 200px;
+            height: 200px;
+            cursor: pointer;
+            border: 3px solid transparent;
+            border-radius: 8px;
+            transition: border-color 0.2s ease;
+        }
+
+        .qr-code:hover {
+            border-color: #1D212B;
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 480px) {
+            .login-container {
+                padding: 20px 16px;
+            }
+            
+            .login-logo-section {
+                margin-bottom: 60px;
+            }
+            
+            .bankid-section {
+                margin-bottom: 40px;
+            }
+            
+            .qr-code {
+                width: 180px;
+                height: 180px;
+            }
+        }
+    </style>
 </head>
 <body>
-    <div class="dashboard">
-        <!-- Sidebar -->
-        <aside class="sidebar">
-            <div class="sidebar-header">
-                <img src="Assets/mmdconnect.png" alt="MMDConnect" class="logo">
-                <span class="logo-text">MMDConnect</span>
-            </div>
-            
-            <nav class="sidebar-nav">
-                <ul class="nav-list">
-                    <li class="nav-item active">
-                        <img src="Assets/översikt.png" alt="Översikt" class="nav-icon">
-                        <span class="nav-text">Översikt</span>
-                    </li>
-                    <li class="nav-item journaldata">
-                        <img src="Assets/journaldata.png" alt="Journaldata" class="nav-icon">
-                        <span class="nav-text">Journaldata</span>
-                    </li>
-                    <li class="nav-item">
-                        <a href="gpt-chat.html" class="nav-link">
-                            <img src="Assets/halsa-gpt.png" alt="Hälsa+ GPT" class="nav-icon">
-                            <span class="nav-text">Hälsa+ GPT</span>
-                        </a>
-                    </li>
-                </ul>
-                
-                <ul class="nav-list-bottom">
-                    <li class="nav-item">
-                        <img src="Assets/hjälp.png" alt="Hjälp" class="nav-icon">
-                        <span class="nav-text">Hjälp</span>
-                    </li>
-                    <li class="nav-item">
-                        <img src="Assets/inställningar.png" alt="Inställningar" class="nav-icon">
-                        <span class="nav-text">Inställningar</span>
-                    </li>
-                    <li class="nav-item">
-                        <img src="Assets/avsluta.png" alt="Avsluta" class="nav-icon">
-                        <span class="nav-text">Avsluta</span>
-                    </li>
-                </ul>
-            </nav>
-        </aside>
-
-        <!-- Main Content -->
-        <main class="main-content">
-            <div class="content-header">
-                <div class="patient-info">
-                    <h1>Patient: Anders Boman</h1>
-                    <p class="patient-id">19650314-xxxx</p>
-                    <p class="patient-date">2024-09-09</p>
-                </div>
-                <div class="user-info">
-                    <span class="user-name">Dr. Anna Andersson</span>
-                    <div class="user-avatar">AA</div>
+    <div class="login-container">
+        <div class="login-content">
+            <!-- MMDConnect Logo Section -->
+            <div class="login-logo-section">
+                <div class="login-logo-container">
+                    <img src="Assets/mmdconnect.png" alt="MMDConnect" class="login-logo">
+                    <span class="login-logo-text">MMDConnect</span>
                 </div>
             </div>
 
-            <div class="overview-grid">
-                <div class="cards-row">
-                    <div class="journal-card">
-                        <h2 class="card-title">Journalanteckningar</h2>
-                        <div class="journal-content">
-                            <div class="journal-entry" onclick="toggleJournalEntry(this)">
-                                <div class="journal-header">
-                                    <div class="journal-info">
-                                        <h3 class="journal-title">Rutinkontroll - Hjärtfunktion</h3>
-                                        <p class="journal-doctor">Dr. Anna Andersson</p>
-                                        <p class="journal-date">2024-09-08</p>
-                                        <p class="journal-summary">EKG visar normal sinusrytm. Blodtryck optimalt. Patient rapporterar inga besvär.</p>
-                                    </div>
-                                    <div class="chevron">›</div>
-                                </div>
-                                <div class="journal-details" style="display: none;">
-                                    <div class="journal-actions">
-                                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
-                                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
-                                            Summera med Hälsa+GPT
-                                        </button>
-                                    </div>
-                                    <div class="journal-content-detail">
-                                        <h4>Undersökningsresultat:</h4>
-                                        <ul>
-                                            <li>EKG: Normal sinusrytm, HR 72 bpm</li>
-                                            <li>Blodtryck: 120/80 mmHg (optimalt)</li>
-                                            <li>Hjärtljud: Klara, regelbundna</li>
-                                            <li>Pulsoximetri: 98% O2-sättning</li>
-                                        </ul>
-                                        
-                                        <h4>Patientens rapportering:</h4>
-                                        <p>Patienten uppger att han känner sig väl och har inga hjärtrelaterade besvär. Tränar regelbundet 3 gånger per vecka utan problem. Ingen bröstsmärta, andningsnöd eller hjärtklappning.</p>
-                                        
-                                        <h4>Rekommendationer:</h4>
-                                        <p>Fortsätt med nuvarande livsstil. Nästa kontroll om 6 månader. Uppmanas att kontakta vården vid eventuella hjärtrelaterade symptom.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="journal-entry" onclick="toggleJournalEntry(this)">
-                                <div class="journal-header">
-                                    <div class="journal-info">
-                                        <h3 class="journal-title">Lungfunktionstest</h3>
-                                        <p class="journal-doctor">Dr. Erik Lindqvist</p>
-                                        <p class="journal-date">2024-09-05</p>
-                                        <p class="journal-summary">Spirometri inom normala värden. Ingen andningsnöd vid ansträngning. FEV1/FVC ratio 0.82.</p>
-                                    </div>
-                                    <div class="chevron">›</div>
-                                </div>
-                                <div class="journal-details" style="display: none;">
-                                    <div class="journal-actions">
-                                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
-                                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
-                                            Summera med Hälsa+GPT
-                                        </button>
-                                    </div>
-                                    <div class="journal-content-detail">
-                                        <h4>Spirometriska värden:</h4>
-                                        <ul>
-                                            <li>FEV1: 4.2 L (108% av förväntat värde)</li>
-                                            <li>FVC: 5.1 L (105% av förväntat värde)</li>
-                                            <li>FEV1/FVC: 0.82 (normal)</li>
-                                            <li>PEF: 8.5 L/s (excellent)</li>
-                                        </ul>
-                                        
-                                        <h4>Klinisk bedömning:</h4>
-                                        <p>Patienten genomförde spirometrin utan problem. Inga tecken på obstruktiv eller restriktiv lungfunktionsstörning. Andningsmönstret var regelbundet och patienten rapporterade inga besvär under testet.</p>
-                                        
-                                        <h4>Följupp:</h4>
-                                        <p>Ingen ytterligare lungfunktionsundersökning behövs. Patient uppmanas att fortsätta med regelbunden fysisk aktivitet för att bibehålla god lungkapacitet.</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="health-card">
-                        <h2 class="card-title">Hälsodata</h2>
-                        <div class="organ-list">
-                            <a href="heart.html" class="organ-item-link">
-                                <div class="organ-item">
-                                    <div class="organ-header">
-                                        <div class="icon-container">
-                                            <img src="Assets/heart.png" alt="Heart" class="organ-icon">
-                                            <div class="status-indicator good"></div>
-                                        </div>
-                                        <h3 class="organ-name">Hjärta</h3>
-                                        <span class="data-count">8 datapunkter tillgängliga</span>
-                                        <div class="chevron">›</div>
-                                    </div>
-                                </div>
-                            </a>
-
-                        </div>
-                    </div>
-                </div>
+            <!-- QR Code Section -->
+            <div class="qr-section">
+                <img src="Assets/QRCode.png" alt="QR Code" class="qr-code" onclick="redirectToOverview()">
             </div>
-        </main>
+
+            <!-- BankID Section -->
+            <div class="bankid-section">
+                <div class="bankid-logo-container">
+                    <img src="Assets/BankID.png" alt="BankID" class="bankid-logo">
+                    <h1 class="identify-text">Identify with BankID</h1>
+                </div>
+                <p class="instruction-text">Open the BankID app and scan the QR code</p>
+            </div>
+        </div>
     </div>
-    <script src="script.js"></script>
+
+    <script>
+        function redirectToOverview() {
+            // Redirect to the main platform (översikt page)
+            window.location.href = 'dashboard.html';
+        }
+    </script>
 </body>
 </html>
