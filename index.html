@@ -17,6 +17,16 @@
             padding: 40px 20px;
         }
 
+        /* Hide login content initially to prevent flash */
+        .login-container {
+            opacity: 0;
+            transition: opacity 0.1s ease;
+        }
+
+        .login-container.show {
+            opacity: 1;
+        }
+
         .login-content {
             display: flex;
             flex-direction: column;
@@ -154,11 +164,12 @@
             const hasSeenLogin = localStorage.getItem('hasSeenLogin');
             
             if (hasSeenLogin) {
-                // User has already seen login, redirect to dashboard
-                window.location.href = 'dashboard.html';
+                // User has already seen login, redirect to dashboard immediately
+                window.location.replace('dashboard.html');
             } else {
                 // First time visitor, show login page
                 localStorage.setItem('hasSeenLogin', 'true');
+                document.querySelector('.login-container').classList.add('show');
             }
         });
 
