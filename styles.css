@@ -377,6 +377,257 @@ body {
     font-style: italic;
 }
 
+/* Journal Summary Message Card Design */
+.journal-summary-message {
+    margin: 16px 0;
+}
+
+.journal-summary-card {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.summary-header {
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.summary-title-section {
+    flex: 1;
+}
+
+.summary-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0 0 8px 0;
+    line-height: 1.4;
+}
+
+.summary-meta {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.summary-date {
+    background: #f8f9fa;
+    color: #6c757d;
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: 500;
+    border: 1px solid #e9ecef;
+}
+
+.summary-doctor-section {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding: 12px 0;
+}
+
+.doctor-avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #1D212B;
+    color: white;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 600;
+    flex-shrink: 0;
+}
+
+.doctor-details {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.doctor-name {
+    font-size: 15px;
+    font-weight: 600;
+    color: #1D212B;
+}
+
+.doctor-role {
+    font-size: 12px;
+    color: #6c757d;
+    font-weight: 400;
+}
+
+.summary-content {
+    margin-bottom: 20px;
+}
+
+.summary-label {
+    font-size: 13px;
+    font-weight: 600;
+    color: #495057;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+}
+
+.summary-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #495057;
+    font-style: italic;
+    margin: 0;
+}
+
+/* Detailed Sections */
+.summary-section {
+    margin: 20px 0;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.section-header {
+    background: #f8f9fa;
+    padding: 12px 16px;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.section-content {
+    padding: 16px;
+    background: #ffffff;
+}
+
+.value-item {
+    display: flex;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 14px;
+    color: #495057;
+}
+
+.value-item:last-child {
+    border-bottom: none;
+}
+
+.value-item::before {
+    content: '•';
+    color: #1D212B;
+    font-weight: bold;
+    margin-right: 12px;
+    flex-shrink: 0;
+}
+
+.value-text {
+    font-size: 14px;
+    line-height: 1.6;
+    color: #495057;
+    margin: 8px 0;
+}
+
+.summary-actions {
+    border-top: 1px solid #e9ecef;
+    padding-top: 16px;
+    margin-top: 20px;
+}
+
+.action-suggestion {
+    padding: 8px 0;
+}
+
+.action-text {
+    font-size: 14px;
+    color: #6c757d;
+    font-weight: 400;
+    line-height: 1.4;
+}
+
+/* Summary Footer Actions */
+.summary-footer-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    margin-top: 16px;
+    padding: 12px 0;
+    border-top: 1px solid #e9ecef;
+}
+
+.action-btn {
+    background: #ffffff;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px 12px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.action-btn:hover {
+    background: #f8f9fa;
+    border-color: #1D212B;
+    color: #1D212B;
+}
+
+.action-btn:active {
+    transform: translateY(0);
+}
+
+.share-btn:hover {
+    color: #1D212B;
+    border-color: #1D212B;
+}
+
+.delete-btn:hover {
+    color: #1D212B;
+    border-color: #1D212B;
+}
+
+/* Animation for the summary card */
+.journal-summary-message {
+    animation: slideInUp 0.4s ease-out;
+}
+
+@keyframes slideInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideOutDown {
+    from {
+        opacity: 1;
+        transform: translateY(0);
+    }
+    to {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+}
+
 /* Organ Page Styles */
 .back-button-container {
     margin-bottom: 24px;
@@ -803,19 +1054,13 @@ body {
     display: flex;
     margin-bottom: 2px;
     gap: 12px;
-    padding: 24px 32px 4px 32px;
+    padding: 12px 32px;
 }
 
-.message:first-child {
-    padding-top: 36px;
-}
 
 
 .ai-message {
-    align-items: center;
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease;
+    align-items: flex-start;
 }
 
 .user-message {
@@ -830,8 +1075,19 @@ body {
 .ai-avatar {
     width: 32px;
     height: 32px;
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
     border-radius: 50%;
-    filter: brightness(0) saturate(100%) invert(15%) sepia(8%) saturate(750%) hue-rotate(169deg) brightness(95%) contrast(88%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    margin-top: 8px;
+}
+
+.ai-avatar img {
+    width: 20px;
+    height: 20px;
+    filter: brightness(0) saturate(100%) invert(100%);
 }
 
 .user-avatar-small {
@@ -845,6 +1101,7 @@ body {
     color: white;
     font-weight: 600;
     font-size: 12px;
+    margin-top: 8px;
 }
 
 .message-content {
@@ -859,15 +1116,53 @@ body {
     background: linear-gradient(135deg, #D1D9E0 0%, #E0E6ED 100%);
 }
 
-.message-content p {
-    margin: 0 0 12px 0;
-    line-height: 1.5;
-    color: #333;
-}
 
 .message-content p:last-child {
     margin-bottom: 0;
 }
+
+/* Use the original journal styles for message content */
+.message-content h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 8px 0;
+}
+
+.message-content h4 {
+    font-size: 16px;
+    font-weight: 700;
+    color: #333;
+    margin: 12px 0 4px 0;
+}
+
+
+.message-content h4:first-child {
+    margin-top: 0;
+}
+
+
+
+.message-content ul {
+    margin: 8px 0 16px 0;
+    padding-left: 20px;
+}
+
+.message-content li {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 4px;
+}
+
+.message-content p {
+    font-size: 15px;
+    font-weight: 500;
+    color: #333;
+    line-height: 1.5;
+    margin: 0;
+}
+
 
 .capabilities-list {
     margin: 12px 0;
@@ -953,20 +1248,3 @@ body {
     opacity: 0;
 }
 
-/* User message slide-in animation */
-.user-message {
-    transform: translateY(20px);
-    opacity: 0;
-    transition: transform 0.4s ease, opacity 0.4s ease;
-    align-items: center;
-}
-
-.user-message.slide-in {
-    transform: translateY(0);
-    opacity: 1;
-}
-
-.ai-message.slide-in {
-    transform: translateY(0);
-    opacity: 1;
-}

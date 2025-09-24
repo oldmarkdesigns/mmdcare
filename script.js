@@ -156,8 +156,20 @@ function summarizeWithGPT(button) {
         });
     }
     
-    // Create the full journal content for summarization
-    const journalContent = `**${title}**\nDoktor: ${doctor}\nDatum: ${date}\n\nSammanfattning: ${summary}${detailedContent}`;
+    // Create the full journal content for summarization with better structure
+    const journalContent = `# ${title}
+
+### Läkare
+${doctor}
+
+### Datum
+${date}
+
+### Sammanfattning
+${summary}${detailedContent}
+
+---
+*Denna sammanfattning har genererats av Hälsa+GPT baserat på journalanteckningen.*`;
     
     // Show loading state
     const originalText = button.textContent;

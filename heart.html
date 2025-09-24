@@ -53,7 +53,7 @@
         <main class="main-content">
             <div class="content-header">
                 <div class="patient-info">
-                    <h1>Patient: Samuel Oldmark</h1>
+                    <h1>Patient: Anders Boman</h1>
                     <div class="organ-title-header">
                         <h2>Hjärta</h2>
                         <div class="icon-container">
@@ -331,21 +331,37 @@
             button.textContent = 'Analyserar...';
             button.disabled = true;
             
-            // Collect heart data
+            // Get today's date in Swedish format
+            const today = new Date();
+            const todayString = today.toLocaleDateString('sv-SE');
+            
+            // Collect heart data with improved structure
             const heartData = {
-                title: 'Hjärtdata - Samuel Oldmark',
-                content: `Hjärtfrekvens: 72 bpm (Normal)
-Systoliskt blodtryck: 120 mmHg (Optimalt)
-Diastoliskt blodtryck: 80 mmHg (Optimalt)
-Kolesterol (LDL): 2.8 mmol/L (Optimalt)
+                title: 'Hjärtdata - Anders Boman',
+                content: `# Hjärtdata Analys
 
-Hjärtfrekvens över tid visar normal variation mellan 65-85 bpm.
-Blodtryck är optimalt med 120/80 mmHg.
-EKG-data visar normal hjärtrytm.
-Hjärtfrekvensvariabilitet är inom normala gränser.
+### Datum
+${todayString}
 
-Sammanfattning: Patientens hjärtdata visar optimala värden med inga avvikelser. Alla vitala parametrar är inom normala gränser och indikerar god hjärtkärlhälsa.`,
-                timestamp: new Date().toISOString()
+### Aktuella Värden
+- **Hjärtfrekvens:** 72 bpm *(Normal)*
+- **Systoliskt blodtryck:** 120 mmHg *(Optimalt)*
+- **Diastoliskt blodtryck:** 80 mmHg *(Optimalt)*
+- **Kolesterol (LDL):** 2.8 mmol/L *(Optimalt)*
+
+### Trendanalys
+- **Hjärtfrekvens över tid:** Normal variation mellan 65-85 bpm
+- **Blodtryck:** Optimalt med 120/80 mmHg
+- **EKG-data:** Normal hjärtrytm
+- **Hjärtfrekvensvariabilitet:** Inom normala gränser
+
+### Sammanfattning
+Patientens hjärtdata visar optimala värden med inga avvikelser. Alla vitala parametrar är inom normala gränser och indikerar god hjärtkärlhälsa.
+
+---
+*Denna analys har genererats av Hälsa+GPT baserat på aktuella hjärtdata.*`,
+                timestamp: new Date().toISOString(),
+                isHeartData: true
             };
             
             // Store data for GPT chat

@@ -57,7 +57,7 @@
                 <div class="chat-header">
                     <div class="chat-title-section">
                         <h1 class="chat-title">Hälsa+GPT</h1>
-                        <p class="chat-subtitle">AI-Powered Healthcare & Medical Support</p>
+                        <p class="chat-subtitle">AI-driven vård & medicinsk support</p>
                     </div>
                     <div class="chat-header-actions">
                         <span class="user-name">Dr. Anna Andersson</span>
@@ -69,10 +69,12 @@
                 <div class="chat-messages">
                     <div class="message ai-message welcome-message" id="welcomeMessage">
                         <div class="message-avatar">
-                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" class="ai-avatar">
+                            <div class="ai-avatar">
+                                <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT">
+                            </div>
                         </div>
                         <div class="message-content">
-                            <p>Hej! Jag är Hälsa+GPT, din AI-drivna vårdassistent. Jag kan hjälpa dig med:</p>
+                            <p>Hej Anders! Jag är Hälsa+GPT, din AI-drivna vårdassistent. Jag kan hjälpa dig med:</p>
                             <ul class="capabilities-list">
                                 <li>Medicinska bedömningar och rekommendationer</li>
                                 <li>Patientöversikt och journalanalys</li>
@@ -127,8 +129,152 @@
             
             // Add AI response with the summary after user message is visible
             setTimeout(() => {
-                addAIMessage(`Här är min sammanfattning av "${summaryData.title}":\n\n${summaryData.content}\n\nVill du att jag ska analysera något specifikt från denna journalanteckning?`);
+                addJournalSummaryMessage(summaryData);
             }, 600);
+        }
+
+        function addJournalSummaryMessage(summaryData) {
+            const messagesContainer = document.querySelector('.chat-messages');
+            const messageDiv = document.createElement('div');
+            messageDiv.className = 'message ai-message journal-summary-message';
+            
+            // Parse the summary data to extract components
+            const content = summaryData.content;
+            const title = summaryData.title;
+            
+            // Extract doctor, date, and summary from content
+            const doctorMatch = content.match(/### Läkare\n(.*?)(?=\n|$)/);
+            const dateMatch = content.match(/### Datum\n(.*?)(?=\n|$)/);
+            const summaryMatch = content.match(/### Sammanfattning\n(.*?)(?=\n\n---|$)/s);
+            
+            const doctor = doctorMatch ? doctorMatch[1] : null;
+            const date = dateMatch ? dateMatch[1] : 'Okänt datum';
+            const summary = summaryMatch ? summaryMatch[1] : 'Ingen sammanfattning tillgänglig';
+            const isHeartData = summaryData.isHeartData || false;
+            
+            // Parse detailed sections from summary
+            const sections = parseSummarySections(summary);
+            
+            messageDiv.innerHTML = `
+                <div class="message-avatar">
+                    <div class="ai-avatar">
+                        <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT">
+                    </div>
+                </div>
+                <div class="message-content">
+                    <div class="journal-summary-card">
+                        <div class="summary-header">
+                            <div class="summary-title-section">
+                                <h3 class="summary-title">${title}</h3>
+                                <div class="summary-meta">
+                                    <span class="summary-date">${date}</span>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        ${doctor ? `
+                        <div class="summary-doctor-section">
+                            <div class="doctor-avatar">${doctor.replace('Dr. ', '').split(' ').map(n => n[0]).join('')}</div>
+                            <div class="doctor-details">
+                                <span class="doctor-name">${doctor}</span>
+                                <span class="doctor-role">Behandlande läkare</span>
+                            </div>
+                        </div>
+                        ` : ''}
+                        
+                        <div class="summary-content">
+                            <div class="summary-label">Sammanfattning</div>
+                            <div class="summary-text">${sections.basicSummary}</div>
+                        </div>
+                        
+                        ${sections.detailedSections.map(section => `
+                            <div class="summary-section">
+                                <div class="section-header">
+                                    <h4 class="section-title">${section.title}</h4>
+                                </div>
+                                <div class="section-content">
+                                    ${section.content}
+                                </div>
+                            </div>
+                        `).join('')}
+                        
+                        <div class="summary-actions">
+                            <div class="action-suggestion">
+                                <span class="action-text">Vill du att jag ska analysera något specifikt från denna journalanteckning?</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="summary-footer-actions">
+                        <button class="action-btn share-btn" onclick="shareSummary()" title="Dela sammanfattning">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="18" cy="5" r="3"></circle>
+                                <circle cx="6" cy="12" r="3"></circle>
+                                <circle cx="18" cy="19" r="3"></circle>
+                                <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                            </svg>
+                        </button>
+                        <button class="action-btn delete-btn" onclick="deleteSummary()" title="Radera sammanfattning">
+                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <polyline points="3,6 5,6 21,6"></polyline>
+                                <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                                <line x1="10" y1="11" x2="10" y2="17"></line>
+                                <line x1="14" y1="11" x2="14" y2="17"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            `;
+            
+            messagesContainer.appendChild(messageDiv);
+            // Don't scroll for journal summary messages - keep at top for reading
+        }
+
+        function parseSummarySections(summary) {
+            // Split summary into basic summary and detailed sections
+            const lines = summary.split('\n');
+            let basicSummary = '';
+            let detailedSections = [];
+            let currentSection = null;
+            
+            for (let line of lines) {
+                line = line.trim();
+                
+                // Check if line is a section header (starts with **)
+                if (line.startsWith('**') && line.endsWith('**')) {
+                    // Save previous section if exists
+                    if (currentSection) {
+                        detailedSections.push(currentSection);
+                    }
+                    
+                    // Start new section
+                    currentSection = {
+                        title: line.replace(/\*\*/g, ''),
+                        content: ''
+                    };
+                } else if (currentSection) {
+                    // Add content to current section
+                    if (line.startsWith('•')) {
+                        currentSection.content += `<div class="value-item">${line.substring(1).trim()}</div>`;
+                    } else if (line) {
+                        currentSection.content += `<div class="value-text">${line}</div>`;
+                    }
+                } else if (line && !line.startsWith('•')) {
+                    // This is part of basic summary
+                    basicSummary += (basicSummary ? ' ' : '') + line;
+                }
+            }
+            
+            // Add last section
+            if (currentSection) {
+                detailedSections.push(currentSection);
+            }
+            
+            return {
+                basicSummary: basicSummary || 'Ingen grundläggande sammanfattning tillgänglig.',
+                detailedSections: detailedSections
+            };
         }
 
         // Chat functionality
@@ -172,10 +318,6 @@
             // Always append to the end of messages
             messagesContainer.appendChild(messageDiv);
             
-            // Make the user message visible after a brief delay
-            setTimeout(() => {
-                messageDiv.classList.add('slide-in');
-            }, 50);
             
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
         }
@@ -184,24 +326,49 @@
             const messagesContainer = document.querySelector('.chat-messages');
             const messageDiv = document.createElement('div');
             messageDiv.className = 'message ai-message';
+            
+            // Convert markdown-like formatting to HTML
+            const formattedMessage = formatMessage(message);
+            
             messageDiv.innerHTML = `
                 <div class="message-avatar">
-                    <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" class="ai-avatar">
+                    <div class="ai-avatar">
+                        <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT">
+                    </div>
                 </div>
                 <div class="message-content">
-                    <p>${message}</p>
+                    ${formattedMessage}
                 </div>
             `;
             
             // Always append to the end
             messagesContainer.appendChild(messageDiv);
             
-            // Add slide-in animation after a brief delay
-            setTimeout(() => {
-                messageDiv.classList.add('slide-in');
-            }, 50);
             
             messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        }
+
+        function formatMessage(message) {
+            // Simple formatting that works
+            let formattedMessage = message
+                .replace(/^# (.*$)/gim, '<h3 class="journal-title">$1</h3>')
+                .replace(/^### (.*$)/gim, '<h4>$1</h4>')
+                .replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                .replace(/\*(.*?)\*/g, '<em>$1</em>')
+                .replace(/^- (.*$)/gim, '<li>$1</li>')
+                .replace(/^---$/gim, '<hr>')
+                .replace(/\n\n/g, '<br>')
+                .replace(/\n/g, '<br>')
+                .replace(/(<li>.*<\/li>)/gs, '<ul>$1</ul>')
+                .replace(/<\/ul><br><ul>/g, '')
+                .replace(/<\/h4><br>/g, '</h4>');
+            
+            // Split into two sections
+            const sections = formattedMessage.split('<h4>Undersökningsresultat:</h4>');
+            if (sections.length === 2) {
+                return `<div class="header-section">${sections[0]}</div><div class="content-section"><h4>Undersökningsresultat:</h4>${sections[1]}</div>`;
+            }
+            return formattedMessage;
         }
 
         // Allow Enter key to send message
@@ -222,6 +389,43 @@
                         welcomeMessage.parentNode.removeChild(welcomeMessage);
                     }
                 }, 100);
+            }
+        }
+
+        // Summary action functions
+        function shareSummary() {
+            const summaryCard = document.querySelector('.journal-summary-card');
+            if (summaryCard) {
+                const title = summaryCard.querySelector('.summary-title').textContent;
+                const date = summaryCard.querySelector('.summary-date').textContent;
+                const summaryText = summaryCard.querySelector('.summary-text').textContent;
+                
+                const shareText = `${title}\nDatum: ${date}\n\n${summaryText}`;
+                
+                if (navigator.share) {
+                    navigator.share({
+                        title: title,
+                        text: shareText
+                    });
+                } else {
+                    // Fallback: copy to clipboard
+                    navigator.clipboard.writeText(shareText).then(() => {
+                        alert('Sammanfattning kopierad till urklipp!');
+                    });
+                }
+            }
+        }
+
+
+        function deleteSummary() {
+            if (confirm('Är du säker på att du vill radera denna sammanfattning?')) {
+                const summaryMessage = document.querySelector('.journal-summary-message');
+                if (summaryMessage) {
+                    summaryMessage.style.animation = 'slideOutDown 0.3s ease-in';
+                    setTimeout(() => {
+                        summaryMessage.remove();
+                    }, 300);
+                }
             }
         }
     </script>
