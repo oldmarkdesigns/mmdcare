@@ -163,12 +163,15 @@
         // Check if user has already seen the login page
         window.addEventListener('load', function() {
             const hasSeenLogin = localStorage.getItem('hasSeenLogin');
+            console.log('hasSeenLogin:', hasSeenLogin); // Debug log
             
             if (hasSeenLogin) {
                 // User has already seen login, redirect to dashboard immediately
+                console.log('Redirecting to dashboard...'); // Debug log
                 window.location.replace('dashboard.html');
             } else {
                 // First time visitor, show login page
+                console.log('Showing login page...'); // Debug log
                 localStorage.setItem('hasSeenLogin', 'true');
                 document.querySelector('.login-container').classList.add('show');
             }
@@ -177,6 +180,13 @@
         function redirectToOverview() {
             // Redirect to the main platform (översikt page)
             window.location.href = 'dashboard.html';
+        }
+
+        // Debug function to reset login state (remove this in production)
+        function resetLoginState() {
+            localStorage.removeItem('hasSeenLogin');
+            console.log('Login state reset. Reload the page to see login screen.');
+            alert('Login state reset! Reload the page to see the login screen.');
         }
     </script>
 </body>
