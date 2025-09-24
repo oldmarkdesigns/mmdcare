@@ -6,6 +6,43 @@
     <title>Hjärta - MMDConnect Platform</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        /* Heart page chart animations */
+        .chart-container {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .chart-container.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        .heart-overview, .heart-data {
+            opacity: 0;
+            transform: translateY(10px);
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .heart-overview.loaded, .heart-data.loaded {
+            opacity: 1;
+            transform: translateY(0);
+        }
+        
+        /* Staggered animation delays */
+        .heart-overview.loaded {
+            transition-delay: 0.1s;
+        }
+        
+        .chart-container.loaded {
+            transition-delay: 0.2s;
+        }
+        
+        .heart-data.loaded {
+            transition-delay: 0.3s;
+        }
+    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -19,16 +56,20 @@
             <nav class="sidebar-nav">
                 <ul class="nav-list">
                     <li class="nav-item">
-                        <img src="Assets/översikt.png" alt="Översikt" class="nav-icon">
-                        <span class="nav-text">Översikt</span>
+                        <a href="dashboard.html" class="nav-link">
+                            <img src="Assets/översikt.png" alt="Översikt" class="nav-icon">
+                            <span class="nav-text">Översikt</span>
+                        </a>
                     </li>
                     <li class="nav-item journaldata">
                         <img src="Assets/journaldata.png" alt="Journaldata" class="nav-icon">
                         <span class="nav-text">Journaldata</span>
                     </li>
                     <li class="nav-item">
-                        <img src="Assets/halsa-gpt.png" alt="Hälsa+ GPT" class="nav-icon">
-                        <span class="nav-text">Hälsa+ GPT</span>
+                        <a href="gpt-chat.html" class="nav-link">
+                            <img src="Assets/halsa-gpt.png" alt="Hälsa+ GPT" class="nav-icon">
+                            <span class="nav-text">Hälsa+ GPT</span>
+                        </a>
                     </li>
                 </ul>
                 
@@ -71,7 +112,7 @@
 
             <!-- Back Button and Summarize Button -->
             <div class="back-button-container" style="display: flex; justify-content: space-between; align-items: center;">
-                <button class="back-button" onclick="window.location.href='index.html'">
+                <button class="back-button" onclick="window.location.href='dashboard.html'">
                     ← Tillbaka till översikt
                 </button>
                 <button class="summarize-button" onclick="summarizeHeartData()">
@@ -161,7 +202,7 @@
                     
                     switch(navText) {
                         case 'Översikt':
-                            window.location.href = 'index.html';
+                            window.location.href = 'dashboard.html';
                             break;
                         case 'Hälsa+ GPT':
                             window.location.href = 'gpt-chat.html';
@@ -377,6 +418,33 @@ Patientens hjärtdata visar optimala värden med inga avvikelser. Alla vitala pa
                 window.location.href = 'gpt-chat.html';
             }, 1500);
         }
+
+        // Trigger heart page animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate overview section
+            const overview = document.querySelector('.heart-overview');
+            if (overview) {
+                setTimeout(() => {
+                    overview.classList.add('loaded');
+                }, 50);
+            }
+            
+            // Animate chart containers
+            const chartContainers = document.querySelectorAll('.chart-container');
+            chartContainers.forEach((container, index) => {
+                setTimeout(() => {
+                    container.classList.add('loaded');
+                }, 150 + (index * 100));
+            });
+            
+            // Animate heart data section
+            const heartData = document.querySelector('.heart-data');
+            if (heartData) {
+                setTimeout(() => {
+                    heartData.classList.add('loaded');
+                }, 300);
+            }
+        });
     </script>
 </body>
 </html>

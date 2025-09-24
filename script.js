@@ -69,7 +69,7 @@ document.addEventListener('DOMContentLoaded', function() {
             const navText = this.querySelector('.nav-text').textContent.trim();
             switch(navText) {
                 case 'Översikt':
-                    window.location.href = 'index.html';
+                    window.location.href = 'dashboard.html';
                     break;
                 case 'Journaldata':
                     // Journaldata doesn't have a separate page yet, could add one
@@ -113,16 +113,18 @@ function toggleJournalEntry(entry) {
     const details = entry.querySelector('.journal-details');
     const chevron = entry.querySelector('.chevron');
     
-    if (details.style.display === 'none') {
-        details.style.display = 'block';
-        entry.classList.add('expanded');
-        chevron.textContent = '‹';
-        chevron.style.transform = 'rotate(-90deg)';
-    } else {
-        details.style.display = 'none';
+    if (details.classList.contains('expanded')) {
+        // Collapse
+        details.classList.remove('expanded');
         entry.classList.remove('expanded');
         chevron.textContent = '›';
         chevron.style.transform = 'rotate(0deg)';
+    } else {
+        // Expand
+        details.classList.add('expanded');
+        entry.classList.add('expanded');
+        chevron.textContent = '‹';
+        chevron.style.transform = 'rotate(-90deg)';
     }
 }
 
