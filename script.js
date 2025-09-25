@@ -53,6 +53,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // Navigation item click handlers
     const navItems = document.querySelectorAll('.nav-item');
+    console.log('Found nav items:', navItems.length); // Debug log
     navItems.forEach(item => {
         item.addEventListener('click', function() {
             // Remove active class from all items
@@ -67,6 +68,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // Navigate to appropriate page based on nav text
             const navText = this.querySelector('.nav-text').textContent.trim();
+            console.log('Navigation clicked:', navText); // Debug log
             switch(navText) {
                 case 'Översikt':
                     window.location.href = 'dashboard.html';
@@ -84,7 +86,15 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Settings page doesn't exist yet, could add one
                     break;
                 case 'Avsluta':
-                    // Logout functionality could be added here
+                    // Logout functionality - clear session and redirect to login
+                    console.log('Logout clicked'); // Debug log
+                    if (confirm('Är du säker på att du vill logga ut?')) {
+                        console.log('Logout confirmed'); // Debug log
+                        localStorage.removeItem('hasSeenLogin');
+                        window.location.href = 'index.html';
+                    } else {
+                        console.log('Logout cancelled'); // Debug log
+                    }
                     break;
             }
         });
