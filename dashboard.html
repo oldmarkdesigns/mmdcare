@@ -42,7 +42,7 @@
                         <img src="Assets/inställningar.png" alt="Inställningar" class="nav-icon">
                         <span class="nav-text">Inställningar</span>
                     </li>
-                    <li class="nav-item">
+                    <li class="nav-item" onclick="logout()">
                         <img src="Assets/avsluta.png" alt="Avsluta" class="nav-icon">
                         <span class="nav-text">Avsluta</span>
                     </li>
@@ -165,5 +165,13 @@
         </main>
     </div>
     <script src="script.js"></script>
+    <script>
+        function logout() {
+            if (confirm('Är du säker på att du vill logga ut?')) {
+                localStorage.removeItem('hasSeenLogin');
+                window.location.href = 'index.html';
+            }
+        }
+    </script>
 </body>
 </html>
