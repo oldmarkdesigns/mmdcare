@@ -17,14 +17,14 @@
             padding: 40px 20px;
         }
 
-        /* Hide login content initially to prevent flash */
+        /* Show login content by default, hide only if user has seen it */
         .login-container {
-            opacity: 0;
-            transition: opacity 0.1s ease;
+            opacity: 1;
+            transition: opacity 0.3s ease;
         }
 
-        .login-container.show {
-            opacity: 1;
+        .login-container.hide {
+            opacity: 0;
         }
 
 
@@ -39,7 +39,7 @@
 
         /* MMDConnect Logo Section */
         .login-logo-section {
-            margin-bottom: 60px;
+            margin-bottom: 40px;
         }
 
         .login-logo-container {
@@ -63,12 +63,12 @@
 
         /* QR Code Section */
         .qr-section {
-            margin-bottom: 30px;
+            margin-bottom: 20px;
         }
 
         /* BankID Section */
         .bankid-section {
-            margin-bottom: 60px;
+            margin-bottom: 20px;
         }
 
         .bankid-logo-container {
@@ -118,11 +118,15 @@
             }
             
             .login-logo-section {
-                margin-bottom: 60px;
+                margin-bottom: 30px;
             }
             
             .bankid-section {
-                margin-bottom: 40px;
+                margin-bottom: 15px;
+            }
+            
+            .qr-section {
+                margin-bottom: 15px;
             }
             
             .qr-code {
@@ -160,21 +164,10 @@
     </div>
 
     <script>
-        // Check if user has already seen the login page
-        window.addEventListener('load', function() {
-            const hasSeenLogin = localStorage.getItem('hasSeenLogin');
-            console.log('hasSeenLogin:', hasSeenLogin); // Debug log
-            
-            if (hasSeenLogin) {
-                // User has already seen login, redirect to dashboard immediately
-                console.log('Redirecting to dashboard...'); // Debug log
-                window.location.replace('dashboard.html');
-            } else {
-                // First time visitor, show login page
-                console.log('Showing login page...'); // Debug log
-                localStorage.setItem('hasSeenLogin', 'true');
-                document.querySelector('.login-container').classList.add('show');
-            }
+        // Always show login page - no automatic redirect
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Showing login page...'); // Debug log
+            // Login page is already visible by default
         });
 
         function redirectToOverview() {
@@ -188,6 +181,9 @@
             console.log('Login state reset. Reload the page to see login screen.');
             alert('Login state reset! Reload the page to see the login screen.');
         }
+
+        // Clear localStorage on page load to ensure fresh start
+        localStorage.removeItem('hasSeenLogin');
     </script>
 </body>
 </html>
