@@ -262,7 +262,7 @@ body {
     border: 1px solid #e9ecef;
     width: 100%;
     box-sizing: border-box;
-    transition: border-color 0.4s ease;
+    transition: border-color 0.4s ease, box-shadow 0.3s ease, transform 0.2s ease;
 }
 
 .journal-entry:last-child {
@@ -278,24 +278,48 @@ body {
 .journal-entry.expanded {
     border-color: #1D212B;
     border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(29, 33, 43, 0.1);
+    transform: translateY(-1px);
 }
 
 .journal-details {
     max-height: 0;
     overflow: hidden;
     opacity: 0;
-    transition: max-height 0.3s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.25s ease;
+    transform: translateY(-10px);
+    transition: max-height 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94), 
+                opacity 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                transform 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                margin-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                padding-top 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94),
+                border-top 0.3s ease;
     margin-top: 0;
     padding-top: 0;
     border-top: 1px solid transparent;
 }
 
 .journal-details.expanded {
-    max-height: 800px;
+    max-height: 1000px;
     opacity: 1;
+    transform: translateY(0);
     margin-top: 16px;
     padding-top: 16px;
     border-top: 1px solid #e9ecef;
+}
+
+.journal-content-detail {
+    animation: fadeInUp 0.4s ease-out 0.2s both;
+}
+
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
 }
 
 .journal-content-detail h4 {
@@ -640,6 +664,460 @@ body {
     }
 }
 
+/* Share Overlay Styles */
+.share-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.share-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.share-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 480px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.share-overlay.active .share-modal {
+    transform: scale(1) translateY(0);
+}
+
+.share-modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.share-modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0 0 8px 0;
+}
+
+.share-modal-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.share-modal-content {
+    margin-bottom: 32px;
+}
+
+.share-info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.share-info-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0 0 12px 0;
+}
+
+.share-info-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.share-app-info {
+    padding: 16px;
+    background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+}
+
+.share-app-details h4 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0 0 4px 0;
+}
+
+.share-app-details p {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+}
+
+.share-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.share-btn-cancel {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.share-btn-cancel:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.share-btn-confirm {
+    background: linear-gradient(180deg, #161B27 0%, #1D212B 100%);
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.share-btn-confirm:hover {
+    background: linear-gradient(180deg, #1E2430 0%, #252B3A 100%);
+}
+
+.share-btn-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive design for share overlay */
+@media (max-width: 768px) {
+    .share-modal {
+        padding: 24px;
+        margin: 20px;
+        max-width: none;
+        width: calc(100% - 40px);
+    }
+    
+    .share-modal-title {
+        font-size: 20px;
+    }
+    
+    .share-modal-subtitle {
+        font-size: 14px;
+    }
+    
+    .share-modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .share-btn-cancel,
+    .share-btn-confirm {
+        width: 100%;
+        justify-content: center;
+    }
+    
+    .share-app-info {
+        text-align: center;
+    }
+}
+
+/* Delete Overlay Styles */
+.delete-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    opacity: 0;
+    visibility: hidden;
+    transition: opacity 0.3s ease, visibility 0.3s ease;
+}
+
+.delete-overlay.active {
+    opacity: 1;
+    visibility: visible;
+}
+
+.delete-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 420px;
+    width: 90%;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    transform: scale(0.9) translateY(20px);
+    transition: transform 0.3s ease;
+    position: relative;
+}
+
+.delete-overlay.active .delete-modal {
+    transform: scale(1) translateY(0);
+}
+
+.delete-modal-header {
+    text-align: center;
+    margin-bottom: 24px;
+}
+
+.delete-modal-title {
+    font-size: 24px;
+    font-weight: 600;
+    color: #FF4400;
+    margin: 0 0 8px 0;
+}
+
+.delete-modal-subtitle {
+    font-size: 16px;
+    color: #666;
+    margin: 0;
+    line-height: 1.4;
+}
+
+.delete-modal-content {
+    margin-bottom: 32px;
+}
+
+
+.delete-info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.delete-info-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1D212B;
+    margin: 0 0 8px 0;
+}
+
+.delete-info-text {
+    font-size: 14px;
+    color: #666;
+    line-height: 1.5;
+    margin: 0;
+}
+
+.delete-modal-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: flex-end;
+}
+
+.delete-btn-cancel {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.delete-btn-cancel:hover {
+    background: #e9ecef;
+    border-color: #dee2e6;
+    color: #495057;
+}
+
+.delete-btn-confirm {
+    background: #FF4400;
+    border: none;
+    border-radius: 8px;
+    padding: 12px 24px;
+    font-size: 14px;
+    font-weight: 500;
+    color: white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.delete-btn-confirm:hover {
+    background: #e63e00;
+}
+
+.delete-btn-icon {
+    width: 16px;
+    height: 16px;
+}
+
+/* Responsive design for delete overlay */
+@media (max-width: 768px) {
+    .delete-modal {
+        padding: 24px;
+        margin: 20px;
+        max-width: none;
+        width: calc(100% - 40px);
+    }
+    
+    .delete-modal-title {
+        font-size: 20px;
+    }
+    
+    .delete-modal-subtitle {
+        font-size: 14px;
+    }
+    
+    .delete-modal-actions {
+        flex-direction: column;
+        gap: 8px;
+    }
+    
+    .delete-btn-cancel,
+    .delete-btn-confirm {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+/* Logout Overlay Styles */
+.logout-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.logout-modal {
+    background: white;
+    border-radius: 12px;
+    padding: 32px;
+    max-width: 400px;
+    width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+}
+
+.logout-modal-content {
+    margin-bottom: 32px;
+}
+
+.logout-info-card {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 8px;
+    padding: 16px;
+}
+
+.logout-info-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    margin: 0 0 12px 0;
+}
+
+.logout-info-text {
+    font-size: 14px;
+    color: #666;
+    margin: 0;
+    line-height: 1.5;
+}
+
+.logout-modal-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+}
+
+.logout-btn-cancel,
+.logout-btn-confirm {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-width: 100px;
+}
+
+.logout-btn-cancel {
+    background: #f8f9fa;
+    color: #666;
+    border: 1px solid #e9ecef;
+}
+
+.logout-btn-cancel:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.logout-btn-confirm {
+    background: #FF4400;
+    color: white;
+}
+
+.logout-btn-confirm:hover {
+    background: #e63900;
+}
+
+.logout-btn-confirm:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+}
+
+/* Responsive design for logout overlay */
+@media (max-width: 768px) {
+    .logout-modal {
+        width: 95%;
+        padding: 24px;
+    }
+    
+    .logout-modal-actions {
+        flex-direction: column;
+        gap: 12px;
+    }
+    
+    .logout-btn-cancel,
+    .logout-btn-confirm {
+        width: 100%;
+    }
+}
+
 /* Organ Page Styles */
 .back-button-container {
     margin-bottom: 24px;
@@ -752,10 +1230,7 @@ body {
     margin: 0 0 16px 0;
 }
 
-.chart-container {
-    height: 200px;
-    position: relative;
-}
+/* Chart container styles moved to advanced chart styles section */
 
 /* Metrics Cards */
 .metrics-grid {
@@ -888,6 +1363,17 @@ body {
     font-size: 20px;
     color: #999;
     font-weight: 300;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.2s ease;
+    transform-origin: center;
+}
+
+.journal-entry:hover .chevron {
+    color: #1D212B;
+}
+
+.journal-entry.expanded .chevron {
+    transform: rotate(90deg);
+    color: #1D212B;
 }
 
 .organ-data {
@@ -1113,7 +1599,6 @@ body {
     color: white;
     font-weight: 600;
     font-size: 12px;
-    margin-top: 8px;
 }
 
 .message-content {
@@ -1258,5 +1743,110 @@ body {
 
 .welcome-message.fade-out {
     opacity: 0;
+}
+
+/* Page Loading Animations */
+.card-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.card-animate.loaded {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+/* Staggered animation delays for dashboard cards */
+.journal-card.card-animate.loaded {
+    transition-delay: 0.1s;
+}
+
+.health-card.card-animate.loaded {
+    transition-delay: 0.2s;
+}
+
+/* Staggered animation delays for heart page */
+.metric-card.card-animate.loaded:nth-child(1) {
+    transition-delay: 0.1s;
+}
+
+.metric-card.card-animate.loaded:nth-child(2) {
+    transition-delay: 0.15s;
+}
+
+.metric-card.card-animate.loaded:nth-child(3) {
+    transition-delay: 0.2s;
+}
+
+.metric-card.card-animate.loaded:nth-child(4) {
+    transition-delay: 0.25s;
+}
+
+.chart-card.card-animate.loaded:nth-child(1) {
+    transition-delay: 0.3s;
+}
+
+.chart-card.card-animate.loaded:nth-child(2) {
+    transition-delay: 0.35s;
+}
+
+.chart-card.card-animate.loaded:nth-child(3) {
+    transition-delay: 0.4s;
+}
+
+.chart-card.card-animate.loaded:nth-child(4) {
+    transition-delay: 0.45s;
+}
+
+/* Advanced Chart Styles */
+.chart-container {
+    position: relative;
+    height: 300px;
+    padding: 16px;
+    background: white;
+    border-radius: 12px;
+    margin-top: 16px;
+}
+
+/* Responsive chart design */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 250px;
+        padding: 12px;
+    }
+    
+    .charts-grid {
+        grid-template-columns: 1fr;
+        gap: 16px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+}
+
+@media (max-width: 480px) {
+    .chart-container {
+        height: 200px;
+        padding: 8px;
+    }
+    
+    .metrics-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Chat Message Animations */
+.message-animate {
+    opacity: 0;
+    transform: translateY(30px);
+    transition: opacity 0.5s ease, transform 0.5s ease;
+}
+
+.message-animate.loaded {
+    opacity: 1;
+    transform: translateY(0);
 }
 

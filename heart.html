@@ -6,43 +6,6 @@
     <title>Hjärta - MMDConnect Platform</title>
     <link rel="stylesheet" href="styles.css">
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <style>
-        /* Heart page chart animations */
-        .chart-container {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .chart-container.loaded {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        .heart-overview, .heart-data {
-            opacity: 0;
-            transform: translateY(10px);
-            transition: opacity 0.3s ease, transform 0.3s ease;
-        }
-        
-        .heart-overview.loaded, .heart-data.loaded {
-            opacity: 1;
-            transform: translateY(0);
-        }
-        
-        /* Staggered animation delays */
-        .heart-overview.loaded {
-            transition-delay: 0.1s;
-        }
-        
-        .chart-container.loaded {
-            transition-delay: 0.2s;
-        }
-        
-        .heart-data.loaded {
-            transition-delay: 0.3s;
-        }
-    </style>
 </head>
 <body>
     <div class="dashboard">
@@ -123,21 +86,21 @@
 
             <!-- Health Metrics Cards -->
             <div class="metrics-grid">
-                <div class="metric-card">
+                <div class="metric-card card-animate">
                     <h3 class="metric-title">Hjärtfrekvens</h3>
                     <div class="metric-value">72</div>
                     <div class="metric-unit">bpm</div>
                     <div class="metric-status good">Normal</div>
                 </div>
 
-                <div class="metric-card">
+                <div class="metric-card card-animate">
                     <h3 class="metric-title">Systoliskt blodtryck</h3>
                     <div class="metric-value">120</div>
                     <div class="metric-unit">mmHg</div>
                     <div class="metric-status good">Optimalt</div>
                 </div>
 
-                <div class="metric-card">
+                <div class="metric-card card-animate">
                     <h3 class="metric-title">Diastoliskt blodtryck</h3>
                     <div class="metric-value">80</div>
                     <div class="metric-unit">mmHg</div>
@@ -145,7 +108,7 @@
                 </div>
 
 
-                <div class="metric-card">
+                <div class="metric-card card-animate">
                     <h3 class="metric-title">Kolesterol (LDL)</h3>
                     <div class="metric-value">2.8</div>
                     <div class="metric-unit">mmol/L</div>
@@ -156,7 +119,7 @@
             <!-- Health Data Charts -->
             <div class="charts-grid">
                 <!-- Heart Rate Chart -->
-                <div class="chart-card">
+                <div class="chart-card card-animate">
                     <h3 class="chart-title">Hjärtfrekvens över tid</h3>
                     <div class="chart-container">
                         <canvas id="heartRateChart"></canvas>
@@ -164,7 +127,7 @@
                 </div>
 
                 <!-- Blood Pressure Chart -->
-                <div class="chart-card">
+                <div class="chart-card card-animate">
                     <h3 class="chart-title">Blodtryck</h3>
                     <div class="chart-container">
                         <canvas id="bloodPressureChart"></canvas>
@@ -172,7 +135,7 @@
                 </div>
 
                 <!-- ECG Data Chart -->
-                <div class="chart-card">
+                <div class="chart-card card-animate">
                     <h3 class="chart-title">EKG-data</h3>
                     <div class="chart-container">
                         <canvas id="ecgChart"></canvas>
@@ -180,7 +143,7 @@
                 </div>
 
                 <!-- Heart Rate Variability Chart -->
-                <div class="chart-card">
+                <div class="chart-card card-animate">
                     <h3 class="chart-title">Hjärtfrekvensvariabilitet</h3>
                     <div class="chart-container">
                         <canvas id="hrvChart"></canvas>
@@ -192,10 +155,7 @@
     <script src="script.js"></script>
     <script>
         function logout() {
-            if (confirm('Är du säker på att du vill logga ut?')) {
-                localStorage.removeItem('hasSeenLogin');
-                window.location.href = 'index.html';
-            }
+            showLogoutOverlay();
         }
         
         // Ensure navigation works on heart page
@@ -256,10 +216,37 @@
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
+                        }
+                    },
                     y: {
                         beginAtZero: false,
                         min: 50,
-                        max: 100
+                        max: 100,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            },
+                            callback: function(value) {
+                                return value + ' bpm';
+                            }
+                        }
                     }
                 }
             }
@@ -273,8 +260,11 @@
                 labels: ['Systoliskt', 'Diastoliskt'],
                 datasets: [{
                     data: [120, 80],
-                    backgroundColor: ['#F6A000', '#00E100'],
-                    borderWidth: 0
+                    backgroundColor: ['#FF6B35', '#00E100'],
+                    borderColor: ['#FF6B35', '#00E100'],
+                    borderWidth: 2,
+                    borderRadius: 8,
+                    borderSkipped: false
                 }]
             },
             options: {
@@ -286,9 +276,35 @@
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            display: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 13,
+                                weight: '500'
+                            }
+                        }
+                    },
                     y: {
                         beginAtZero: true,
-                        max: 140
+                        max: 140,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            },
+                            callback: function(value) {
+                                return value + ' mmHg';
+                            }
+                        }
                     }
                 }
             }
@@ -318,8 +334,36 @@
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 11,
+                                weight: '500'
+                            },
+                            maxTicksLimit: 8
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 11,
+                                weight: '500'
+                            },
+                            callback: function(value) {
+                                return value.toFixed(0) + ' mV';
+                            }
+                        }
                     }
                 }
             }
@@ -349,8 +393,35 @@
                     }
                 },
                 scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            }
+                        }
+                    },
                     y: {
-                        beginAtZero: true
+                        beginAtZero: true,
+                        grid: {
+                            color: 'rgba(0, 0, 0, 0.1)',
+                            drawBorder: false
+                        },
+                        ticks: {
+                            color: '#666',
+                            font: {
+                                size: 12,
+                                weight: '500'
+                            },
+                            callback: function(value) {
+                                return value + ' ms';
+                            }
+                        }
                     }
                 }
             }
@@ -428,29 +499,22 @@ Patientens hjärtdata visar optimala värden med inga avvikelser. Alla vitala pa
 
         // Trigger heart page animations
         document.addEventListener('DOMContentLoaded', function() {
-            // Animate overview section
-            const overview = document.querySelector('.heart-overview');
-            if (overview) {
+            // Animate metric cards first
+            const metricCards = document.querySelectorAll('.metric-card.card-animate');
+            metricCards.forEach((card, index) => {
                 setTimeout(() => {
-                    overview.classList.add('loaded');
-                }, 50);
-            }
-            
-            // Animate chart containers
-            const chartContainers = document.querySelectorAll('.chart-container');
-            chartContainers.forEach((container, index) => {
-                setTimeout(() => {
-                    container.classList.add('loaded');
-                }, 150 + (index * 100));
+                    card.classList.add('loaded');
+                }, 100 + (index * 50));
             });
             
-            // Animate heart data section
-            const heartData = document.querySelector('.heart-data');
-            if (heartData) {
+            // Animate chart cards after metric cards
+            const chartCards = document.querySelectorAll('.chart-card.card-animate');
+            chartCards.forEach((card, index) => {
                 setTimeout(() => {
-                    heartData.classList.add('loaded');
-                }, 300);
-            }
+                    card.classList.add('loaded');
+                }, 300 + (index * 50));
+            });
+            
         });
     </script>
 </body>

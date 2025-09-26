@@ -67,7 +67,7 @@
 
                 <!-- Chat Messages -->
                 <div class="chat-messages">
-                    <div class="message ai-message welcome-message" id="welcomeMessage">
+                    <div class="message ai-message welcome-message message-animate" id="welcomeMessage">
                         <div class="message-avatar">
                             <div class="ai-avatar">
                                 <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT">
@@ -102,10 +102,7 @@
     <script src="script.js"></script>
     <script>
         function logout() {
-            if (confirm('Är du säker på att du vill logga ut?')) {
-                localStorage.removeItem('hasSeenLogin');
-                window.location.href = 'index.html';
-            }
+            showLogoutOverlay();
         }
         
         // Check for pending journal summary on page load
@@ -305,14 +302,15 @@
             
             // Step 3: Add AI response after user message is visible
             setTimeout(() => {
-                addAIMessage("Tack för din fråga! Jag analyserar informationen och kommer med ett svar snart.");
+                const aiResponse = generateAIResponse(message);
+                addAIMessage(aiResponse);
             }, 600);
         }
 
         function addUserMessage(message) {
             const messagesContainer = document.querySelector('.chat-messages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message user-message';
+            messageDiv.className = 'message user-message message-animate';
             messageDiv.innerHTML = `
                 <div class="message-content">
                     <p>${message}</p>
@@ -322,17 +320,24 @@
                 </div>
             `;
             
-            // Always append to the end of messages
+            // Always append to the end of messages (normal order)
             messagesContainer.appendChild(messageDiv);
             
+            // Trigger animation
+            setTimeout(() => {
+                messageDiv.classList.add('loaded');
+            }, 10);
             
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // Scroll so the new user message is visible at the top of the view
+            setTimeout(() => {
+                messageDiv.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            }, 50);
         }
 
         function addAIMessage(message) {
             const messagesContainer = document.querySelector('.chat-messages');
             const messageDiv = document.createElement('div');
-            messageDiv.className = 'message ai-message';
+            messageDiv.className = 'message ai-message message-animate';
             
             // Convert markdown-like formatting to HTML
             const formattedMessage = formatMessage(message);
@@ -351,8 +356,60 @@
             // Always append to the end
             messagesContainer.appendChild(messageDiv);
             
+            // Trigger animation
+            setTimeout(() => {
+                messageDiv.classList.add('loaded');
+            }, 10);
             
-            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+            // Don't auto-scroll for AI messages - let user read from beginning
+        }
+
+        function generateAIResponse(userMessage) {
+            const message = userMessage.toLowerCase();
+            
+            // Check for different types of questions and provide appropriate responses
+            if (message.includes('hej') || message.includes('hello') || message.includes('tjena')) {
+                return "Hej! Trevligt att höra från dig. Hur kan jag hjälpa dig med din vård idag?";
+            }
+            
+            if (message.includes('hur mår') || message.includes('hälsa') || message.includes('känns')) {
+                return "Jag förstår att du undrar om din hälsa. Baserat på dina senaste journalanteckningar ser jag att du har:\n\n- **Stabil hjärtfrekvens** (68-72 bpm)\n- **Normal blodtryck** (120/80 mmHg)\n- **Bra sömnkvalitet** (7-8 timmar per natt)\n\nFinns det något specifikt du vill diskutera eller några symptom som oroar dig?";
+            }
+            
+            if (message.includes('medicin') || message.includes('tablett') || message.includes('dos')) {
+                return "Angående medicinering kan jag se i dina journaler att du för närvarande tar:\n\n- **Metformin 500mg** - 2 gånger dagligen\n- **Lisinopril 10mg** - 1 gång dagligen\n- **Atorvastatin 20mg** - 1 gång på kvällen\n\n**Viktiga påminnelser:**\n- Ta medicinerna med mat för bättre tolerans\n- Kontrollera blodtryck veckovis\n- Kontakta mig om du upplever biverkningar\n\nHar du frågor om din medicinering?";
+            }
+            
+            if (message.includes('träning') || message.includes('motion') || message.includes('gym')) {
+                return "Träning är en viktig del av din hälsa! Baserat på dina senaste data rekommenderar jag:\n\n**Kardiovaskulär träning:**\n- 30 minuter måttlig intensitet, 5 dagar/vecka\n- Gång, cykling eller simning\n- Målhjärtfrekvens: 100-120 bpm\n\n**Styrketräning:**\n- 2-3 gånger per vecka\n- Fokus på stora muskelgrupper\n- 8-12 repetitioner per övning\n\n**Flexibilitet:**\n- Daglig stretching, 10-15 minuter\n- Yoga eller pilates 2 gånger/vecka\n\nVill du ha en mer detaljerad träningsplan?";
+            }
+            
+            if (message.includes('kost') || message.includes('mat') || message.includes('diet')) {
+                return "Kost är grundläggande för din hälsa! Här är mina rekommendationer:\n\n**Allmänna riktlinjer:**\n- Ät regelbundet, 3 huvudmåltider + 2 mellanmål\n- Drick minst 2 liter vatten dagligen\n- Begränsa socker och processad mat\n\n**Specifika råd för dig:**\n- **Fiber:** 25-30g dagligen (frukt, grönsaker, fullkorn)\n- **Protein:** 1g per kg kroppsvikt\n- **Fett:** Fokus på omättade fetter (fisk, nötter, olivolja)\n- **Kolhydrater:** Komplexa kolhydrater (havregryn, quinoa, sötpotatis)\n\n**Undvik:**\n- Transfetter och för mycket salt\n- Alkohol (max 1-2 glas/vecka)\n- Stora mängder koffein\n\nVill du ha hjälp med måltidsplanering?";
+            }
+            
+            if (message.includes('sömn') || message.includes('vila') || message.includes('trött')) {
+                return "Sömn är avgörande för din återhämtning! Baserat på dina data ser jag att du sover 7-8 timmar per natt, vilket är bra.\n\n**För bättre sömnkvalitet:**\n- Gå och lägg dig samma tid varje dag\n- Undvik skärmar 1 timme före läggdags\n- Håll sovrummet mörkt, tyst och svalt (18-20°C)\n- Undvik koffein efter 14:00\n- Träna regelbundet men inte för sent på kvällen\n\n**Sömnhygien:**\n- Använd sängen endast för sömn och intimitet\n- Om du inte kan somna på 20 minuter, gå upp och gör något avslappnande\n- Undvik tunga måltider 3 timmar före läggdags\n\nKänner du dig ofta trött trots tillräcklig sömn?";
+            }
+            
+            if (message.includes('stress') || message.includes('ångest') || message.includes('oro')) {
+                return "Mental hälsa är lika viktig som fysisk hälsa. Här är några strategier för stresshantering:\n\n**Akuta stresshanteringsmetoder:**\n- Djupandning: 4 sekunder in, 4 sekunder håll, 4 sekunder ut\n- Progressiv muskelavslappning\n- Kort promenad i naturen\n\n**Långsiktiga strategier:**\n- Regelbunden träning (minst 30 min/dag)\n- Meditation eller mindfulness (10-15 min/dag)\n- Håll regelbunden dygnsrytm\n- Sociala kontakter och hobbyer\n- Begränsa nyhetskonsumtion\n\n**Varningstecken att söka hjälp:**\n- Kontinuerlig oro i flera veckor\n- Sömnproblem\n- Förändringar i aptit\n- Svårigheter att koncentrera sig\n\nKänner du att stressen påverkar din vardag?";
+            }
+            
+            if (message.includes('blodtryck') || message.includes('puls') || message.includes('hjärtfrekvens')) {
+                return "Dina senaste hjärtmätningar visar:\n\n**Blodtryck:** 120/80 mmHg (normal)\n**Hjärtfrekvens:** 68-72 bpm (excellent)\n**Variabilitet:** God hjärtrytmvariabilitet\n\n**För att bibehålla god hjärtfrekvens:**\n- Regelbunden kardiovaskulär träning\n- Stressreduktion och tillräcklig sömn\n- Undvik rökning och begränsa alkohol\n- Håll en hälsosam vikt\n- Följ din medicinering enligt ordination\n\n**Kontakta mig om:**\n- Blodtryck över 140/90 mmHg\n- Hjärtfrekvens över 100 bpm i vila\n- Bröstsmärta eller andningsbesvär\n- Hjärtklappning eller yrsel\n\nVill du ha hjälp med att tolka dina hjärtmätningar?";
+            }
+            
+            if (message.includes('vikt') || message.includes('viktnedgång') || message.includes('bmi')) {
+                return "Vikthantering är en viktig del av din hälsa. Här är mina rekommendationer:\n\n**Hälsosam viktnedgång:**\n- Mål: 0.5-1 kg per vecka\n- Kaloriunderskott: 500-750 kcal/dag\n- Kombinera kost och träning\n\n**Koststrategier:**\n- Mindre portionsstorlekar\n- Ät långsamt och medvetet\n- Fokus på protein och fiber för mättnad\n- Håll en matdagbok\n\n**Träningsstrategier:**\n- Kombinera kardio och styrketräning\n- Öka daglig aktivitet (gå trappor, parkera längre bort)\n- Mål: 150 minuter måttlig träning/vecka\n\n**Viktiga påminnelser:**\n- Viktnedgång ska vara hållbar\n- Fokusera på hälsa, inte bara vikt\n- Var tålmodig - resultat tar tid\n\nVill du ha en personlig vikthanteringsplan?";
+            }
+            
+            if (message.includes('tack') || message.includes('bra') || message.includes('hjälp')) {
+                return "Det var så lite så! Jag är här för att stödja dig i din vårdresa. Tveka inte att ställa fler frågor när som helst.\n\n**Kom ihåg:**\n- Kontakta mig om du har akuta symptom\n- Följ dina medicineringar enligt ordination\n- Håll regelbundna kontroller\n- Ta hand om din mentala och fysiska hälsa\n\nFinns det något annat jag kan hjälpa dig med?";
+            }
+            
+            // Default response for unrecognized questions
+            return "Tack för din fråga! Jag förstår att du vill ha hjälp. Som din AI-vårdassistent kan jag hjälpa dig med:\n\n**Medicinska frågor:**\n- Tolka dina hälsodata\n- Förklara mediciner och behandlingar\n- Ge råd om symptom\n\n**Lifestyle-råd:**\n- Kost och näring\n- Träning och motion\n- Sömn och stresshantering\n\n**Allmänna hälsotips:**\n- Förebyggande vård\n- Vikt och hälsa\n- Mental hälsa\n\nKan du vara mer specifik med din fråga så kan jag ge dig ett mer detaljerat svar?";
         }
 
         function formatMessage(message) {
@@ -385,6 +442,16 @@
             }
         });
 
+        // Animate welcome message on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeMessage = document.getElementById('welcomeMessage');
+            if (welcomeMessage) {
+                setTimeout(() => {
+                    welcomeMessage.classList.add('loaded');
+                }, 300);
+            }
+        });
+
         // Hide welcome message when user sends first message
         function hideWelcomeMessage() {
             const welcomeMessage = document.getElementById('welcomeMessage');
@@ -407,25 +474,265 @@
                 const date = summaryCard.querySelector('.summary-date').textContent;
                 const summaryText = summaryCard.querySelector('.summary-text').textContent;
                 
-                const shareText = `${title}\nDatum: ${date}\n\n${summaryText}`;
-                
-                if (navigator.share) {
-                    navigator.share({
-                        title: title,
-                        text: shareText
-                    });
-                } else {
-                    // Fallback: copy to clipboard
-                    navigator.clipboard.writeText(shareText).then(() => {
-                        alert('Sammanfattning kopierad till urklipp!');
-                    });
-                }
+                showShareOverlay(title, date, summaryText);
             }
         }
 
+        function showShareOverlay(title, date, summaryText) {
+            // Create overlay HTML
+            const overlayHTML = `
+                <div class="share-overlay" id="shareOverlay">
+                    <div class="share-modal">
+                        <div class="share-modal-header">
+                            <h2 class="share-modal-title">Dela sammanfattning</h2>
+                            <p class="share-modal-subtitle">Vill du dela denna sammanfattning med patienten?</p>
+                        </div>
+                        
+                        <div class="share-modal-content">
+                            <div class="share-info-card">
+                                <h3 class="share-info-title">${title}</h3>
+                                <p class="share-info-text">Datum: ${date}</p>
+                                <p class="share-info-text">${summaryText}</p>
+                            </div>
+                            
+                            <div class="share-app-info">
+                                <div class="share-app-details">
+                                    <h4>Hälsa+ App</h4>
+                                    <p>Sammanfattningen kommer att skickas till patientens Hälsa+ app för enkel åtkomst</p>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <div class="share-modal-actions">
+                            <button class="share-btn-cancel" onclick="closeShareOverlay()">Avbryt</button>
+                            <button class="share-btn-confirm" onclick="confirmShare('${title}', '${date}', '${summaryText}')">
+                                <svg class="share-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <circle cx="18" cy="5" r="3"></circle>
+                                    <circle cx="6" cy="12" r="3"></circle>
+                                    <circle cx="18" cy="19" r="3"></circle>
+                                    <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"></line>
+                                    <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"></line>
+                                </svg>
+                                Dela
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add overlay to body
+            document.body.insertAdjacentHTML('beforeend', overlayHTML);
+            
+            // Show overlay with animation
+            setTimeout(() => {
+                document.getElementById('shareOverlay').classList.add('active');
+            }, 10);
+            
+            // Add click outside to close functionality
+            document.getElementById('shareOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeShareOverlay();
+                }
+            });
+            
+            // Add escape key to close functionality
+            document.addEventListener('keydown', handleEscapeKey);
+        }
+
+        function closeShareOverlay() {
+            const overlay = document.getElementById('shareOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.remove();
+                    // Remove escape key listener
+                    document.removeEventListener('keydown', handleEscapeKey);
+                }, 300);
+            }
+        }
+
+        function handleEscapeKey(e) {
+            if (e.key === 'Escape' && document.getElementById('shareOverlay')) {
+                closeShareOverlay();
+            }
+        }
+
+        function confirmShare(title, date, summaryText) {
+            // Show loading state
+            const confirmBtn = document.querySelector('.share-btn-confirm');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div> Delar...';
+            confirmBtn.disabled = true;
+            
+            // Simulate API call
+            setTimeout(() => {
+                // Reset button
+                confirmBtn.innerHTML = originalText;
+                confirmBtn.disabled = false;
+                
+                // Close overlay
+                closeShareOverlay();
+                
+                // Show success message
+                showSuccessMessage('Sammanfattningen har skickats till patientens Hälsa+ app!');
+            }, 2000);
+        }
+
+        function showSuccessMessage(message) {
+            // Create success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                color: #1D212B;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 10001;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            `;
+            
+            // Create status circle
+            const statusCircle = document.createElement('div');
+            statusCircle.style.cssText = `
+                width: 12px;
+                height: 12px;
+                background: #00E100;
+                border-radius: 50%;
+                flex-shrink: 0;
+            `;
+            
+            notification.appendChild(statusCircle);
+            notification.appendChild(document.createTextNode(message));
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
+        }
+
+        // Add CSS for loading spinner
+        const style = document.createElement('style');
+        style.textContent = `
+            @keyframes spin {
+                0% { transform: rotate(0deg); }
+                100% { transform: rotate(360deg); }
+            }
+        `;
+        document.head.appendChild(style);
+
 
         function deleteSummary() {
-            if (confirm('Är du säker på att du vill radera denna sammanfattning?')) {
+            const summaryCard = document.querySelector('.journal-summary-card');
+            if (summaryCard) {
+                const title = summaryCard.querySelector('.summary-title').textContent;
+                const date = summaryCard.querySelector('.summary-date').textContent;
+                
+                showDeleteOverlay(title, date);
+            }
+        }
+
+        function showDeleteOverlay(title, date) {
+            // Create overlay HTML
+            const overlayHTML = `
+                <div class="delete-overlay" id="deleteOverlay">
+                    <div class="delete-modal">
+                        <div class="delete-modal-header">
+                            <h2 class="delete-modal-title">Radera sammanfattning</h2>
+                            <p class="delete-modal-subtitle">Är du säker på att du vill radera denna sammanfattning?</p>
+                        </div>
+                        
+                        <div class="delete-modal-content">
+                            <div class="delete-info-card">
+                                <h4 class="delete-info-title">${title}</h4>
+                                <p class="delete-info-text">Datum: ${date}</p>
+                                <p class="delete-info-text" style="margin-top: 12px; font-style: italic; color: #999;">Denna åtgärd kan inte ångras.</p>
+                            </div>
+                        </div>
+                        
+                        <div class="delete-modal-actions">
+                            <button class="delete-btn-cancel" onclick="closeDeleteOverlay()">Avbryt</button>
+                            <button class="delete-btn-confirm" onclick="confirmDelete()">
+                                <svg class="delete-btn-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="3,6 5,6 21,6"></polyline>
+                                    <path d="M19,6v14a2,2 0 0,1 -2,2H7a2,2 0 0,1 -2,-2V6m3,0V4a2,2 0 0,1 2,-2h4a2,2 0 0,1 2,2v2"></path>
+                                    <line x1="10" y1="11" x2="10" y2="17"></line>
+                                    <line x1="14" y1="11" x2="14" y2="17"></line>
+                                </svg>
+                                Radera
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `;
+            
+            // Add overlay to body
+            document.body.insertAdjacentHTML('beforeend', overlayHTML);
+            
+            // Show overlay with animation
+            setTimeout(() => {
+                document.getElementById('deleteOverlay').classList.add('active');
+            }, 10);
+            
+            // Add click outside to close functionality
+            document.getElementById('deleteOverlay').addEventListener('click', function(e) {
+                if (e.target === this) {
+                    closeDeleteOverlay();
+                }
+            });
+            
+            // Add escape key to close functionality
+            document.addEventListener('keydown', handleDeleteEscapeKey);
+        }
+
+        function closeDeleteOverlay() {
+            const overlay = document.getElementById('deleteOverlay');
+            if (overlay) {
+                overlay.classList.remove('active');
+                setTimeout(() => {
+                    overlay.remove();
+                    // Remove escape key listener
+                    document.removeEventListener('keydown', handleDeleteEscapeKey);
+                }, 300);
+            }
+        }
+
+        function handleDeleteEscapeKey(e) {
+            if (e.key === 'Escape' && document.getElementById('deleteOverlay')) {
+                closeDeleteOverlay();
+            }
+        }
+
+        function confirmDelete() {
+            // Show loading state
+            const confirmBtn = document.querySelector('.delete-btn-confirm');
+            const originalText = confirmBtn.innerHTML;
+            confirmBtn.innerHTML = '<div style="width: 16px; height: 16px; border: 2px solid #fff; border-top: 2px solid transparent; border-radius: 50%; animation: spin 1s linear infinite;"></div> Raderar...';
+            confirmBtn.disabled = true;
+            
+            // Simulate deletion process
+            setTimeout(() => {
+                // Close overlay
+                closeDeleteOverlay();
+                
+                // Remove the summary message with animation
                 const summaryMessage = document.querySelector('.journal-summary-message');
                 if (summaryMessage) {
                     summaryMessage.style.animation = 'slideOutDown 0.3s ease-in';
@@ -433,7 +740,60 @@
                         summaryMessage.remove();
                     }, 300);
                 }
-            }
+                
+                // Show success message
+                showDeleteSuccessMessage('Sammanfattningen har raderats!');
+            }, 1500);
+        }
+
+        function showDeleteSuccessMessage(message) {
+            // Create success notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: white;
+                color: #1D212B;
+                padding: 16px 24px;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+                z-index: 10001;
+                font-weight: 500;
+                transform: translateX(100%);
+                transition: transform 0.3s ease;
+                display: flex;
+                align-items: center;
+                gap: 12px;
+            `;
+            
+            // Create status circle
+            const statusCircle = document.createElement('div');
+            statusCircle.style.cssText = `
+                width: 12px;
+                height: 12px;
+                background: #FF4400;
+                border-radius: 50%;
+                flex-shrink: 0;
+            `;
+            
+            notification.appendChild(statusCircle);
+            notification.appendChild(document.createTextNode(message));
+            
+            document.body.appendChild(notification);
+            
+            // Animate in
+            setTimeout(() => {
+                notification.style.transform = 'translateX(0)';
+            }, 10);
+            
+            // Remove after 3 seconds
+            setTimeout(() => {
+                notification.style.transform = 'translateX(100%)';
+                setTimeout(() => {
+                    notification.remove();
+                }, 300);
+            }, 3000);
         }
     </script>
 </body>

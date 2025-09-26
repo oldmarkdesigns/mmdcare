@@ -86,15 +86,9 @@ document.addEventListener('DOMContentLoaded', function() {
                     // Settings page doesn't exist yet, could add one
                     break;
                 case 'Avsluta':
-                    // Logout functionality - clear session and redirect to login
+                    // Logout functionality - show overlay instead of confirm
                     console.log('Logout clicked'); // Debug log
-                    if (confirm('Är du säker på att du vill logga ut?')) {
-                        console.log('Logout confirmed'); // Debug log
-                        localStorage.removeItem('hasSeenLogin');
-                        window.location.href = 'index.html';
-                    } else {
-                        console.log('Logout cancelled'); // Debug log
-                    }
+                    showLogoutOverlay();
                     break;
             }
         });
@@ -103,7 +97,113 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add smooth scrolling for better UX
     document.documentElement.style.scrollBehavior = 'smooth';
     
-    // Add loading animation for organ items
+});
+
+// Logout overlay functions (global scope)
+function showLogoutOverlay() {
+        // Create overlay
+        const overlay = document.createElement('div');
+        overlay.className = 'logout-overlay';
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        `;
+        
+        // Create modal
+        const modal = document.createElement('div');
+        modal.className = 'logout-modal';
+        modal.style.cssText = `
+            background: white;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 400px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+            transform: scale(0.9);
+            transition: transform 0.3s ease;
+        `;
+        
+        modal.innerHTML = `
+            <div class="logout-modal-content">
+                <div class="logout-info-card">
+                    <h4 class="logout-info-title">Logga ut</h4>
+                    <p class="logout-info-text">Är du säker på att du vill logga ut från MMDConnect?</p>
+                    <p class="logout-info-text" style="margin-top: 12px; font-style: italic; color: #999;">Du kommer att behöva logga in igen för att komma åt plattformen.</p>
+                </div>
+            </div>
+            <div class="logout-modal-actions">
+                <button class="logout-btn-cancel" onclick="closeLogoutOverlay()">Avbryt</button>
+                <button class="logout-btn-confirm" onclick="confirmLogout()">Logga ut</button>
+            </div>
+        `;
+        
+        overlay.appendChild(modal);
+        document.body.appendChild(overlay);
+        
+        // Animate in
+        setTimeout(() => {
+            overlay.style.opacity = '1';
+            modal.style.transform = 'scale(1)';
+        }, 10);
+        
+        // Close on overlay click
+        overlay.addEventListener('click', function(e) {
+            if (e.target === overlay) {
+                closeLogoutOverlay();
+            }
+        });
+        
+        // Close on escape key
+        document.addEventListener('keydown', handleLogoutEscapeKey);
+}
+
+function closeLogoutOverlay() {
+        const overlay = document.querySelector('.logout-overlay');
+        if (overlay) {
+            overlay.style.opacity = '0';
+            const modal = overlay.querySelector('.logout-modal');
+            modal.style.transform = 'scale(0.9)';
+            setTimeout(() => {
+                overlay.remove();
+            }, 300);
+        }
+        document.removeEventListener('keydown', handleLogoutEscapeKey);
+}
+
+function handleLogoutEscapeKey(e) {
+        if (e.key === 'Escape') {
+            closeLogoutOverlay();
+        }
+}
+
+function confirmLogout() {
+        const button = document.querySelector('.logout-btn-confirm');
+        const originalText = button.textContent;
+        
+        // Show loading state
+        button.textContent = 'Loggar ut...';
+        button.disabled = true;
+        
+        // Simulate logout process
+        setTimeout(() => {
+            localStorage.removeItem('hasSeenLogin');
+            window.location.href = 'index.html';
+        }, 1000);
+}
+
+// Add loading animation for organ items
+document.addEventListener('DOMContentLoaded', function() {
     const organItems = document.querySelectorAll('.organ-item');
     organItems.forEach((item, index) => {
         item.style.opacity = '0';
@@ -115,26 +215,20 @@ document.addEventListener('DOMContentLoaded', function() {
             item.style.transform = 'translateY(0)';
         }, index * 150);
     });
-    
 });
 
 // Journal entry expansion functionality
 function toggleJournalEntry(entry) {
     const details = entry.querySelector('.journal-details');
-    const chevron = entry.querySelector('.chevron');
     
     if (details.classList.contains('expanded')) {
         // Collapse
         details.classList.remove('expanded');
         entry.classList.remove('expanded');
-        chevron.textContent = '›';
-        chevron.style.transform = 'rotate(0deg)';
     } else {
         // Expand
         details.classList.add('expanded');
         entry.classList.add('expanded');
-        chevron.textContent = '‹';
-        chevron.style.transform = 'rotate(-90deg)';
     }
 }
 

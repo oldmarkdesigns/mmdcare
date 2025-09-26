@@ -66,7 +66,7 @@
 
             <div class="overview-grid">
                 <div class="cards-row">
-                    <div class="journal-card">
+                    <div class="journal-card card-animate">
                         <h2 class="card-title">Journalanteckningar</h2>
                         <div class="journal-content">
                             <div class="journal-entry" onclick="toggleJournalEntry(this)">
@@ -141,7 +141,7 @@
                         </div>
                     </div>
 
-                    <div class="health-card">
+                    <div class="health-card card-animate">
                         <h2 class="card-title">Hälsodata</h2>
                         <div class="organ-list">
                             <a href="heart.html" class="organ-item-link">
@@ -167,11 +167,19 @@
     <script src="script.js"></script>
     <script>
         function logout() {
-            if (confirm('Är du säker på att du vill logga ut?')) {
-                localStorage.removeItem('hasSeenLogin');
-                window.location.href = 'index.html';
-            }
+            showLogoutOverlay();
         }
+
+        // Trigger dashboard page animations
+        document.addEventListener('DOMContentLoaded', function() {
+            // Animate cards with staggered timing
+            const cards = document.querySelectorAll('.card-animate');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.classList.add('loaded');
+                }, 100 + (index * 100));
+            });
+        });
     </script>
 </body>
 </html>
