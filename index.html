@@ -9,7 +9,7 @@
         /* Login page specific styles */
         .login-container {
             min-height: 100vh;
-            background-color: #F5F5F5;
+            background-color: #ECECEC;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -35,6 +35,16 @@
             text-align: center;
             max-width: 400px;
             width: 100%;
+        }
+
+        /* Login card styling */
+        .login-card {
+            background: #F0F2F5;
+            border-radius: 16px;
+            padding: 32px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 400px;
         }
 
         /* MMDConnect Logo Section */
@@ -105,18 +115,25 @@
             border: 3px solid transparent;
             border-radius: 8px;
             transition: border-color 0.2s ease;
-            filter: blur(8px);
-            -webkit-filter: blur(8px);
         }
 
         .qr-code:hover {
             border-color: #1D212B;
         }
 
+        .qr-code.blurred {
+            filter: blur(8px);
+            -webkit-filter: blur(8px);
+        }
+
         /* Responsive adjustments */
         @media (max-width: 480px) {
             .login-container {
                 padding: 20px 16px;
+            }
+            
+            .login-card {
+                padding: 24px;
             }
             
             .login-logo-section {
@@ -151,8 +168,11 @@
 
             <!-- QR Code Section -->
             <div class="qr-section">
-                <img src="Assets/QRCode.png" alt="QR Code" class="qr-code" onclick="redirectToOverview()">
-                <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">QR-kod är oskarp för säkerhet</p>
+            <div id="qr-container">
+                <img id="qr-code" src="Assets/QRCode.png" alt="QR Code" class="qr-code">
+            </div>
+                <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">Scan to share health documents</p>
+                <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Waiting for file uploads...</p>
             </div>
 
             <!-- BankID Section -->
@@ -167,13 +187,79 @@
     </div>
 
     <script>
-        // Always show login page - no automatic redirect
+        let currentTransferId = null;
+        let eventSource = null;
+
+        // Always show login page - NO AUTOMATIC REDIRECT
         document.addEventListener('DOMContentLoaded', function() {
             console.log('Showing login page...'); // Debug log
-            // Login page is already visible by default
+            generateFreshQRCode();
         });
 
+        async function generateFreshQRCode() {
+            try {
+                // Create a new transfer session
+                const response = await fetch('http://192.168.196.174:8000/transfers', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    currentTransferId = data.transferId;
+                    console.log('Generated fresh transfer ID:', currentTransferId);
+                    
+                    // Update QR code with new transfer ID
+                    const qrUrl = `https://quickchart.io/qr?text=http://192.168.196.174:8000/upload?transferId=${currentTransferId}&size=200`;
+                    document.getElementById('qr-code').src = qrUrl;
+                    
+                    // Start monitoring for this new transfer
+                    startFileMonitoring();
+                } else {
+                    console.error('Failed to create transfer session');
+                }
+            } catch (error) {
+                console.error('Error generating QR code:', error);
+            }
+        }
+
+        function startFileMonitoring() {
+            if (!currentTransferId) return;
+            
+            // Close any existing event source
+            if (eventSource) {
+                eventSource.close();
+            }
+            
+            eventSource = new EventSource(`http://192.168.196.174:8000/events/${currentTransferId}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('Received event:', data);
+                
+                // ONLY redirect if we actually receive a file from mobile upload
+                if (data.type === 'file' && data.file && data.file.name) {
+                    document.getElementById('transfer-status').textContent = 
+                        `✅ Received: ${data.file.name} (${Math.round(data.file.size/1024)} KB)`;
+                    document.getElementById('transfer-status').style.color = '#059669';
+                    
+                    // Auto-redirect to dashboard ONLY after file is uploaded from mobile
+                    setTimeout(() => {
+                        document.getElementById('transfer-status').textContent = 'Redirecting to dashboard...';
+                        redirectToOverview();
+                    }, 2000);
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('EventSource failed:', event);
+            };
+        }
+
+
         function redirectToOverview() {
+            // Store the current transfer ID for the dashboard to use
+            localStorage.setItem('currentTransferId', currentTransferId);
             // Redirect to the main platform (översikt page)
             window.location.href = 'dashboard.html';
         }
@@ -185,8 +271,16 @@
             alert('Login state reset! Reload the page to see the login screen.');
         }
 
+        // Clean up on page unload
+        window.addEventListener('beforeunload', function() {
+            if (eventSource) {
+                eventSource.close();
+            }
+        });
+
         // Clear localStorage on page load to ensure fresh start
         localStorage.removeItem('hasSeenLogin');
     </script>
 </body>
 </html>
+

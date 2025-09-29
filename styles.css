@@ -180,29 +180,45 @@ body {
     width: 100%;
 }
 
+.main-layout {
+    display: flex;
+    gap: 24px;
+    width: 100%;
+    align-items: flex-start; /* Align columns to top, don't stretch */
+}
+
+.right-column {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+    flex: 1; /* Take up 50% width */
+    min-height: 0; /* Allow column to maintain its own height */
+}
+
 .cards-row {
     display: flex;
     gap: 24px;
     width: 100%;
+    align-items: stretch; /* Make cards equal height */
 }
 
 .health-card {
     background: white;
     border-radius: 8px;
     padding: 24px;
-    flex: 1;
     display: flex;
     flex-direction: column;
-    height: fit-content;
+    flex: 1; /* Take up remaining space in right column */
 }
 
 .journal-card {
     background: white;
     border-radius: 8px;
     padding: 24px;
-    flex: 1;
+    flex: 1; /* Take up 50% width */
     display: flex;
     flex-direction: column;
+    height: fit-content; /* Hug content height, don't stretch */
 }
 
 .card-title {
@@ -212,10 +228,16 @@ body {
     margin-bottom: 16px;
 }
 
+.upload-card .card-title {
+    background: transparent;
+    margin-bottom: 16px;
+}
+
 .organ-list {
     display: flex;
     flex-direction: column;
     gap: 0;
+    flex: 1; /* Take up remaining space in the health card */
 }
 
 .organ-item {
@@ -252,6 +274,23 @@ body {
     padding: 0 0 20px 0;
     display: flex;
     flex-direction: column;
+}
+
+/* Empty journal state */
+.empty-journal-state {
+    text-align: center;
+    padding: 40px 20px;
+    color: #666;
+}
+
+.empty-journal-state p {
+    margin-bottom: 8px;
+}
+
+.empty-hint {
+    font-size: 14px;
+    color: #999;
+    font-style: italic;
 }
 
 .journal-entry {
@@ -354,6 +393,83 @@ body {
 .journal-actions {
     margin-bottom: 12px;
     padding-bottom: 8px;
+}
+
+/* Structured journal sections */
+.journal-section {
+    margin: 20px 0;
+    border-left: 3px solid #e5e7eb;
+    padding-left: 16px;
+    background: #f9fafb;
+    border-radius: 8px;
+    padding: 16px;
+    margin-left: 0;
+}
+
+.journal-section .section-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #e5e7eb;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.journal-section .section-content {
+    margin: 0;
+}
+
+.journal-section .section-content p {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 8px 0;
+}
+
+.journal-section .section-content p:first-child {
+    margin-top: 0;
+}
+
+.journal-section .section-content p:last-child {
+    margin-bottom: 0;
+}
+
+/* Specific section styling */
+.journal-section:nth-child(odd) {
+    background: #f8fafc;
+    border-left-color: #3b82f6;
+}
+
+.journal-section:nth-child(even) {
+    background: #fefefe;
+    border-left-color: #10b981;
+}
+
+/* Full content styling for expanded journal entries */
+.journal-full-content {
+    margin: 0;
+}
+
+.journal-full-content p {
+    font-size: 13px;
+    color: #4b5563;
+    line-height: 1.6;
+    margin: 12px 0;
+}
+
+.journal-full-content p:first-child {
+    margin-top: 0;
+}
+
+.journal-full-content p:last-child {
+    margin-bottom: 0;
+}
+
+.journal-full-content strong {
+    color: #1f2937;
+    font-weight: 600;
 }
 
 .gpt-summarize-btn {
@@ -1755,6 +1871,280 @@ body {
 .card-animate.loaded {
     opacity: 1;
     transform: translateY(0);
+}
+
+/* Upload card styles */
+.upload-card {
+    background: white;
+    border-radius: 8px;
+    padding: 24px;
+    display: flex;
+    flex-direction: column;
+    flex: 1; /* Take up remaining space in right column */
+}
+
+.upload-status {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.upload-status p {
+    color: #6b7280;
+    font-size: 14px;
+    margin: 0;
+}
+
+
+/* File categories */
+.file-categories {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    flex: 1; /* Take up remaining space in the card */
+}
+
+.file-category {
+    background: #f9fafb;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 16px;
+    transition: all 0.2s ease;
+}
+
+.file-category:hover {
+    border-color: #1d4ed8;
+    box-shadow: 0 2px 8px rgba(29, 78, 216, 0.1);
+}
+
+.file-category h3 {
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0 0 12px 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.file-category .category-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+}
+
+/* Expandable file category layout - matching journalanteckningar exactly */
+.file-category-expandable {
+    margin-bottom: 12px;
+    padding: 12px 24px;
+    background: #F0F2F5;
+    border-radius: 8px;
+    border: 1px solid #e9ecef;
+    width: 100%;
+    box-sizing: border-box;
+    transition: border-color 0.4s ease, box-shadow 0.3s ease, transform 0.2s ease;
+}
+
+.file-category-expandable:last-child {
+    margin-bottom: 0;
+}
+
+.file-category-expandable:hover {
+    border-color: #1D212B;
+    border-radius: 8px;
+    background: #F0F2F5;
+}
+
+.file-category-expandable.expanded {
+    border-color: #1D212B;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(29, 33, 43, 0.1);
+    transform: translateY(-1px);
+}
+
+.category-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 16px;
+    cursor: pointer;
+    padding: 0;
+    background: none;
+    border: none;
+}
+
+.category-title-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    flex: 1;
+}
+
+.category-title {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+    margin: 0;
+}
+
+.file-count {
+    background: #d1d5db;
+    color: #6b7280;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 12px;
+    font-weight: 500;
+    min-width: 20px;
+    text-align: center;
+}
+
+.file-category-expandable .chevron {
+    font-size: 20px;
+    color: #999;
+    font-weight: 300;
+    transition: transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94), color 0.2s ease;
+    transform-origin: center;
+}
+
+.file-category-expandable:hover .chevron {
+    color: #1D212B;
+}
+
+.file-category-expandable.expanded .chevron {
+    transform: rotate(90deg);
+    color: #1D212B;
+}
+
+.file-list-vertical {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    padding: 0;
+    margin-top: 16px;
+}
+
+.file-item-vertical {
+    background: white;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 12px 16px;
+    transition: all 0.2s ease;
+}
+
+.file-item-vertical:hover {
+    border-color: #d1d5db;
+    background: #fafafa;
+}
+
+.file-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.file-details {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: #6b7280;
+}
+
+.file-date {
+    font-weight: 500;
+}
+
+.file-size {
+    font-weight: 500;
+}
+
+.file-category .file-count {
+    background: #1d4ed8;
+    color: white;
+    font-size: 12px;
+    padding: 2px 8px;
+    border-radius: 12px;
+    margin-left: auto;
+}
+
+.file-list {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.file-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #e5e7eb;
+    font-size: 14px;
+}
+
+.file-item:last-child {
+    border-bottom: none;
+}
+
+.file-name {
+    color: #374151;
+    font-weight: 500;
+    flex: 1;
+    margin-right: 12px;
+    word-break: break-word;
+}
+
+.file-size {
+    color: #6b7280;
+    font-size: 12px;
+    white-space: nowrap;
+}
+
+.file-date {
+    color: #9ca3af;
+    font-size: 11px;
+    margin-top: 2px;
+}
+
+.empty-category {
+    color: #9ca3af;
+    font-style: italic;
+    font-size: 14px;
+    text-align: center;
+    padding: 20px 0;
+}
+
+/* File type indicators */
+.file-type-pdf {
+    color: #333;
+}
+
+.file-type-excel {
+    color: #333;
+}
+
+/* Responsive adjustments for file categories */
+@media (max-width: 768px) {
+    .main-layout {
+        flex-direction: column; /* Stack columns vertically on mobile */
+    }
+    
+    .cards-row {
+        flex-direction: column; /* Stack cards vertically on mobile */
+    }
+    
+    .file-categories {
+        grid-template-columns: 1fr;
+    }
+    
+    .upload-status {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+    }
 }
 
 /* Staggered animation delays for dashboard cards */

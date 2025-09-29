@@ -222,11 +222,23 @@ function toggleJournalEntry(entry) {
     const details = entry.querySelector('.journal-details');
     
     if (details.classList.contains('expanded')) {
-        // Collapse
+        // Collapse current entry
         details.classList.remove('expanded');
         entry.classList.remove('expanded');
     } else {
-        // Expand
+        // First, collapse all other expanded entries
+        const allEntries = document.querySelectorAll('.journal-entry');
+        allEntries.forEach(otherEntry => {
+            if (otherEntry !== entry) {
+                const otherDetails = otherEntry.querySelector('.journal-details');
+                if (otherDetails && otherDetails.classList.contains('expanded')) {
+                    otherDetails.classList.remove('expanded');
+                    otherEntry.classList.remove('expanded');
+                }
+            }
+        });
+        
+        // Then expand the clicked entry
         details.classList.add('expanded');
         entry.classList.add('expanded');
     }

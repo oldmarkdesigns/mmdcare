@@ -42,7 +42,7 @@
                         <img src="Assets/inställningar.png" alt="Inställningar" class="nav-icon">
                         <span class="nav-text">Inställningar</span>
                     </li>
-                    <li class="nav-item" onclick="logout()">
+                    <li class="nav-item" onclick="showLogoutOverlay()">
                         <img src="Assets/avsluta.png" alt="Avsluta" class="nav-icon">
                         <span class="nav-text">Avsluta</span>
                     </li>
@@ -65,82 +65,18 @@
             </div>
 
             <div class="overview-grid">
-                <div class="cards-row">
+                <!-- Main Layout: Journal (50%) | Health Data + Upload (50%) -->
+                <div class="main-layout">
+                    <!-- Journal Card - 50% Width -->
                     <div class="journal-card card-animate">
                         <h2 class="card-title">Journalanteckningar</h2>
                         <div class="journal-content">
-                            <div class="journal-entry" onclick="toggleJournalEntry(this)">
-                                <div class="journal-header">
-                                    <div class="journal-info">
-                                        <h3 class="journal-title">Rutinkontroll - Hjärtfunktion</h3>
-                                        <p class="journal-doctor">Dr. Anna Andersson</p>
-                                        <p class="journal-date">2024-09-08</p>
-                                        <p class="journal-summary">EKG visar normal sinusrytm. Blodtryck optimalt. Patient rapporterar inga besvär.</p>
-                                    </div>
-                                    <div class="chevron">›</div>
-                                </div>
-                                <div class="journal-details">
-                                    <div class="journal-actions">
-                                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
-                                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
-                                            Summera med Hälsa+GPT
-                                        </button>
-                                    </div>
-                                    <div class="journal-content-detail">
-                                        <h4>Undersökningsresultat:</h4>
-                                        <ul>
-                                            <li>EKG: Normal sinusrytm, HR 72 bpm</li>
-                                            <li>Blodtryck: 120/80 mmHg (optimalt)</li>
-                                            <li>Hjärtljud: Klara, regelbundna</li>
-                                            <li>Pulsoximetri: 98% O2-sättning</li>
-                                        </ul>
-                                        
-                                        <h4>Patientens rapportering:</h4>
-                                        <p>Patienten uppger att han känner sig väl och har inga hjärtrelaterade besvär. Tränar regelbundet 3 gånger per vecka utan problem. Ingen bröstsmärta, andningsnöd eller hjärtklappning.</p>
-                                        
-                                        <h4>Rekommendationer:</h4>
-                                        <p>Fortsätt med nuvarande livsstil. Nästa kontroll om 6 månader. Uppmanas att kontakta vården vid eventuella hjärtrelaterade symptom.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="journal-entry" onclick="toggleJournalEntry(this)">
-                                <div class="journal-header">
-                                    <div class="journal-info">
-                                        <h3 class="journal-title">Lungfunktionstest</h3>
-                                        <p class="journal-doctor">Dr. Erik Lindqvist</p>
-                                        <p class="journal-date">2024-09-05</p>
-                                        <p class="journal-summary">Spirometri inom normala värden. Ingen andningsnöd vid ansträngning. FEV1/FVC ratio 0.82.</p>
-                                    </div>
-                                    <div class="chevron">›</div>
-                                </div>
-                                <div class="journal-details">
-                                    <div class="journal-actions">
-                                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
-                                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
-                                            Summera med Hälsa+GPT
-                                        </button>
-                                    </div>
-                                    <div class="journal-content-detail">
-                                        <h4>Spirometriska värden:</h4>
-                                        <ul>
-                                            <li>FEV1: 4.2 L (108% av förväntat värde)</li>
-                                            <li>FVC: 5.1 L (105% av förväntat värde)</li>
-                                            <li>FEV1/FVC: 0.82 (normal)</li>
-                                            <li>PEF: 8.5 L/s (excellent)</li>
-                                        </ul>
-                                        
-                                        <h4>Klinisk bedömning:</h4>
-                                        <p>Patienten genomförde spirometrin utan problem. Inga tecken på obstruktiv eller restriktiv lungfunktionsstörning. Andningsmönstret var regelbundet och patienten rapporterade inga besvär under testet.</p>
-                                        
-                                        <h4>Följupp:</h4>
-                                        <p>Ingen ytterligare lungfunktionsundersökning behövs. Patient uppmanas att fortsätta med regelbunden fysisk aktivitet för att bibehålla god lungkapacitet.</p>
-                                    </div>
-                                </div>
-                            </div>
+                            <!-- PDF entries will be dynamically added here -->
                         </div>
                     </div>
 
+                    <!-- Right Column - 50% Width with stacked cards -->
+                    <div class="right-column">
                     <div class="health-card card-animate">
                         <h2 class="card-title">Hälsodata</h2>
                         <div class="organ-list">
@@ -157,15 +93,44 @@
                                     </div>
                                 </div>
                             </a>
+                            </div>
+                        </div>
 
+                        <!-- File Upload Section -->
+                        <div class="upload-card card-animate">
+                            <h2 class="card-title">Mottagna filer</h2>
+                            <div class="file-categories" id="file-categories">
+                                <!-- File categories will be populated here -->
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </main>
     </div>
+
+    <!-- Logout Overlay -->
+    <div id="logout-overlay" class="logout-overlay" style="display: none;">
+        <div class="logout-modal">
+            <div class="logout-modal-content">
+                <div class="logout-info-card">
+                    <h3 style="margin: 0 0 8px 0; color: #1D212B; font-size: 20px;">Logga ut</h3>
+                    <p style="margin: 0; color: #666; font-size: 16px;">Är du säker på att du vill logga ut från MMDConnect?</p>
+                </div>
+            </div>
+            <div class="logout-modal-actions">
+                <button onclick="hideLogoutOverlay()" class="logout-btn-cancel">Avbryt</button>
+                <button onclick="confirmLogout()" class="logout-btn-confirm">Logga ut</button>
+            </div>
+        </div>
+    </div>
+
     <script src="script.js"></script>
     <script>
+        let uploadedFiles = [];
+        let currentTransferId = null;
+        let eventSource = null;
+
         function logout() {
             showLogoutOverlay();
         }
@@ -179,7 +144,669 @@
                     card.classList.add('loaded');
                 }, 100 + (index * 100));
             });
+            
+            // Initialize file upload functionality
+            initializeFileUpload();
+            
+            // Add escape key listener for logout overlay
+            document.addEventListener('keydown', function(event) {
+                if (event.key === 'Escape') {
+                    hideLogoutOverlay();
+                }
+            });
         });
+
+        async function initializeFileUpload() {
+            // First, load any previously saved files from localStorage
+            loadFilesFromStorage();
+            
+            // Check if there's a transfer ID in localStorage from login page
+            const savedTransferId = localStorage.getItem('currentTransferId');
+            console.log('Checking localStorage for transfer ID:', savedTransferId);
+            
+            if (savedTransferId) {
+                currentTransferId = savedTransferId;
+                console.log('Found transfer ID:', currentTransferId);
+                
+                // Show loading state
+                console.log('Loading files...');
+                
+                await loadUploadedFiles();
+                startFileEventStream();
+                
+            } else {
+                console.log('No transfer ID found in localStorage');
+                // For testing, let's also check if we can create a new transfer
+                console.log('Creating new transfer for testing...');
+                try {
+                    const response = await fetch('http://192.168.196.174:8000/transfers', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' }
+                    });
+                    if (response.ok) {
+                        const data = await response.json();
+                        currentTransferId = data.transferId;
+                        localStorage.setItem('currentTransferId', currentTransferId);
+                        console.log('Created new transfer ID:', currentTransferId);
+                        startFileEventStream();
+                    }
+                } catch (error) {
+                    console.error('Failed to create transfer:', error);
+                }
+            }
+        }
+
+        async function loadUploadedFiles() {
+            if (!currentTransferId) {
+                console.log('No transfer ID available for loading files');
+                return;
+            }
+
+            console.log('Loading files for transfer ID:', currentTransferId);
+            try {
+                const response = await fetch(`http://192.168.196.174:8000/transfer/${currentTransferId}`);
+                console.log('Response status:', response.status);
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Loaded files data:', data);
+                    uploadedFiles = data.files || [];
+                    console.log('Uploaded files array:', uploadedFiles);
+                    saveFilesToStorage(); // Save to localStorage
+                    updateFileDisplay();
+                    
+                    // Load imported journal notes if any PDF files exist
+                    await loadImportedJournalNotes();
+                } else {
+                    console.error('Failed to load files, status:', response.status);
+                }
+            } catch (error) {
+                console.error('Failed to load uploaded files:', error);
+            }
+        }
+
+        async function loadImportedJournalNotes() {
+            if (!currentTransferId) return;
+            
+            // Find PDF files in the uploaded files
+            const pdfFiles = uploadedFiles.filter(file => 
+                file.mimetype === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+            );
+            
+            const journalContent = document.querySelector('.journal-content');
+            
+            if (pdfFiles.length > 0) {
+                // Clear existing PDF cards and empty state
+                journalContent.innerHTML = '';
+                
+                // Create a card for each PDF file
+                for (const pdfFile of pdfFiles) {
+                    try {
+                        const response = await fetch(`http://192.168.196.174:8000/pdf-content/${currentTransferId}/${encodeURIComponent(pdfFile.name)}`);
+                        
+                        if (response.ok) {
+                            const parsedData = await response.json();
+                            const pdfCard = createPDFJournalCard(pdfFile, parsedData);
+                            journalContent.appendChild(pdfCard);
+                        }
+                    } catch (error) {
+                        console.error(`Failed to load PDF content for ${pdfFile.name}:`, error);
+                        // Create a basic card even if content loading fails
+                        const basicCard = createBasicPDFCard(pdfFile);
+                        journalContent.appendChild(basicCard);
+                    }
+                }
+            } else {
+                showEmptyJournalState();
+            }
+        }
+
+        function formatStructuredContent(content) {
+            // If content is a string (old format), return it as is
+            if (typeof content === 'string') {
+                return `<h4>Importerad Journalanteckning</h4><p>${content}</p>`;
+            }
+            
+            // If content is structured (new format), show full content as one block
+            if (typeof content === 'object' && content !== null) {
+                let html = '<h4>Importerad Journalanteckning</h4>';
+                
+                // Combine all content into one readable text
+                let fullContent = '';
+                
+                // Define section order and Swedish labels
+                const sectionOrder = [
+                    { key: 'anamnes', label: 'Anamnes' },
+                    { key: 'status', label: 'Status' },
+                    { key: 'undersokningar', label: 'Undersökningar' },
+                    { key: 'bedomning', label: 'Bedömning' },
+                    { key: 'rekommendationer', label: 'Rekommendationer' },
+                    { key: 'medicin', label: 'Medicin/Behandling' }
+                ];
+                
+                // Add structured sections to full content
+                sectionOrder.forEach(section => {
+                    if (content[section.key]) {
+                        fullContent += `<strong>${section.label}:</strong> ${content[section.key]}\n\n`;
+                    }
+                });
+                
+                // Add other content if any
+                if (content.other && content.other.length > 0) {
+                    fullContent += `<strong>Övrig information:</strong> ${content.other.join(' ')}\n\n`;
+                }
+                
+                // Display as single paragraph with line breaks
+                html += `<div class="journal-full-content"><p>${fullContent.replace(/\n\n/g, '</p><p>')}</p></div>`;
+                
+                return html;
+            }
+            
+            // Fallback
+            return `<h4>Importerad Journalanteckning</h4><p>Innehållet kunde inte formateras korrekt.</p>`;
+        }
+
+        function createPDFJournalCard(pdfFile, parsedData) {
+            const card = document.createElement('div');
+            card.className = 'journal-entry pdf-journal-entry';
+            card.onclick = () => toggleJournalEntry(card);
+            
+            // Use the parsed data from the server
+            const title = parsedData.title || generatePDFTitle(parsedData.content, pdfFile.name);
+            const doctor = parsedData.doctor || 'Importerad från PDF';
+            const date = parsedData.date || new Date(pdfFile.uploadedAt || Date.now()).toLocaleDateString('sv-SE');
+            const summary = parsedData.summary || generatePDFSummary(parsedData.content);
+            
+            card.innerHTML = `
+                <div class="journal-header">
+                    <div class="journal-info">
+                        <h3 class="journal-title">${title}</h3>
+                        <p class="journal-doctor">${doctor}</p>
+                        <p class="journal-date">${date}</p>
+                        <p class="journal-summary">${summary}</p>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+                <div class="journal-details">
+                    <div class="journal-actions">
+                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
+                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
+                            Summera med Hälsa+GPT
+                        </button>
+                    </div>
+                    <div class="journal-content-detail">
+                        ${formatStructuredContent(parsedData.content)}
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function createBasicPDFCard(pdfFile) {
+            const card = document.createElement('div');
+            card.className = 'journal-entry pdf-journal-entry';
+            card.onclick = () => toggleJournalEntry(card);
+            
+            const uploadDate = new Date(pdfFile.uploadedAt || Date.now()).toLocaleDateString('sv-SE');
+            
+            card.innerHTML = `
+                <div class="journal-header">
+                    <div class="journal-info">
+                        <h3 class="journal-title">${pdfFile.name}</h3>
+                        <p class="journal-doctor">Importerad från PDF</p>
+                        <p class="journal-date">${uploadDate}</p>
+                        <p class="journal-summary">PDF-fil importerad från mobilen. Innehåll kunde inte analyseras.</p>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+                <div class="journal-details">
+                    <div class="journal-actions">
+                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
+                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
+                            Summera med Hälsa+GPT
+                        </button>
+                    </div>
+                    <div class="journal-content-detail">
+                        <h4>PDF-fil:</h4>
+                        <p>Filnamn: ${pdfFile.name}</p>
+                        <p>Storlek: ${Math.round(pdfFile.size / 1024)} KB</p>
+                        <p>Typ: ${pdfFile.mimetype}</p>
+                    </div>
+                </div>
+            `;
+            
+            return card;
+        }
+
+        function generatePDFTitle(content, filename) {
+            // Try to extract a meaningful title from the content
+            if (typeof content === 'object' && content.anamnes) {
+                // Look for common medical terms in anamnes
+                const anamnes = content.anamnes.toLowerCase();
+                if (anamnes.includes('kontroll') || anamnes.includes('uppföljning')) {
+                    return 'Uppföljning - ' + extractPatientInfo(content);
+                } else if (anamnes.includes('akut') || anamnes.includes('besvär')) {
+                    return 'Akutbesök - ' + extractPatientInfo(content);
+                } else if (anamnes.includes('operation') || anamnes.includes('kirurgi')) {
+                    return 'Operation - ' + extractPatientInfo(content);
+                }
+            }
+            
+            // Fallback to filename or generic title
+            const cleanFilename = filename.replace(/\.pdf$/i, '').replace(/[_-]/g, ' ');
+            return cleanFilename || 'Importerad Journalanteckning';
+        }
+
+        function extractPatientInfo(content) {
+            if (typeof content === 'object' && content.anamnes) {
+                // Try to extract age, gender, or condition from anamnes
+                const anamnes = content.anamnes;
+                const ageMatch = anamnes.match(/(\d+)\s*år/);
+                const genderMatch = anamnes.match(/(man|kvinna|patient)/i);
+                
+                if (ageMatch && genderMatch) {
+                    return `${genderMatch[1]} ${ageMatch[1]} år`;
+                } else if (ageMatch) {
+                    return `${ageMatch[1]} år`;
+                }
+            }
+            return 'Patient';
+        }
+
+        function generatePDFSummary(content) {
+            if (typeof content === 'object') {
+                if (content.bedömning) {
+                    return content.bedömning.substring(0, 80) + (content.bedömning.length > 80 ? '...' : '');
+                } else if (content.status) {
+                    return content.status.substring(0, 80) + (content.status.length > 80 ? '...' : '');
+                } else if (content.anamnes) {
+                    return content.anamnes.substring(0, 80) + (content.anamnes.length > 80 ? '...' : '');
+                }
+            } else if (typeof content === 'string') {
+                return content.substring(0, 80) + (content.length > 80 ? '...' : '');
+            }
+            return 'Importerad journalanteckning från PDF-fil.';
+        }
+
+        function replaceJournalEntriesWithImported(importedContent) {
+            const journalContent = document.querySelector('.journal-content');
+            if (!journalContent) return;
+            
+            // Create a new journal entry based on imported content
+            const newEntry = document.createElement('div');
+            newEntry.className = 'journal-entry';
+            newEntry.onclick = function() { toggleJournalEntry(this); };
+            
+            newEntry.innerHTML = `
+                <div class="journal-header">
+                    <div class="journal-info">
+                        <h3 class="journal-title">${importedContent.title}</h3>
+                        <p class="journal-doctor">${importedContent.doctor}</p>
+                        <p class="journal-date">${importedContent.date}</p>
+                        <p class="journal-summary">${importedContent.summary}</p>
+                    </div>
+                    <div class="chevron">›</div>
+                </div>
+                <div class="journal-details">
+                    <div class="journal-actions">
+                        <button class="gpt-summarize-btn" onclick="event.stopPropagation(); summarizeWithGPT(this)">
+                            <img src="Assets/halsa-gpt.png" alt="Hälsa+GPT" style="width: 16px; height: 16px;">
+                            Summera med Hälsa+GPT
+                        </button>
+                    </div>
+                    <div class="journal-content-detail">
+                        ${formatStructuredContent(importedContent.content)}
+                    </div>
+                </div>
+            `;
+            
+            // Replace all existing journal entries with the imported one
+            journalContent.innerHTML = '';
+            journalContent.appendChild(newEntry);
+        }
+
+        function startFileEventStream() {
+            if (!currentTransferId) return;
+
+            // Close any existing event source
+            if (eventSource) {
+                eventSource.close();
+            }
+
+            eventSource = new EventSource(`http://192.168.196.174:8000/events/${currentTransferId}`);
+            
+            eventSource.onmessage = function(event) {
+                const data = JSON.parse(event.data);
+                console.log('Dashboard received event:', data);
+                
+                if (data.type === 'file') {
+                    uploadedFiles.unshift(data.file); // Add to beginning
+                    saveFilesToStorage(); // Save to localStorage
+                    updateFileDisplay();
+                    showFileNotification(data.file);
+                    
+                    // Reload journal notes if a PDF was uploaded
+                    if (data.file.mimetype === 'application/pdf' || data.file.name.toLowerCase().endsWith('.pdf')) {
+                        loadImportedJournalNotes();
+                    }
+                } else if (data.type === 'status' && data.status === 'closed') {
+                    eventSource.close();
+                    console.log('Transfer completed');
+                }
+            };
+            
+            eventSource.onerror = function(event) {
+                console.error('File event stream failed:', event);
+            };
+        }
+
+        function updateFileDisplay() {
+            const categoriesContainer = document.getElementById('file-categories');
+            console.log('Updating file display with', uploadedFiles.length, 'files');
+
+            if (uploadedFiles.length === 0) {
+                console.log('No files to display, showing empty message');
+                categoriesContainer.innerHTML = '<p class="empty-category">Inga filer att visa</p>';
+                return;
+            }
+
+            // Categorize files by type
+            const categorized = categorizeFilesByType(uploadedFiles);
+            console.log('Categorized files by type:', categorized);
+            
+            // Render categories
+            categoriesContainer.innerHTML = '';
+            
+            const categoryConfigs = [
+                { key: 'excel', name: 'Provsvar', icon: '' },
+                { key: 'pdf', name: 'Journalanteckningar', icon: '' }
+            ];
+
+            categoryConfigs.forEach(config => {
+                const files = categorized[config.key] || [];
+                if (files.length > 0) {
+                    const categoryDiv = createCategoryElement(config, files);
+                    categoriesContainer.appendChild(categoryDiv);
+                }
+            });
+        }
+
+        function createCategoryElement(config, files) {
+            const div = document.createElement('div');
+            div.className = 'file-category-expandable';
+            
+            const header = document.createElement('div');
+            header.className = 'category-header';
+            header.innerHTML = `
+                <div class="category-title-row">
+                    <h3 class="category-title">${config.name}</h3>
+                    <span class="file-count">${files.length}</span>
+                </div>
+                <div class="chevron">›</div>
+            `;
+            
+            const fileList = document.createElement('div');
+            fileList.className = 'file-list-vertical';
+            fileList.style.display = 'none'; // Initially hidden
+            
+            files.forEach(file => {
+                const fileItem = document.createElement('div');
+                fileItem.className = 'file-item-vertical';
+                
+                const fileType = file.mimetype === 'application/pdf' ? 'pdf' : 'excel';
+                const fileDate = new Date(file.uploadedAt).toLocaleDateString('sv-SE');
+                
+                fileItem.innerHTML = `
+                    <div class="file-info">
+                        <div class="file-name file-type-${fileType}">${file.name}</div>
+                        <div class="file-details">
+                            <span class="file-date">${fileDate}</span>
+                            <span class="file-size">${Math.round(file.size/1024)} KB</span>
+                        </div>
+                    </div>
+                `;
+                
+                fileList.appendChild(fileItem);
+            });
+            
+            // Add click handler for expand/collapse
+            header.addEventListener('click', () => {
+                const isExpanded = fileList.style.display !== 'none';
+                fileList.style.display = isExpanded ? 'none' : 'flex';
+                div.classList.toggle('expanded', !isExpanded);
+            });
+            
+            div.appendChild(header);
+            div.appendChild(fileList);
+            
+            return div;
+        }
+
+        function categorizeFilesByType(files) {
+            const categories = {
+                excel: [],
+                pdf: []
+            };
+
+            files.forEach(file => {
+                if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+                    file.name.toLowerCase().endsWith('.xlsx')) {
+                    categories.excel.push(file);
+                } else if (file.mimetype === 'application/pdf' || 
+                           file.name.toLowerCase().endsWith('.pdf')) {
+                    categories.pdf.push(file);
+                } else {
+                    // Default to PDF for unknown types
+                    categories.pdf.push(file);
+                }
+            });
+
+            return categories;
+        }
+
+        function categorizeFiles(files) {
+            const categories = {
+                heart: [],
+                bp: [],
+                glucose: [],
+                activity: [],
+                notes: [],
+                other: []
+            };
+
+            files.forEach(file => {
+                const name = file.name.toLowerCase();
+                let categorized = false;
+
+                // Heart-related files
+                if (/\b(ecg|ekg|heart|cardio|pulse|hjärta|hjärt)\b/.test(name)) {
+                    categories.heart.push(file);
+                    categorized = true;
+                }
+                // Blood pressure files
+                else if (/\b(bp|blood[- ]?pressure|systolic|diastolic|blodtryck)\b/.test(name)) {
+                    categories.bp.push(file);
+                    categorized = true;
+                }
+                // Glucose/blood sugar files
+                else if (/\b(glucose|bg|cgm|hba1c|a1c|glukos|blodsocker)\b/.test(name)) {
+                    categories.glucose.push(file);
+                    categorized = true;
+                }
+                // Activity/fitness files
+                else if (/\b(steps|activity|workout|hrv|vo2|fitness|aktivitet|träning)\b/.test(name)) {
+                    categories.activity.push(file);
+                    categorized = true;
+                }
+                // Notes/journal files
+                else if (/\b(note|journal|anteckning|anteckningar|journalanteckningar|notat)\b/.test(name)) {
+                    categories.notes.push(file);
+                    categorized = true;
+                }
+
+                if (!categorized) {
+                    categories.other.push(file);
+                }
+            });
+
+            return categories;
+        }
+
+        function showFileNotification(file) {
+            // Create a temporary notification
+            const notification = document.createElement('div');
+            notification.style.cssText = `
+                position: fixed;
+                top: 20px;
+                right: 20px;
+                background: #059669;
+                color: white;
+                padding: 16px 24px;
+                border-radius: 12px;
+                box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+                z-index: 10000;
+                font-size: 14px;
+                max-width: 350px;
+                border-left: 4px solid #047857;
+                animation: slideIn 0.3s ease-out;
+            `;
+            
+            if (file.size === 0) {
+                // Special case for welcome message
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;">📱</span>
+                        <div>
+                            <div style="font-weight: 600;">Mobilfiler laddade!</div>
+                            <div style="font-size: 12px; opacity: 0.9;">Filer från din mobil visas nedan</div>
+                        </div>
+                    </div>
+                `;
+            } else {
+                notification.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 18px;">📄</span>
+                        <div>
+                            <div style="font-weight: 600;">Ny fil mottagen</div>
+                            <div style="font-size: 12px; opacity: 0.9;">${file.name}</div>
+                        </div>
+                    </div>
+                `;
+            }
+            
+            // Add CSS animation
+            const style = document.createElement('style');
+            style.textContent = `
+                @keyframes slideIn {
+                    from { transform: translateX(100%); opacity: 0; }
+                    to { transform: translateX(0); opacity: 1; }
+                }
+            `;
+            document.head.appendChild(style);
+            
+            document.body.appendChild(notification);
+            
+            // Remove after 4 seconds
+            setTimeout(() => {
+                notification.style.animation = 'slideIn 0.3s ease-out reverse';
+                setTimeout(() => {
+                    notification.remove();
+                    style.remove();
+                }, 300);
+            }, 4000);
+        }
+
+        async function refreshUploadedFiles() {
+            await loadUploadedFiles();
+        }
+
+        function saveFilesToStorage() {
+            // Save uploaded files to localStorage so they persist
+            localStorage.setItem('uploadedFiles', JSON.stringify(uploadedFiles));
+            console.log('Saved', uploadedFiles.length, 'files to localStorage');
+        }
+
+        function loadFilesFromStorage() {
+            // Load previously saved files from localStorage
+            const savedFiles = localStorage.getItem('uploadedFiles');
+            if (savedFiles) {
+                uploadedFiles = JSON.parse(savedFiles);
+                console.log('Loaded', uploadedFiles.length, 'files from localStorage');
+                updateFileDisplay();
+                
+                // Also load journal notes if there are PDF files
+                const pdfFiles = uploadedFiles.filter(file => 
+                    file.mimetype === 'application/pdf' || file.name.toLowerCase().endsWith('.pdf')
+                );
+                if (pdfFiles.length > 0) {
+                    loadImportedJournalNotes();
+                } else {
+                    showEmptyJournalState();
+                }
+            } else {
+                showEmptyJournalState();
+            }
+        }
+
+        function showEmptyJournalState() {
+            const journalContent = document.querySelector('.journal-content');
+            if (journalContent && journalContent.children.length === 0) {
+                journalContent.innerHTML = `
+                    <div class="empty-journal-state">
+                        <p>Inga journalanteckningar tillgängliga ännu.</p>
+                        <p class="empty-hint">Ladda upp PDF-filer från din mobil för att se importerade journalanteckningar här.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function clearAllFiles() {
+            // Clear all saved files (for logout or manual clear)
+            uploadedFiles = [];
+            localStorage.removeItem('uploadedFiles');
+            updateFileDisplay();
+            console.log('Cleared all files');
+        }
+
+        function showLogoutOverlay() {
+            const overlay = document.getElementById('logout-overlay');
+            overlay.style.display = 'flex';
+            setTimeout(() => {
+                overlay.classList.add('active');
+            }, 10);
+        }
+
+        function hideLogoutOverlay() {
+            const overlay = document.getElementById('logout-overlay');
+            overlay.classList.remove('active');
+            setTimeout(() => {
+                overlay.style.display = 'none';
+            }, 300);
+        }
+
+
+        function confirmLogout() {
+            console.log('confirmLogout called');
+            
+            // Clear all session data
+            localStorage.removeItem('currentTransferId');
+            localStorage.removeItem('hasSeenLogin');
+            console.log('Cleared session data');
+            
+            // Close any active event streams
+            if (eventSource) {
+                eventSource.close();
+                console.log('Closed event source');
+            }
+            
+            // Hide overlay first
+            hideLogoutOverlay();
+            
+            // Redirect to login page
+            console.log('Redirecting to index.html');
+            window.location.href = 'index.html';
+        }
+
     </script>
 </body>
 </html>
