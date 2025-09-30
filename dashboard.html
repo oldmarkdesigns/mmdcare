@@ -165,9 +165,6 @@
         });
 
         async function initializeFileUpload() {
-            // First, load any previously saved files from localStorage
-            loadFilesFromStorage();
-            
             // Check if there's a transfer ID in localStorage from login page
             const savedTransferId = localStorage.getItem('currentTransferId');
             console.log('Checking localStorage for transfer ID:', savedTransferId);
@@ -177,13 +174,16 @@
                 console.log('Found transfer ID:', currentTransferId);
                 
                 // Show loading state
-                console.log('Loading files...');
+                console.log('Loading files from mobile app...');
                 
+                // Always load fresh files from mobile app when coming from redirect
                 await loadUploadedFiles();
                 startFileEventStream();
                 
             } else {
                 console.log('No transfer ID found in localStorage');
+                // Load any previously saved files from localStorage as fallback
+                loadFilesFromStorage();
                 console.log('Please use the QR code from the login page to upload files');
             }
         }
@@ -213,6 +213,11 @@
                     
                     saveFilesToStorage(); // Save to localStorage
                     updateFileDisplay();
+                    
+                    // Show notification if files were loaded
+                    if (uploadedFiles.length > 0) {
+                        showFileNotification({ size: 0 }); // Special notification for mobile files
+                    }
                     
                     // Load imported journal notes if any PDF files exist
                     await loadImportedJournalNotes();
