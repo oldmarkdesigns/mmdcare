@@ -149,7 +149,7 @@ function showLogoutOverlay() {
             <div class="logout-modal-content">
                 <div class="logout-info-card">
                     <h4 class="logout-info-title">Logga ut</h4>
-                    <p class="logout-info-text">Är du säker på att du vill logga ut från MMDConnect?</p>
+                    <p class="logout-info-text">Är du säker på att du vill logga ut från MMDCare?</p>
                     <p class="logout-info-text" style="margin-top: 12px; font-style: italic; color: #999;">Du kommer att behöva logga in igen för att komma åt plattformen.</p>
                 </div>
             </div>
