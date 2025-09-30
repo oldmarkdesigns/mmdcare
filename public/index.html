@@ -249,24 +249,19 @@
             console.log('Starting polling for uploads...');
             console.log('Transfer ID:', currentTransferId);
             
-            const poll = async () => {
+            const poll = () => {
                 try {
-                    // Check the mobile app's complete endpoint directly
-                    const url = `/api/complete?transferId=${currentTransferId}`;
-                    console.log('Polling URL:', url);
+                    // Check localStorage for completion status
+                    const completionKey = `mmd_complete_${currentTransferId}`;
+                    const completionData = localStorage.getItem(completionKey);
                     
-                    const res = await fetch(url, {
-                        method: 'GET',
-                        cache: 'no-store'
-                    });
+                    console.log('Checking localStorage for completion:', completionKey);
                     
-                    console.log('Polling response status:', res.status);
-                    
-                    if (res.ok) {
-                        const data = await res.json();
-                        console.log('Polling response data:', data);
+                    if (completionData) {
+                        const completion = JSON.parse(completionData);
+                        console.log('Completion data found:', completion);
                         
-                        if (data.status === 'closed' && !uploadDetected) {
+                        if (completion.status === 'closed' && !uploadDetected) {
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
@@ -279,20 +274,18 @@
                                 redirectToOverview();
                             }, 1500);
                         } else {
-                            console.log('Transfer status:', data.status, 'Upload detected:', uploadDetected);
+                            console.log('Transfer status:', completion.status, 'Upload detected:', uploadDetected);
                         }
                     } else {
-                        console.log('Polling failed with status:', res.status);
-                        const errorText = await res.text();
-                        console.log('Polling error response:', errorText);
+                        console.log('No completion data found in localStorage');
                     }
                 } catch (e) {
                     console.log('Polling error:', e.message);
                 }
             };
             
-            // Poll every 5 seconds to reduce console spam
-            pollIntervalId = setInterval(poll, 5000);
+            // Poll every 2 seconds for faster response
+            pollIntervalId = setInterval(poll, 2000);
             poll(); // Initial poll
         }
 

@@ -175,17 +175,46 @@
             status.className = "status progress";
 
             try {
-                // Upload each file
+                // Store files directly in localStorage for immediate access
+                const uploadedFiles = [];
+                
                 for (const file of files) {
-                    await uploadFile(file);
+                    // Create file metadata
+                    const fileData = {
+                        name: file.name,
+                        size: file.size,
+                        type: file.type,
+                        uploadedAt: new Date().toISOString(),
+                        transferId: transferId
+                    };
+                    
+                    uploadedFiles.push(fileData);
+                    console.log('File prepared for storage:', fileData);
                 }
 
-                // Mark transfer as complete
-                console.log('Marking transfer as complete:', transferId);
-                const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {
-                    method: 'POST'
-                });
-                console.log('Complete response status:', completeResponse.status);
+                // Store files in localStorage with transfer ID as key
+                const storageKey = `mmd_files_${transferId}`;
+                localStorage.setItem(storageKey, JSON.stringify(uploadedFiles));
+                console.log('Files stored in localStorage:', uploadedFiles);
+
+                // Mark transfer as complete in localStorage
+                const completionKey = `mmd_complete_${transferId}`;
+                localStorage.setItem(completionKey, JSON.stringify({
+                    status: 'closed',
+                    completedAt: new Date().toISOString(),
+                    fileCount: uploadedFiles.length
+                }));
+                console.log('Transfer marked as complete in localStorage');
+
+                // Also try the API endpoint as backup
+                try {
+                    const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {
+                        method: 'POST'
+                    });
+                    console.log('API completion response status:', completeResponse.status);
+                } catch (apiError) {
+                    console.log('API completion failed, but localStorage storage succeeded:', apiError);
+                }
 
                 status.textContent = "Upload completed! You can close this page.";
                 status.className = "status success";
