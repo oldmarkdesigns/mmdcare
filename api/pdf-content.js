@@ -89,7 +89,8 @@ export default async function handler(req, res) {
       res.status(200).json(structuredContent);
     } catch (error) {
       console.error('Error processing PDF content:', error);
-      res.status(500).json({ error: 'Failed to process PDF content' });
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ error: 'Failed to process PDF content', details: error.message });
     }
   } else {
     res.status(405).json({ error: 'Method not allowed' });
