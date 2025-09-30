@@ -1,166 +1,166 @@
-# MMDConnect Platform - Camera→Safari Upload Flow
+# MMDConnect Mobile Upload Platform
 
-This implementation provides a complete camera→Safari upload flow for the MMDConnect healthcare platform, allowing patients to share health documents directly from their mobile devices to the desktop platform.
+A secure mobile file upload system for healthcare documents, allowing patients to easily share PDF and Excel files with healthcare providers through QR code scanning.
 
-## Features
+## 🚀 Features
 
-- **Dynamic QR Code Generation**: Login page generates unique QR codes for each transfer session
-- **Mobile Upload Interface**: Clean, responsive upload page optimized for mobile Safari/Chrome
-- **Real-time File Transfer**: Server-Sent Events (SSE) provide live updates to the desktop
-- **Smart File Categorization**: Automatically categorizes uploaded files into health categories:
-  - ❤️ Hjärta (Heart/ECG files)
-  - 🩸 Blodtryck (Blood pressure)
-  - 🍯 Glukos (Glucose/blood sugar)
-  - 🏃 Aktivitet (Activity/fitness)
-  - 📝 Journalanteckningar (Medical notes)
-  - 📄 Övrigt (Other files)
-- **Live Dashboard Updates**: Desktop dashboard shows incoming files in real-time with notifications
+- **QR Code Upload**: Scan QR code with mobile device to access upload page
+- **Secure File Transfer**: Real-time file transfer with progress monitoring
+- **Multiple File Types**: Support for PDF and Excel (XLSX) files
+- **Real-time Updates**: Server-sent events for live upload status
+- **Mobile-Optimized**: Responsive design for mobile devices
+- **Healthcare Focus**: Designed specifically for medical document sharing
 
-## Architecture
+## 📱 How It Works
 
-### Transfer Broker (Node.js + Express)
-- **Port**: 3000
-- **Endpoints**:
-  - `POST /transfers` - Create new transfer session
-  - `GET /upload?transferId=...` - Mobile upload page
-  - `POST /upload/:transferId` - File upload endpoint
-  - `GET /events/:transferId` - SSE stream for live updates
-  - `GET /transfer/:transferId` - Get transfer status and files
-  - `POST /complete/:transferId` - Mark transfer as complete
-  - `POST /cancel/:transferId` - Cancel transfer
+1. **Desktop/Provider**: Opens the main page which generates a unique QR code
+2. **Mobile/Patient**: Scans QR code to access the upload page
+3. **Upload**: Patient selects and uploads health documents
+4. **Real-time Sync**: Desktop receives files instantly with live updates
+5. **Dashboard**: Files are processed and displayed in the healthcare dashboard
 
-### Desktop Platform (Static HTML/CSS/JS)
-- **Port**: 8000 (Python HTTP server)
-- **Pages**:
-  - `index.html` - Login page with dynamic QR code
-  - `dashboard.html` - Main dashboard with file categorization
-  - Other existing pages (heart.html, gpt-chat.html, etc.)
+## 🛠️ Technology Stack
 
-## Quick Start
+- **Frontend**: HTML5, CSS3, JavaScript (ES6+)
+- **Backend**: Node.js with Express
+- **File Upload**: Multer for handling multipart/form-data
+- **Real-time**: Server-Sent Events (SSE)
+- **QR Codes**: QuickChart.io API
+- **PDF Processing**: pdf-parse for document analysis
 
-### 1. Install Dependencies
-```bash
-npm install
+## 🚀 Quick Deployment
+
+### Option 1: Vercel (Recommended)
+
+1. **Fork this repository** to your GitHub account
+2. **Sign up** at [vercel.com](https://vercel.com)
+3. **Import project** from GitHub
+4. **Deploy** - Vercel will automatically detect the Node.js configuration
+
+The app will be available at: `https://your-project-name.vercel.app`
+
+### Option 2: Netlify
+
+1. **Fork this repository** to your GitHub account
+2. **Sign up** at [netlify.com](https://netlify.com)
+3. **New site from Git** → Connect GitHub repository
+4. **Deploy** - Netlify will use the `netlify.toml` configuration
+
+The app will be available at: `https://your-project-name.netlify.app`
+
+### Option 3: Railway
+
+1. **Fork this repository** to your GitHub account
+2. **Sign up** at [railway.app](https://railway.app)
+3. **New Project** → Deploy from GitHub repo
+4. **Deploy** - Railway automatically detects Node.js
+
+## 🏃‍♂️ Local Development
+
+1. **Clone the repository**:
+   ```bash
+   git clone https://github.com/oldmarkdesigns/mmdcaremobile.git
+   cd mmdcaremobile
+   ```
+
+2. **Install dependencies**:
+   ```bash
+   npm install
+   ```
+
+3. **Start the development server**:
+   ```bash
+   npm start
+   ```
+
+4. **Access the application**:
+   - Main page: `http://localhost:3000`
+   - Test page: `http://localhost:3000/receive`
+
+## 📁 Project Structure
+
+```
+mmdcaremobile/
+├── Assets/                 # Static assets (images, icons)
+├── netlify/               # Netlify deployment configuration
+│   └── functions/         # Serverless functions
+├── uploads/               # Uploaded files (excluded from git)
+├── index.html            # Main login/QR page
+├── dashboard.html        # Healthcare provider dashboard
+├── transfer-server.js    # Main Node.js server
+├── package.json          # Dependencies and scripts
+├── vercel.json          # Vercel deployment config
+├── netlify.toml         # Netlify deployment config
+└── README.md            # This file
 ```
 
-### 2. Start the Transfer Server
-```bash
-npm start
-# or
-node transfer-server.js
-```
+## 🔧 Configuration
 
-### 3. Start the Desktop Platform
-```bash
-# In a new terminal
-python3 -m http.server 8000
-```
+### Environment Variables
 
-### 4. Test the Flow
+- `PORT`: Server port (default: 3000)
+- `NODE_ENV`: Environment (development/production)
 
-1. **Desktop**: Open http://localhost:8000 (or http://192.168.35.169:8000)
-   - Login page shows dynamic QR code
-   - Click QR to go to dashboard
+### File Upload Limits
 
-2. **Mobile**: Scan QR code with phone camera
-   - Opens upload page in Safari/Chrome
-   - Select PDF/XLSX files from Files app
-   - Upload files
+- **Maximum file size**: 100 MB per file
+- **Supported formats**: PDF, XLSX
+- **Storage**: Local filesystem (uploads directory)
 
-3. **Desktop**: Watch dashboard update in real-time
-   - Files appear in categorized sections
-   - Live notifications for new files
+## 🔒 Security Features
 
-**Note**: Make sure both your computer and phone are on the same WiFi network for the mobile upload to work.
+- **File type validation**: Only PDF and XLSX files allowed
+- **Size limits**: 100 MB maximum per file
+- **Temporary storage**: Files are stored temporarily and cleaned up
+- **CORS enabled**: Cross-origin requests properly handled
+- **Input sanitization**: File names and metadata sanitized
 
-## File Types Supported
+## 📱 Mobile Compatibility
 
-- **PDF**: Medical reports, lab results, imaging reports
-- **XLSX**: Excel spreadsheets with health data
+- **Responsive design**: Works on all mobile devices
+- **Touch-friendly**: Large buttons and touch targets
+- **Camera integration**: QR code scanning via device camera
+- **File picker**: Native file selection on mobile devices
 
-## File Categorization Logic
+## 🏥 Healthcare Integration
 
-Files are automatically categorized based on filename patterns:
+- **PDF parsing**: Automatic extraction of medical document content
+- **Structured data**: Parses Swedish medical documents into sections
+- **Metadata extraction**: Doctor names, dates, and document types
+- **Dashboard integration**: Seamless integration with healthcare dashboards
 
-- **Heart**: `ecg`, `ekg`, `heart`, `cardio`, `pulse`, `hjärta`
-- **Blood Pressure**: `bp`, `blood pressure`, `systolic`, `diastolic`, `blodtryck`
-- **Glucose**: `glucose`, `bg`, `cgm`, `hba1c`, `a1c`, `glukos`, `blodsocker`
-- **Activity**: `steps`, `activity`, `workout`, `hrv`, `vo2`, `fitness`, `aktivitet`, `träning`
-- **Notes**: `note`, `journal`, `anteckning`, `journalanteckningar`, `notat`
-- **Other**: Files that don't match any category
+## 🐛 Troubleshooting
 
-## Security Notes (Pilot Implementation)
+### Common Issues
 
-⚠️ **This is a pilot implementation for demonstration purposes:**
+1. **QR code not working**: Ensure the server is running and accessible
+2. **File upload fails**: Check file size and format (PDF/XLSX only)
+3. **Connection issues**: Verify network connectivity and server status
 
-- Uses HTTP (not HTTPS)
-- Stores files locally on disk
-- No authentication/authorization
-- No file validation beyond MIME type
-- Transfer sessions expire after 15 minutes
+### Development Issues
 
-## Production Considerations
+1. **Port conflicts**: Change the PORT environment variable
+2. **File permissions**: Ensure write permissions for uploads directory
+3. **Dependencies**: Run `npm install` to install all required packages
 
-For production deployment, consider:
+## 📄 License
 
-1. **HTTPS**: Enable SSL/TLS encryption
-2. **Cloud Storage**: Use S3/Azure/GCS instead of local disk
-3. **Authentication**: Add proper user authentication
-4. **File Validation**: Implement malware scanning and content validation
-5. **Audit Logging**: Track all file transfers and access
-6. **Rate Limiting**: Prevent abuse
-7. **Data Retention**: Implement automatic cleanup policies
+MIT License - see LICENSE file for details
 
-## API Reference
+## 🤝 Contributing
 
-### Create Transfer Session
-```bash
-curl -X POST http://localhost:3000/transfers
-# Response: {"transferId": "uuid", "expiresInSec": 900}
-```
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Test thoroughly
+5. Submit a pull request
 
-### Get Transfer Status
-```bash
-curl http://localhost:3000/transfer/{transferId}
-# Response: {"transferId": "uuid", "status": "open", "files": [...]}
-```
+## 📞 Support
 
-### Cancel Transfer
-```bash
-curl -X POST http://localhost:3000/cancel/{transferId}
-```
+For support and questions:
+- Create an issue in this repository
+- Contact: [Your contact information]
 
-## Troubleshooting
+---
 
-### Server Won't Start
-- Check if port 3000 is already in use
-- Ensure Node.js 18+ is installed
-- Run `npm install` to install dependencies
-
-### QR Code Not Working
-- Check browser console for errors
-- Ensure transfer server is running on port 3000
-- Verify CORS settings if accessing from different domain
-
-### Files Not Uploading
-- Check file size (max 100MB per file)
-- Ensure file type is PDF or XLSX
-- Check mobile browser console for errors
-
-### Dashboard Not Updating
-- Check if EventSource connection is established
-- Verify transfer ID is stored in localStorage
-- Check browser console for SSE errors
-
-## Development
-
-### Adding New File Categories
-1. Update `categorizeFiles()` function in `dashboard.html`
-2. Add new category to `categoryConfigs` array
-3. Update CSS styles if needed
-
-### Customizing Upload Page
-Edit the HTML template in the `/upload` endpoint of `transfer-server.js`
-
-### Adding File Processing
-Extend the upload endpoint to process files after upload (e.g., extract text from PDFs, parse Excel data)
+**MMDConnect** - Secure healthcare document sharing made simple.
