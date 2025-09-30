@@ -201,8 +201,8 @@
 
         async function generateFreshQRCode() {
             try {
-                // Create a new transfer session on the mobile Vercel app
-                const response = await fetch('https://mmdcaremobile.vercel.app/api/transfers', {
+                // Create a new transfer session using local API
+                const response = await fetch('/api/transfers', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -212,8 +212,12 @@
                     currentTransferId = data.transferId;
                     console.log('Generated fresh transfer ID:', currentTransferId);
                     
-                    // Update QR code with new transfer ID - points to mobile Vercel app
-                    const qrUrl = `https://quickchart.io/qr?text=https://mmdcaremobile.vercel.app?transferId=${currentTransferId}&size=200`;
+                    // Store transfer ID in localStorage for dashboard
+                    localStorage.setItem('currentTransferId', currentTransferId);
+                    
+                    // Update QR code with new transfer ID - points to local mobile page
+                    const mobileUrl = `${window.location.origin}/mobile-upload.html?transferId=${currentTransferId}`;
+                    const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(mobileUrl)}&size=200`;
                     document.getElementById('qr-code').src = qrUrl;
                     
                     // Start monitoring for this new transfer
@@ -248,7 +252,7 @@
             const poll = async () => {
                 try {
                     // Check the mobile app's complete endpoint directly
-                    const url = `https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`;
+                    const url = `/api/complete?transferId=${currentTransferId}`;
                     console.log('Polling URL:', url);
                     
                     const res = await fetch(url, {
@@ -301,7 +305,7 @@
             
             try {
                 console.log('Manual test - checking mobile app for transfer:', currentTransferId);
-                const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, {
+                const res = await fetch(`/api/complete?transferId=${currentTransferId}`, {
                     method: 'GET',
                     cache: 'no-store'
                 });
@@ -330,7 +334,7 @@
             
             try {
                 console.log('Testing completion status for transfer:', currentTransferId);
-                const response = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`);
+                const response = await fetch(`/api/complete?transferId=${currentTransferId}`);
                 const data = await response.json();
                 console.log('Completion test result:', data);
                 alert(`Completion Status: ${data.status}`);

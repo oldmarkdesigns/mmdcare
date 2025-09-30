@@ -1,29 +1,17 @@
 {
-  "name": "mmdconnect-transfer-server",
+  "name": "mmdconnect-desktop",
   "version": "1.0.0",
-  "description": "Transfer broker for MMDConnect camera→Safari upload flow",
-  "type": "module",
-  "main": "transfer-server.js",
+  "description": "MMDConnect Desktop Application with Mobile Upload",
+  "main": "index.html",
   "scripts": {
-    "start": "node transfer-server.js",
-    "dev": "node --watch transfer-server.js"
+    "dev": "vercel dev",
+    "build": "echo 'No build step required'",
+    "start": "vercel dev"
   },
   "dependencies": {
-    "cors": "^2.8.5",
-    "express": "^4.18.2",
-    "formidable": "^3.5.1",
-    "multer": "^1.4.5-lts.1",
-    "pdf-parse": "^1.1.1",
-    "qrcode": "^1.5.3",
-    "uuid": "^9.0.1"
+    "formidable": "^3.5.1"
   },
-  "keywords": [
-    "healthcare",
-    "file-transfer",
-    "mobile",
-    "qr-code"
-  ],
-  "author": "MMDConnect",
-  "license": "MIT"
+  "devDependencies": {
+    "vercel": "^32.0.0"
+  }
 }
-
