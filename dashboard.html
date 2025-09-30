@@ -852,12 +852,25 @@
                     const data = await response.json();
                     console.log('Mobile app debug response:', data);
                     
-                    debugInfo.innerHTML = `
+                    let debugHtml = `
                         🔍 Mobile App Debug Info:<br>
                         📊 Global State Size: ${data.globalStateSize}<br>
-                        🆔 All Transfer IDs: ${data.allTransfers.map(([id, transfer]) => id).join(', ')}<br>
-                        📁 Current Transfer: ${data.transfer ? JSON.stringify(data.transfer, null, 2) : 'Not found'}
+                        📁 Storage file exists: ${data.storageFileExists || 'N/A'}<br>
+                        ⏰ Timestamp: ${data.timestamp || 'N/A'}<br>
                     `;
+                    
+                    if (data.storageFileContent) {
+                        debugHtml += `📄 Storage content: <pre style="font-size: 10px; max-height: 100px; overflow: auto; background: #f5f5f5; padding: 5px;">${data.storageFileContent}</pre>`;
+                    }
+                    
+                    if (data.allTransfers && data.allTransfers.length > 0) {
+                        debugHtml += `🆔 All Transfer IDs: ${data.allTransfers.map(([id, transfer]) => id).join(', ')}<br>`;
+                        debugHtml += `📁 Current Transfer: <pre style="font-size: 10px; max-height: 100px; overflow: auto; background: #f5f5f5; padding: 5px;">${data.transfer ? JSON.stringify(data.transfer, null, 2) : 'Not found'}</pre>`;
+                    } else {
+                        debugHtml += `📋 No transfers found`;
+                    }
+                    
+                    debugInfo.innerHTML = debugHtml;
                 } else {
                     const errorText = await response.text();
                     console.error('Debug error response:', errorText);
