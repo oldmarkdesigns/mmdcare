@@ -173,6 +173,7 @@
             </div>
                 <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">Scan to share health documents</p>
                 <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Waiting for file uploads...</p>
+                <button id="test-redirect-btn" onclick="redirectToOverview()" style="margin-top: 10px; padding: 6px 12px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Test: Go to Dashboard</button>
             </div>
 
             <!-- BankID Section -->
@@ -231,15 +232,34 @@
                 eventSource.close();
             }
             
+            console.log('Starting EventSource connection to:', `https://mmdcaremobile.vercel.app/api/events?transferId=${currentTransferId}`);
+            
             // Monitor events from the mobile Vercel app
             eventSource = new EventSource(`https://mmdcaremobile.vercel.app/api/events?transferId=${currentTransferId}`);
+            
+            eventSource.onopen = function(event) {
+                console.log('EventSource connection opened:', event);
+                document.getElementById('transfer-status').textContent = 'Connected to mobile app. Waiting for file uploads...';
+            };
             
             eventSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);
                 console.log('Received event:', data);
                 
+                // Handle different event types
+                if (data.type === 'ping') {
+                    console.log('Received ping from mobile app');
+                    return;
+                }
+                
+                if (data.type === 'status') {
+                    console.log('Status update:', data.status);
+                    return;
+                }
+                
                 // ONLY redirect if we actually receive a file from mobile upload
                 if (data.type === 'file' && data.file && data.file.name) {
+                    console.log('File received from mobile:', data.file);
                     document.getElementById('transfer-status').textContent = 
                         `✅ Received: ${data.file.name} (${Math.round(data.file.size/1024)} KB)`;
                     document.getElementById('transfer-status').style.color = '#059669';
@@ -250,10 +270,33 @@
                         redirectToOverview();
                     }, 2000);
                 }
+                
+                // Handle transfer completion
+                if (data.type === 'closed') {
+                    console.log('Transfer completed by mobile user');
+                    document.getElementById('transfer-status').textContent = 'Upload completed! Redirecting to dashboard...';
+                    document.getElementById('transfer-status').style.color = '#059669';
+                    
+                    setTimeout(() => {
+                        redirectToOverview();
+                    }, 1000);
+                }
             };
             
             eventSource.onerror = function(event) {
                 console.error('EventSource failed:', event);
+                document.getElementById('transfer-status').textContent = 'Connection lost. Click "Manual Redirect" if upload completed.';
+                document.getElementById('transfer-status').style.color = '#dc2626';
+                
+                // Add manual redirect button as fallback
+                if (!document.getElementById('manual-redirect-btn')) {
+                    const btn = document.createElement('button');
+                    btn.id = 'manual-redirect-btn';
+                    btn.textContent = 'Manual Redirect to Dashboard';
+                    btn.style.cssText = 'margin-top: 10px; padding: 8px 16px; background: #1d4ed8; color: white; border: none; border-radius: 6px; cursor: pointer;';
+                    btn.onclick = () => redirectToOverview();
+                    document.querySelector('.qr-section').appendChild(btn);
+                }
             };
         }
 
