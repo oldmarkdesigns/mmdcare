@@ -297,7 +297,33 @@
                     btn.onclick = () => redirectToOverview();
                     document.querySelector('.qr-section').appendChild(btn);
                 }
+
+                // Start polling fallback
+                startPollingFallback();
             };
+        }
+
+        let pollIntervalId = null;
+        function startPollingFallback() {
+            if (pollIntervalId) return;
+            const poll = async () => {
+                try {
+                    const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, { cache: 'no-store' });
+                    if (res.ok) {
+                        const data = await res.json();
+                        console.log('Polling status:', data);
+                        if (data.status === 'closed') {
+                            clearInterval(pollIntervalId);
+                            pollIntervalId = null;
+                            redirectToOverview();
+                        }
+                    }
+                } catch (e) {
+                    console.warn('Polling failed:', e);
+                }
+            };
+            pollIntervalId = setInterval(poll, 3000);
+            poll();
         }
 
 
