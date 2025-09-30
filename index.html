@@ -246,24 +246,20 @@
             
             const poll = async () => {
                 try {
-                    console.log('Polling shared storage...');
-                    // Use a shared JSON storage service to track completion
-                    const res = await fetch(`https://api.jsonbin.io/v3/b/65c8a4b8dc74654018a8b8b4/latest`, {
-                        headers: {
-                            'X-Master-Key': '$2a$10$8K1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK'
-                        }
+                    console.log('Polling mobile app for completion...');
+                    // Check the mobile app's complete endpoint directly
+                    const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, {
+                        method: 'GET',
+                        cache: 'no-store'
                     });
                     
-                    console.log('Storage response status:', res.status);
+                    console.log('Mobile app response status:', res.status);
                     
                     if (res.ok) {
                         const data = await res.json();
-                        console.log('Storage data:', data);
-                        const transfers = data.record || {};
-                        console.log('All transfers:', transfers);
-                        console.log('Our transfer status:', transfers[currentTransferId]);
+                        console.log('Mobile app response:', data);
                         
-                        if (transfers[currentTransferId] === 'completed' && !uploadDetected) {
+                        if (data.status === 'closed' && !uploadDetected) {
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
@@ -279,10 +275,10 @@
                             console.log('Transfer not completed yet, continuing to poll...');
                         }
                     } else {
-                        console.error('Storage fetch failed:', res.status, res.statusText);
+                        console.log('Mobile app not responding yet, continuing to poll...');
                     }
                 } catch (e) {
-                    console.error('Polling failed:', e);
+                    console.log('Polling failed (this is normal initially):', e.message);
                 }
             };
             
@@ -291,7 +287,7 @@
             poll(); // Initial poll
         }
 
-        // Test function to manually check storage
+        // Test function to manually check mobile app
         async function testPolling() {
             if (!currentTransferId) {
                 alert('No transfer ID available');
@@ -299,23 +295,20 @@
             }
             
             try {
-                console.log('Manual test - checking storage for transfer:', currentTransferId);
-                const res = await fetch(`https://api.jsonbin.io/v3/b/65c8a4b8dc74654018a8b8b4/latest`, {
-                    headers: {
-                        'X-Master-Key': '$2a$10$8K1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK'
-                    }
+                console.log('Manual test - checking mobile app for transfer:', currentTransferId);
+                const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, {
+                    method: 'GET',
+                    cache: 'no-store'
                 });
+                
+                console.log('Manual test - mobile app response status:', res.status);
                 
                 if (res.ok) {
                     const data = await res.json();
-                    const transfers = data.record || {};
-                    console.log('Manual test - storage data:', data);
-                    console.log('Manual test - all transfers:', transfers);
-                    console.log('Manual test - our transfer status:', transfers[currentTransferId]);
-                    
-                    alert(`Transfer ${currentTransferId} status: ${transfers[currentTransferId] || 'not found'}`);
+                    console.log('Manual test - mobile app response:', data);
+                    alert(`Transfer ${currentTransferId} status: ${data.status || 'unknown'}`);
                 } else {
-                    alert(`Storage fetch failed: ${res.status}`);
+                    alert(`Mobile app fetch failed: ${res.status}`);
                 }
             } catch (e) {
                 console.error('Manual test failed:', e);
