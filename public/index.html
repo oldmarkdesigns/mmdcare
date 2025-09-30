@@ -169,7 +169,7 @@
             <!-- QR Code Section -->
             <div class="qr-section">
             <div id="qr-container">
-                <img id="qr-code" src="Assets/QRCode.png" alt="QR Code" class="qr-code" style="opacity: 0; transition: opacity 0.8s ease-in-out;">
+                <img id="qr-code" src="Assets/QRCode.png" alt="QR Code" class="qr-code" style="opacity: 0; transition: opacity 0.8s ease-in-out; width: 200px; height: 200px; object-fit: contain;">
             </div>
                 <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">Scan to share health documents</p>
                 <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Övervakar filuppladdningar...</p>
@@ -239,7 +239,8 @@
             if (!currentTransferId) return;
             
             console.log('Starting file monitoring for transfer:', currentTransferId);
-            document.getElementById('transfer-status').textContent = 'Monitoring for file uploads...';
+            // Keep the Swedish text - don't change it
+            // document.getElementById('transfer-status').textContent = 'Monitoring for file uploads...';
             
             // Use a simple external service to track completion
             startPollingForUploads();
@@ -277,7 +278,7 @@
                             pollIntervalId = null;
                             
                             console.log('✅ Upload detected! Redirecting to dashboard...');
-                            document.getElementById('transfer-status').textContent = '✅ Upload completed! Redirecting to dashboard...';
+                            document.getElementById('transfer-status').textContent = '✅ Uppladdning slutförd! Omdirigerar till översikt...';
                             document.getElementById('transfer-status').style.color = '#059669';
                             
                             setTimeout(() => {
