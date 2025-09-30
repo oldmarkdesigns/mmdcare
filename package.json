@@ -4,7 +4,7 @@
   "description": "MMDConnect Desktop Application with Mobile Upload",
   "main": "index.html",
   "engines": {
-    "node": "18.x"
+    "node": "22.x"
   },
   "scripts": {
     "dev": "vercel dev",
