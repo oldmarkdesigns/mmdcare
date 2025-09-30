@@ -169,10 +169,10 @@
             <!-- QR Code Section -->
             <div class="qr-section">
             <div id="qr-container">
-                <img id="qr-code" src="Assets/QRCode.png" alt="QR Code" class="qr-code">
+                <img id="qr-code" src="Assets/QRCode.png" alt="QR Code" class="qr-code" style="opacity: 0; transition: opacity 0.8s ease-in-out;">
             </div>
                 <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">Scan to share health documents</p>
-                <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Waiting for file uploads...</p>
+                <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Övervakar filuppladdningar...</p>
             </div>
 
             <!-- BankID Section -->
@@ -215,7 +215,15 @@
                     // Update QR code with new transfer ID - points to local mobile page
                     const mobileUrl = `${window.location.origin}/mobile-upload.html?transferId=${currentTransferId}`;
                     const qrUrl = `https://quickchart.io/qr?text=${encodeURIComponent(mobileUrl)}&size=200`;
-                    document.getElementById('qr-code').src = qrUrl;
+                    
+                    // Set the new QR code and animate it in
+                    const qrImage = document.getElementById('qr-code');
+                    qrImage.src = qrUrl;
+                    
+                    // Trigger dissolve animation
+                    setTimeout(() => {
+                        qrImage.style.opacity = '1';
+                    }, 100);
                     
                     // Start monitoring for this new transfer
                     startFileMonitoring();
