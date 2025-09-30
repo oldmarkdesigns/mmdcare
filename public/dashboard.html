@@ -302,8 +302,10 @@
                     // New structured format with sections - simple hierarchy within main card
                     content.sections.forEach(section => {
                         html += `<div style="margin-bottom: 12px;">`;
-                        html += `<h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #374151;">${section.heading}</h4>`;
-                        html += `<p style="margin: 0; color: #6b7280; line-height: 1.5; font-size: 14px;">${section.content}</p>`;
+                        // Match the style of "Importerad Journalanteckning" by using a plain h4 without custom sizing
+                        html += `<h4>${section.heading}</h4>`;
+                        // Match the style of the summary text above by reusing the journal-summary class
+                        html += `<p class="journal-summary">${section.content}</p>`;
                         html += `</div>`;
                     });
                 } else {
