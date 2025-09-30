@@ -175,11 +175,28 @@
             status.className = "status progress";
 
             try {
-                // Store files directly in localStorage for immediate access
+                // Upload files to API endpoints (most reliable for cross-context communication)
                 const uploadedFiles = [];
                 
                 for (const file of files) {
-                    // Create file metadata
+                    console.log('Uploading file:', file.name, 'for transfer:', transferId);
+                    const formData = new FormData();
+                    formData.append('file', file);
+
+                    const response = await fetch(`/api/upload?transferId=${transferId}`, {
+                        method: 'POST',
+                        body: formData
+                    });
+
+                    console.log('Upload response status:', response.status);
+                    if (!response.ok) {
+                        const errorText = await response.text();
+                        console.error('Upload error:', errorText);
+                        throw new Error(errorText || 'Upload failed');
+                    }
+                    console.log('File uploaded successfully:', file.name);
+                    
+                    // Create file metadata for local storage
                     const fileData = {
                         name: file.name,
                         size: file.size,
@@ -189,52 +206,23 @@
                     };
                     
                     uploadedFiles.push(fileData);
-                    console.log('File prepared for storage:', fileData);
                 }
 
-                // Store files in localStorage with transfer ID as key
+                // Mark transfer as complete via API (this is what the desktop polls)
+                console.log('Marking transfer as complete via API:', transferId);
+                const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {
+                    method: 'POST'
+                });
+                console.log('API completion response status:', completeResponse.status);
+                
+                if (!completeResponse.ok) {
+                    throw new Error('Failed to mark transfer as complete');
+                }
+
+                // Also store in localStorage as backup
                 const storageKey = `mmd_files_${transferId}`;
                 localStorage.setItem(storageKey, JSON.stringify(uploadedFiles));
-                console.log('Files stored in localStorage:', uploadedFiles);
-
-                // Mark transfer as complete in localStorage
-                const completionKey = `mmd_complete_${transferId}`;
-                localStorage.setItem(completionKey, JSON.stringify({
-                    status: 'closed',
-                    completedAt: new Date().toISOString(),
-                    fileCount: uploadedFiles.length
-                }));
-                console.log('Transfer marked as complete in localStorage');
-
-                // Store in a shared storage mechanism using a simple approach
-                // We'll use a combination of localStorage and a shared key approach
-                const sharedData = {
-                    transferId: transferId,
-                    files: uploadedFiles,
-                    status: 'closed',
-                    completedAt: new Date().toISOString(),
-                    fileCount: uploadedFiles.length,
-                    timestamp: Date.now()
-                };
-                
-                // Store in multiple localStorage keys for cross-tab communication
-                const sharedKey = `mmd_shared_${transferId}`;
-                localStorage.setItem(sharedKey, JSON.stringify(sharedData));
-                
-                // Also store in a global key that can be checked by any tab
-                localStorage.setItem('mmd_latest_completion', JSON.stringify(sharedData));
-                
-                console.log('Files and completion stored in shared localStorage:', sharedData);
-
-                // Also try the API endpoint as backup
-                try {
-                    const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {
-                        method: 'POST'
-                    });
-                    console.log('API completion response status:', completeResponse.status);
-                } catch (apiError) {
-                    console.log('API completion failed, but localStorage storage succeeded:', apiError);
-                }
+                console.log('Files also stored in localStorage as backup:', uploadedFiles);
 
                 status.textContent = "Upload completed! You can close this page.";
                 status.className = "status success";

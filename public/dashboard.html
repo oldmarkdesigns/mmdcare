@@ -196,59 +196,9 @@
 
             console.log('Loading files for transfer ID:', currentTransferId);
             try {
-                // Load files from localStorage first (most reliable)
-                const storageKey = `mmd_files_${currentTransferId}`;
-                const filesData = localStorage.getItem(storageKey);
-                
-                if (filesData) {
-                    const files = JSON.parse(filesData);
-                    console.log('Loaded files from localStorage:', files);
-                    uploadedFiles = files || [];
-                    console.log('Number of files loaded from localStorage:', uploadedFiles.length);
-                    
-                    saveFilesToStorage(); // Save to localStorage
-                    updateFileDisplay();
-                    
-                    // Show notification if files were loaded
-                    if (uploadedFiles.length > 0) {
-                        showFileNotification({ size: 0 }); // Special notification for mobile files
-                    }
-                    
-                    // Load imported journal notes if any PDF files exist
-                    await loadImportedJournalNotes();
-                    return;
-                }
-                
-                // Try latest completion storage as fallback
-                const latestCompletionData = localStorage.getItem('mmd_latest_completion');
-                
-                if (latestCompletionData) {
-                    const latestData = JSON.parse(latestCompletionData);
-                    console.log('Loaded latest completion data:', latestData);
-                    
-                    // Check if this is for our current transfer ID
-                    if (latestData.transferId === currentTransferId) {
-                        uploadedFiles = latestData.files || [];
-                        console.log('Number of files loaded from latest completion:', uploadedFiles.length);
-                        
-                        saveFilesToStorage(); // Save to localStorage
-                        updateFileDisplay();
-                        
-                        // Show notification if files were loaded
-                        if (uploadedFiles.length > 0) {
-                            showFileNotification({ size: 0 }); // Special notification for mobile files
-                        }
-                        
-                        // Load imported journal notes if any PDF files exist
-                        await loadImportedJournalNotes();
-                        return;
-                    }
-                }
-                
-                // Fallback to API if localStorage doesn't have files
-                console.log('No files in localStorage, trying API...');
+                // Load files from API endpoint (most reliable for cross-context communication)
                 const url = `/api/files?transferId=${currentTransferId}`;
-                console.log('Fetching from URL:', url);
+                console.log('Fetching files from API:', url);
                 
                 const response = await fetch(url);
                 console.log('API response status:', response.status);
@@ -273,6 +223,29 @@
                     const errorText = await response.text();
                     console.error('Failed to load files from API, status:', response.status);
                     console.error('Error response:', errorText);
+                    
+                    // Fallback to localStorage if API fails
+                    console.log('API failed, trying localStorage fallback...');
+                    const storageKey = `mmd_files_${currentTransferId}`;
+                    const filesData = localStorage.getItem(storageKey);
+                    
+                    if (filesData) {
+                        const files = JSON.parse(filesData);
+                        console.log('Loaded files from localStorage fallback:', files);
+                        uploadedFiles = files || [];
+                        console.log('Number of files loaded from localStorage:', uploadedFiles.length);
+                        
+                        saveFilesToStorage(); // Save to localStorage
+                        updateFileDisplay();
+                        
+                        // Show notification if files were loaded
+                        if (uploadedFiles.length > 0) {
+                            showFileNotification({ size: 0 }); // Special notification for mobile files
+                        }
+                        
+                        // Load imported journal notes if any PDF files exist
+                        await loadImportedJournalNotes();
+                    }
                 }
             } catch (error) {
                 console.error('Failed to load uploaded files from mobile app:', error);

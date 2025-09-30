@@ -249,22 +249,24 @@
             console.log('Starting polling for uploads...');
             console.log('Transfer ID:', currentTransferId);
             
-            const poll = () => {
+            const poll = async () => {
                 try {
-                    // Check for latest completion in localStorage
-                    const latestCompletionData = localStorage.getItem('mmd_latest_completion');
+                    // Check API endpoint for completion status (most reliable)
+                    const url = `/api/complete?transferId=${currentTransferId}`;
+                    console.log('Polling API endpoint:', url);
                     
-                    console.log('Checking for latest completion in localStorage');
+                    const res = await fetch(url, {
+                        method: 'GET',
+                        cache: 'no-store'
+                    });
                     
-                    if (latestCompletionData) {
-                        const latestCompletion = JSON.parse(latestCompletionData);
-                        console.log('Latest completion data found:', latestCompletion);
+                    console.log('Polling response status:', res.status);
+                    
+                    if (res.ok) {
+                        const data = await res.json();
+                        console.log('Polling response data:', data);
                         
-                        // Check if this completion is for our current transfer ID
-                        if (latestCompletion.transferId === currentTransferId && 
-                            latestCompletion.status === 'closed' && 
-                            !uploadDetected) {
-                            
+                        if (data.status === 'closed' && !uploadDetected) {
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
@@ -277,10 +279,12 @@
                                 redirectToOverview();
                             }, 1500);
                         } else {
-                            console.log('Transfer ID mismatch or already detected. Latest:', latestCompletion.transferId, 'Current:', currentTransferId, 'Upload detected:', uploadDetected);
+                            console.log('Transfer status:', data.status, 'Upload detected:', uploadDetected);
                         }
                     } else {
-                        console.log('No latest completion data found in localStorage');
+                        console.log('Polling failed with status:', res.status);
+                        const errorText = await res.text();
+                        console.log('Polling error response:', errorText);
                     }
                 } catch (e) {
                     console.log('Polling error:', e.message);
