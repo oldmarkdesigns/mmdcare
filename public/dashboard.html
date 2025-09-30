@@ -302,8 +302,8 @@
                     // New structured format with sections - simple hierarchy within main card
                     content.sections.forEach(section => {
                         html += `<div style="margin-bottom: 12px;">`;
-                        html += `<strong style="display: block; margin-bottom: 4px; color: #374151; font-size: 14px; font-weight: 600;">${section.heading}</strong>`;
-                        html += `<span style="color: #6b7280; line-height: 1.5; font-size: 14px;">${section.content}</span>`;
+                        html += `<h4 style="margin: 0 0 4px 0; font-size: 16px; font-weight: 600; color: #374151;">${section.heading}</h4>`;
+                        html += `<p style="margin: 0; color: #6b7280; line-height: 1.5; font-size: 14px;">${section.content}</p>`;
                         html += `</div>`;
                     });
                 } else {

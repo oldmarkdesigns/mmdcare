@@ -176,6 +176,12 @@ function extractTitle(pdfText, filename) {
   // Clean the text first
   const cleanText = pdfText.replace(/\s+/g, ' ').trim();
   
+  // Generate a medical title based on content
+  const medicalTitle = generateMedicalTitle(cleanText);
+  if (medicalTitle) {
+    return medicalTitle;
+  }
+  
   // Look for common title patterns in the PDF
   const titlePatterns = [
     /(?:titel|title|rubrik|heading):\s*(.+?)(?:\n|$)/i,
@@ -201,6 +207,60 @@ function extractTitle(pdfText, filename) {
     .replace(/\.pdf$/i, '')
     .replace(/[-_]/g, ' ')
     .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function generateMedicalTitle(pdfText) {
+  // Medical condition patterns for Swedish
+  const conditionPatterns = [
+    { pattern: /(?:öron|ear|hörsel|hearing)/i, title: 'Anteckning - Öronproblem' },
+    { pattern: /(?:hjärta|heart|kardiologi|cardiology)/i, title: 'Anteckning - Hjärtproblem' },
+    { pattern: /(?:lung|lungor|respiratorisk|respiratory)/i, title: 'Anteckning - Lungproblem' },
+    { pattern: /(?:mage|stomach|gastro|gastrointestinal)/i, title: 'Anteckning - Magproblem' },
+    { pattern: /(?:led|joint|artrit|arthritis)/i, title: 'Anteckning - Ledproblem' },
+    { pattern: /(?:hud|skin|dermatologi|dermatology)/i, title: 'Anteckning - Hudproblem' },
+    { pattern: /(?:ögon|eye|syn|vision)/i, title: 'Anteckning - Synproblem' },
+    { pattern: /(?:neurologi|neurology|hjärna|brain)/i, title: 'Anteckning - Neurologiska problem' },
+    { pattern: /(?:diabetes|blodsocker|sugar)/i, title: 'Anteckning - Diabetes' },
+    { pattern: /(?:blodtryck|hypertension|pressure)/i, title: 'Anteckning - Blodtryck' },
+    { pattern: /(?:allergi|allergy|reaktion)/i, title: 'Anteckning - Allergi' },
+    { pattern: /(?:infektion|infection|bakterie|bacteria)/i, title: 'Anteckning - Infektion' },
+    { pattern: /(?:smärta|pain|ont|sore)/i, title: 'Anteckning - Smärta' },
+    { pattern: /(?:inflammation|inflammation|swelling)/i, title: 'Anteckning - Inflammation' },
+    { pattern: /(?:kontroll|check|uppföljning|follow-up)/i, title: 'Anteckning - Kontrollbesök' },
+    { pattern: /(?:nybesök|new visit|första gången)/i, title: 'Anteckning - Nybesök' }
+  ];
+  
+  // Check for specific medical conditions
+  for (const condition of conditionPatterns) {
+    if (condition.pattern.test(pdfText)) {
+      return condition.title;
+    }
+  }
+  
+  // Check for age and gender to create a more specific title
+  const ageMatch = pdfText.match(/(\d+)-årig\s+(man|kvinna|person)/i);
+  if (ageMatch) {
+    const age = ageMatch[1];
+    const gender = ageMatch[2];
+    const genderText = gender === 'man' ? 'man' : gender === 'kvinna' ? 'kvinna' : 'patient';
+    return `Anteckning - ${age}-årig ${genderText}`;
+  }
+  
+  // Check for specific symptoms or problems
+  const symptomPatterns = [
+    { pattern: /(?:knäppningar|clicking|popping)/i, title: 'Anteckning - Öronknäppningar' },
+    { pattern: /(?:hörselnedsättning|hearing loss|dålig hörsel)/i, title: 'Anteckning - Hörselnedsättning' },
+    { pattern: /(?:lockkänsla|fullness|pressure)/i, title: 'Anteckning - Öronlockkänsla' },
+    { pattern: /(?:bullerdipp|noise dip|frekvens)/i, title: 'Anteckning - Hörseltest' }
+  ];
+  
+  for (const symptom of symptomPatterns) {
+    if (symptom.pattern.test(pdfText)) {
+      return symptom.title;
+    }
+  }
+  
+  return null; // No specific medical title found
 }
 
 function extractDoctor(pdfText) {
