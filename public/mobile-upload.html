@@ -67,14 +67,25 @@
         }
         
         input[type=file] {
-            display: block;
+            display: none; /* Dölj standardknappen och texten "No file chosen" */
+        }
+        .file-picker {
+            display: flex;
+            gap: 12px;
+            align-items: center;
             margin: 16px 0;
-            padding: 12px;
-            border: 2px dashed #d1d5db;
-            border-radius: 8px;
-            width: 100%;
-            box-sizing: border-box;
-            background: #f9fafb;
+        }
+        .choose-btn {
+            padding: 10px 16px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            background: #fff;
+            color: #111827;
+            font-weight: 500;
+        }
+        .file-status {
+            color: #6b7280;
+            font-size: 14px;
         }
         
         .hint {
@@ -119,6 +130,10 @@
             <p class="subtitle">Ladda upp dina hälsofiler till MMDConnect</p>
         </div>
         <p class="hint">Välj PDF- eller Excel (XLSX)-filer. Max 100 MB per fil.</p>
+        <div class="file-picker">
+            <button id="chooseBtn" type="button" class="choose-btn">Välj filer</button>
+            <span id="fileSelectionStatus" class="file-status">Ingen fil vald</span>
+        </div>
         <input id="fileInput" type="file" multiple accept=".pdf,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
         <button id="uploadBtn">Ladda upp filer</button>
         <div id="status" class="status"></div>
@@ -127,6 +142,8 @@
 
     <script>
         const fileInput = document.getElementById('fileInput');
+        const chooseBtn = document.getElementById('chooseBtn');
+        const fileSelectionStatus = document.getElementById('fileSelectionStatus');
         const uploadBtn = document.getElementById('uploadBtn');
         const status = document.getElementById('status');
         const fileList = document.getElementById('fileList');
@@ -141,12 +158,18 @@
             uploadBtn.disabled = true;
         }
 
+        // Open native picker when clicking custom button
+        chooseBtn.addEventListener('click', function() {
+            fileInput.click();
+        });
+
         // Display selected files
         fileInput.addEventListener('change', function() {
             const files = Array.from(this.files);
             fileList.innerHTML = '';
             
             if (files.length > 0) {
+                fileSelectionStatus.textContent = files.length === 1 ? `${files[0].name}` : `${files.length} filer valda`;
                 files.forEach(file => {
                     const fileInfo = document.createElement('div');
                     fileInfo.className = 'file-info';
@@ -157,6 +180,8 @@
                     `;
                     fileList.appendChild(fileInfo);
                 });
+            } else {
+                fileSelectionStatus.textContent = 'Ingen fil vald';
             }
         });
 
