@@ -44,18 +44,46 @@ export default async function handler(req, res) {
 
       // Get the actual PDF file from Blob storage
       const pdfBlobKey = `files/${transferId}/${filename}`;
-      const pdfBlob = await get(pdfBlobKey);
+      console.log('Looking for PDF file at key:', pdfBlobKey);
+      
+      let pdfBlob;
+      try {
+        pdfBlob = await get(pdfBlobKey);
+        console.log('PDF blob found:', !!pdfBlob);
+      } catch (error) {
+        console.error('Error getting PDF blob:', error);
+        return res.status(404).json({ error: 'PDF file not found in storage' });
+      }
       
       if (!pdfBlob) {
+        console.log('PDF blob is null/undefined');
         return res.status(404).json({ error: 'PDF file not found in storage' });
       }
 
       // Download the PDF content
+      console.log('Downloading PDF content from URL:', pdfBlob.url);
       const pdfResponse = await fetch(pdfBlob.url);
+      
+      if (!pdfResponse.ok) {
+        console.error('Failed to download PDF, status:', pdfResponse.status);
+        return res.status(500).json({ error: 'Failed to download PDF file' });
+      }
+      
       const pdfBuffer = await pdfResponse.arrayBuffer();
+      console.log('PDF buffer size:', pdfBuffer.byteLength);
       
       // Parse the PDF content
+      console.log('Parsing PDF content...');
       const pdfData = await pdf(Buffer.from(pdfBuffer));
+      console.log('PDF parsed successfully, text length:', pdfData.text.length);
+      console.log('PDF text preview:', pdfData.text.substring(0, 200));
+      
+      if (!pdfData.text || pdfData.text.trim().length === 0) {
+        console.log('PDF text is empty, creating fallback content');
+        const fallbackContent = createFallbackContent(pdfFile);
+        return res.status(200).json(fallbackContent);
+      }
+      
       const structuredContent = await parsePDFContent(pdfFile, pdfData.text);
       
       res.status(200).json(structuredContent);
@@ -108,18 +136,26 @@ async function parsePDFContent(pdfFile, pdfText) {
 }
 
 function extractTitle(pdfText, filename) {
+  // Clean the text first
+  const cleanText = pdfText.replace(/\s+/g, ' ').trim();
+  
   // Look for common title patterns in the PDF
   const titlePatterns = [
-    /(?:titel|title|rubrik|heading):\s*(.+)/i,
-    /^(.+?)(?:\n|$)/m, // First line
-    /(?:dokument|document|rapport|report):\s*(.+)/i,
-    /(?:undersökning|examination|analysis):\s*(.+)/i
+    /(?:titel|title|rubrik|heading):\s*(.+?)(?:\n|$)/i,
+    /(?:dokument|document|rapport|report):\s*(.+?)(?:\n|$)/i,
+    /(?:undersökning|examination|analysis):\s*(.+?)(?:\n|$)/i,
+    /(?:journal|anteckning|note):\s*(.+?)(?:\n|$)/i,
+    /^([A-ZÅÄÖ][A-ZÅÄÖa-zåäö\s]{10,50}?)(?:\n|$)/m, // First line with proper case
+    /^(.{10,100}?)(?:\n|$)/m // First line as fallback
   ];
   
   for (const pattern of titlePatterns) {
-    const match = pdfText.match(pattern);
-    if (match && match[1] && match[1].trim().length > 3) {
-      return match[1].trim();
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const title = match[1].trim();
+      if (title.length > 3 && title.length < 100 && !title.includes('http')) {
+        return title;
+      }
     }
   }
   
@@ -174,18 +210,28 @@ function extractDate(pdfText) {
 }
 
 function generateSummary(pdfText) {
+  // Clean the text
+  const cleanText = pdfText.replace(/\s+/g, ' ').trim();
+  
+  if (cleanText.length === 0) {
+    return 'PDF-dokument importerat och analyserat.';
+  }
+  
   // Extract first few sentences or key information
-  const sentences = pdfText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 10);
   
   if (sentences.length === 0) {
-    return 'PDF-dokument importerat och analyserat.';
+    // If no sentences found, take first 200 characters
+    const preview = cleanText.substring(0, 200);
+    return preview + (cleanText.length > 200 ? '...' : '');
   }
   
   // Take first 2-3 meaningful sentences
   const summarySentences = sentences.slice(0, 3).map(s => s.trim()).filter(s => s.length > 0);
   
   if (summarySentences.length === 0) {
-    return 'PDF-dokument importerat och analyserat.';
+    const preview = cleanText.substring(0, 200);
+    return preview + (cleanText.length > 200 ? '...' : '');
   }
   
   return summarySentences.join('. ') + '.';
@@ -226,12 +272,52 @@ function parseIntoSections(pdfText) {
     });
   }
   
-  // If no sections found, create a single content section
+  // If no sections found, try to create logical sections from the content
   if (sections.length === 0) {
-    sections.push({
-      heading: 'Innehåll',
-      content: pdfText
-    });
+    const cleanText = pdfText.replace(/\s+/g, ' ').trim();
+    
+    // Try to split by common medical document patterns
+    const medicalPatterns = [
+      /(?:anamnes|history|bakgrund|background)/i,
+      /(?:status|fynd|findings|undersökning|examination)/i,
+      /(?:diagnos|diagnosis|bedömning|assessment)/i,
+      /(?:behandling|treatment|rekommendation|recommendation)/i
+    ];
+    
+    let lastIndex = 0;
+    for (const pattern of medicalPatterns) {
+      const match = cleanText.search(pattern);
+      if (match > lastIndex && match < cleanText.length - 50) {
+        // Found a section
+        const sectionText = cleanText.substring(lastIndex, match).trim();
+        if (sectionText.length > 20) {
+          sections.push({
+            heading: 'Innehåll',
+            content: sectionText
+          });
+        }
+        lastIndex = match;
+      }
+    }
+    
+    // Add remaining content
+    if (lastIndex < cleanText.length - 20) {
+      const remainingText = cleanText.substring(lastIndex).trim();
+      if (remainingText.length > 20) {
+        sections.push({
+          heading: 'Innehåll',
+          content: remainingText
+        });
+      }
+    }
+    
+    // If still no sections, create a single content section
+    if (sections.length === 0) {
+      sections.push({
+        heading: 'Innehåll',
+        content: cleanText
+      });
+    }
   }
   
   return sections;
@@ -247,5 +333,41 @@ function isSectionHeader(line) {
   ];
   
   return headerPatterns.some(pattern => pattern.test(line)) && line.length < 100;
+}
+
+function createFallbackContent(pdfFile) {
+  const filename = pdfFile.name;
+  const uploadedAt = new Date(pdfFile.uploadedAt);
+  
+  // Extract title from filename
+  const title = filename
+    .replace(/\.pdf$/i, '')
+    .replace(/[-_]/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+  
+  return {
+    filename: filename,
+    title: title,
+    doctor: 'Dr. Importerad',
+    date: uploadedAt.toLocaleDateString('sv-SE'),
+    summary: 'PDF-dokument importerat. Innehållet kunde inte analyseras automatiskt.',
+    content: {
+      title: title,
+      doctor: 'Dr. Importerad',
+      date: uploadedAt.toLocaleDateString('sv-SE'),
+      summary: 'PDF-dokument importerat. Innehållet kunde inte analyseras automatiskt.',
+      sections: [
+        {
+          heading: 'Dokumentinformation',
+          content: `Dokument: ${filename}\nUppladdad: ${uploadedAt.toLocaleString('sv-SE')}\nTyp: PDF-dokument\nStatus: Innehållet kunde inte analyseras automatiskt.`
+        },
+        {
+          heading: 'Anteckning',
+          content: 'Detta PDF-dokument har importerats från mobilen men innehållet kunde inte analyseras automatiskt. Du kan använda "Summera med Hälsa+GPT" för att få hjälp med att analysera innehållet.'
+        }
+      ]
+    },
+    parsedAt: new Date().toISOString()
+  };
 }
 
