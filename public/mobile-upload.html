@@ -181,9 +181,11 @@
                 }
 
                 // Mark transfer as complete
-                await fetch(`/api/complete?transferId=${transferId}`, {
+                console.log('Marking transfer as complete:', transferId);
+                const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {
                     method: 'POST'
                 });
+                console.log('Complete response status:', completeResponse.status);
 
                 status.textContent = "Upload completed! You can close this page.";
                 status.className = "status success";
@@ -201,6 +203,7 @@
         });
 
         async function uploadFile(file) {
+            console.log('Uploading file:', file.name, 'for transfer:', transferId);
             const formData = new FormData();
             formData.append('file', file);
 
@@ -209,10 +212,13 @@
                 body: formData
             });
 
+            console.log('Upload response status:', response.status);
             if (!response.ok) {
                 const errorText = await response.text();
+                console.error('Upload error:', errorText);
                 throw new Error(errorText || 'Upload failed');
             }
+            console.log('File uploaded successfully:', file.name);
         }
     </script>
 </body>
