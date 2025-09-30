@@ -71,8 +71,9 @@
         }
         .file-picker {
             display: flex;
-            gap: 12px;
-            align-items: center;
+            flex-direction: column; /* Lägg status under knappen */
+            gap: 6px;
+            align-items: flex-start;
             margin: 16px 0;
         }
         .choose-btn {
@@ -82,6 +83,9 @@
             background: #fff;
             color: #111827;
             font-weight: 500;
+            display: inline-flex;           /* Placera ikon och text horisontellt */
+            align-items: center;
+            gap: 8px;                        /* Avstånd mellan ikon och text */
         }
         .file-status {
             color: #6b7280;
@@ -131,7 +135,12 @@
         </div>
         <p class="hint">Välj PDF- eller Excel (XLSX)-filer. Max 100 MB per fil.</p>
         <div class="file-picker">
-            <button id="chooseBtn" type="button" class="choose-btn">Välj filer</button>
+            <button id="chooseBtn" type="button" class="choose-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <path d="M12 5v14M5 12h14" stroke="#111827" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                </svg>
+                Välj filer
+            </button>
             <span id="fileSelectionStatus" class="file-status">Ingen fil vald</span>
         </div>
         <input id="fileInput" type="file" multiple accept=".pdf,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
@@ -169,17 +178,8 @@
             fileList.innerHTML = '';
             
             if (files.length > 0) {
+                // Visa endast en sammanfattning ovanför, detaljer visas efter uppladdning
                 fileSelectionStatus.textContent = files.length === 1 ? `${files[0].name}` : `${files.length} filer valda`;
-                files.forEach(file => {
-                    const fileInfo = document.createElement('div');
-                    fileInfo.className = 'file-info';
-                    fileInfo.innerHTML = `
-                        <strong>${file.name}</strong><br>
-                        Storlek: ${Math.round(file.size / 1024)} KB<br>
-                        Typ: ${file.type}
-                    `;
-                    fileList.appendChild(fileInfo);
-                });
             } else {
                 fileSelectionStatus.textContent = 'Ingen fil vald';
             }
