@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MMDConnect - Mobile Upload</title>
+    <title>MMDConnect - Mobil uppladdning</title>
     <style>
         body {
             font-family: system-ui, -apple-system, sans-serif;
@@ -115,12 +115,12 @@
     <div class="card">
         <div class="header">
             <img src="/Assets/mmdconnect.png" alt="MMDConnect" class="logo">
-            <h1>Share health documents</h1>
-            <p class="subtitle">Upload your health files to MMDConnect</p>
+            <h1>Dela hälsodokument</h1>
+            <p class="subtitle">Ladda upp dina hälsofiler till MMDConnect</p>
         </div>
-        <p class="hint">Select PDF or Excel (XLSX) files. Maximum 100 MB each.</p>
+        <p class="hint">Välj PDF- eller Excel (XLSX)-filer. Max 100 MB per fil.</p>
         <input id="fileInput" type="file" multiple accept=".pdf,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
-        <button id="uploadBtn">Upload Files</button>
+        <button id="uploadBtn">Ladda upp filer</button>
         <div id="status" class="status"></div>
         <div id="fileList"></div>
     </div>
@@ -136,7 +136,7 @@
         const transferId = urlParams.get('transferId');
 
         if (!transferId) {
-            status.textContent = "Invalid transfer session. Please scan the QR code again.";
+            status.textContent = "Ogiltig överföringssession. Skanna QR‑koden igen.";
             status.className = "status error";
             uploadBtn.disabled = true;
         }
@@ -152,8 +152,8 @@
                     fileInfo.className = 'file-info';
                     fileInfo.innerHTML = `
                         <strong>${file.name}</strong><br>
-                        Size: ${Math.round(file.size / 1024)} KB<br>
-                        Type: ${file.type}
+                        Storlek: ${Math.round(file.size / 1024)} KB<br>
+                        Typ: ${file.type}
                     `;
                     fileList.appendChild(fileInfo);
                 });
@@ -165,13 +165,13 @@
             const files = Array.from(fileInput.files);
             
             if (!files.length) {
-                status.textContent = "Please choose at least one file.";
+                status.textContent = "Välj minst en fil.";
                 status.className = "status error";
                 return;
             }
 
             uploadBtn.disabled = true;
-            status.textContent = `Uploading ${files.length} file(s)...`;
+            status.textContent = `Laddar upp ${files.length} fil(er)...`;
             status.className = "status progress";
 
             try {
@@ -216,7 +216,7 @@
                 console.log('API completion response status:', completeResponse.status);
                 
                 if (!completeResponse.ok) {
-                    throw new Error('Failed to mark transfer as complete');
+                    throw new Error('Kunde inte markera överföringen som slutförd');
                 }
 
                 // Also store in localStorage as backup
@@ -224,7 +224,7 @@
                 localStorage.setItem(storageKey, JSON.stringify(uploadedFiles));
                 console.log('Files also stored in localStorage as backup:', uploadedFiles);
 
-                status.textContent = "Upload completed! You can close this page.";
+                status.textContent = "Uppladdningen slutförd! Du kan stänga den här sidan.";
                 status.className = "status success";
                 
                 // Clear file input
@@ -232,7 +232,7 @@
                 fileList.innerHTML = '';
                 
             } catch (error) {
-                status.textContent = `Upload failed: ${error.message}`;
+                status.textContent = `Uppladdningen misslyckades: ${error.message}`;
                 status.className = "status error";
             } finally {
                 uploadBtn.disabled = false;
