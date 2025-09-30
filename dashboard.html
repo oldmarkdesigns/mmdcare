@@ -106,6 +106,7 @@
                             <div style="margin-top: 16px; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
                                 <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Debug Tools</h4>
                                 <button onclick="debugFileTransfer()" style="margin-right: 8px; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Check Files</button>
+                                <button onclick="debugMobileState()" style="margin-right: 8px; padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Debug Mobile</button>
                                 <button onclick="clearAllFiles()" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Clear Files</button>
                                 <div id="debug-info" style="margin-top: 8px; font-size: 12px; color: #6b7280;"></div>
                             </div>
@@ -825,6 +826,41 @@
             } catch (error) {
                 console.error('Debug error:', error);
                 debugInfo.innerHTML = `❌ Error: ${error.message}`;
+            }
+        }
+
+        async function debugMobileState() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = 'Checking mobile app global state...';
+            
+            try {
+                console.log('=== DEBUG MOBILE STATE ===');
+                
+                // Check mobile app's global state
+                const url = `https://mmdcaremobile.vercel.app/api/debug?transferId=${currentTransferId}`;
+                console.log('Fetching debug info from:', url);
+                
+                const response = await fetch(url);
+                console.log('Debug response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Mobile app debug response:', data);
+                    
+                    debugInfo.innerHTML = `
+                        🔍 Mobile App Debug Info:<br>
+                        📊 Global State Size: ${data.globalStateSize}<br>
+                        🆔 All Transfer IDs: ${data.allTransfers.map(([id, transfer]) => id).join(', ')}<br>
+                        📁 Current Transfer: ${data.transfer ? JSON.stringify(data.transfer, null, 2) : 'Not found'}
+                    `;
+                } else {
+                    const errorText = await response.text();
+                    console.error('Debug error response:', errorText);
+                    debugInfo.innerHTML = `❌ Debug Error: ${response.status} - ${errorText}`;
+                }
+            } catch (error) {
+                console.error('Debug mobile state error:', error);
+                debugInfo.innerHTML = `❌ Debug Error: ${error.message}`;
             }
         }
 
