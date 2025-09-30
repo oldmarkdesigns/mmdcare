@@ -1,6 +1,6 @@
 // Local API endpoint for PDF content parsing
 import { loadTransferFromBlob } from './blobStore.js';
-import { get } from '@vercel/blob';
+import { get, head } from '@vercel/blob';
 import pdf from 'pdf-parse';
 import { Buffer } from 'buffer';
 
@@ -52,6 +52,8 @@ export default async function handler(req, res) {
       
       let pdfBlob;
       try {
+        // Use the blobStore helper function instead of direct @vercel/blob calls
+        console.log('Trying to get PDF blob...');
         pdfBlob = await get(pdfBlobKey);
         console.log('PDF blob found:', !!pdfBlob);
         if (pdfBlob) {
@@ -61,7 +63,19 @@ export default async function handler(req, res) {
       } catch (error) {
         console.error('Error getting PDF blob:', error);
         console.error('Error details:', error.message);
-        return res.status(404).json({ error: 'PDF file not found in storage', key: pdfBlobKey, details: error.message });
+        console.error('Error stack:', error.stack);
+        
+        // Try alternative approach - check if file exists in transfer metadata
+        console.log('Checking if file exists in transfer metadata...');
+        const fileExists = transfer.files.some(f => f.name === filename);
+        console.log('File exists in transfer metadata:', fileExists);
+        
+        return res.status(404).json({ 
+          error: 'PDF file not found in storage', 
+          key: pdfBlobKey, 
+          details: error.message,
+          fileExistsInMetadata: fileExists
+        });
       }
       
       if (!pdfBlob) {
