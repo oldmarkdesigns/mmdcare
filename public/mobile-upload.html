@@ -206,6 +206,26 @@
                 }));
                 console.log('Transfer marked as complete in localStorage');
 
+                // Store in a shared storage mechanism using a simple approach
+                // We'll use a combination of localStorage and a shared key approach
+                const sharedData = {
+                    transferId: transferId,
+                    files: uploadedFiles,
+                    status: 'closed',
+                    completedAt: new Date().toISOString(),
+                    fileCount: uploadedFiles.length,
+                    timestamp: Date.now()
+                };
+                
+                // Store in multiple localStorage keys for cross-tab communication
+                const sharedKey = `mmd_shared_${transferId}`;
+                localStorage.setItem(sharedKey, JSON.stringify(sharedData));
+                
+                // Also store in a global key that can be checked by any tab
+                localStorage.setItem('mmd_latest_completion', JSON.stringify(sharedData));
+                
+                console.log('Files and completion stored in shared localStorage:', sharedData);
+
                 // Also try the API endpoint as backup
                 try {
                     const completeResponse = await fetch(`/api/complete?transferId=${transferId}`, {

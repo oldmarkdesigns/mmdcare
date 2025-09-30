@@ -251,17 +251,20 @@
             
             const poll = () => {
                 try {
-                    // Check localStorage for completion status
-                    const completionKey = `mmd_complete_${currentTransferId}`;
-                    const completionData = localStorage.getItem(completionKey);
+                    // Check for latest completion in localStorage
+                    const latestCompletionData = localStorage.getItem('mmd_latest_completion');
                     
-                    console.log('Checking localStorage for completion:', completionKey);
+                    console.log('Checking for latest completion in localStorage');
                     
-                    if (completionData) {
-                        const completion = JSON.parse(completionData);
-                        console.log('Completion data found:', completion);
+                    if (latestCompletionData) {
+                        const latestCompletion = JSON.parse(latestCompletionData);
+                        console.log('Latest completion data found:', latestCompletion);
                         
-                        if (completion.status === 'closed' && !uploadDetected) {
+                        // Check if this completion is for our current transfer ID
+                        if (latestCompletion.transferId === currentTransferId && 
+                            latestCompletion.status === 'closed' && 
+                            !uploadDetected) {
+                            
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
@@ -274,10 +277,10 @@
                                 redirectToOverview();
                             }, 1500);
                         } else {
-                            console.log('Transfer status:', completion.status, 'Upload detected:', uploadDetected);
+                            console.log('Transfer ID mismatch or already detected. Latest:', latestCompletion.transferId, 'Current:', currentTransferId, 'Upload detected:', uploadDetected);
                         }
                     } else {
-                        console.log('No completion data found in localStorage');
+                        console.log('No latest completion data found in localStorage');
                     }
                 } catch (e) {
                     console.log('Polling error:', e.message);

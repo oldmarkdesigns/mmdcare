@@ -219,6 +219,32 @@
                     return;
                 }
                 
+                // Try latest completion storage as fallback
+                const latestCompletionData = localStorage.getItem('mmd_latest_completion');
+                
+                if (latestCompletionData) {
+                    const latestData = JSON.parse(latestCompletionData);
+                    console.log('Loaded latest completion data:', latestData);
+                    
+                    // Check if this is for our current transfer ID
+                    if (latestData.transferId === currentTransferId) {
+                        uploadedFiles = latestData.files || [];
+                        console.log('Number of files loaded from latest completion:', uploadedFiles.length);
+                        
+                        saveFilesToStorage(); // Save to localStorage
+                        updateFileDisplay();
+                        
+                        // Show notification if files were loaded
+                        if (uploadedFiles.length > 0) {
+                            showFileNotification({ size: 0 }); // Special notification for mobile files
+                        }
+                        
+                        // Load imported journal notes if any PDF files exist
+                        await loadImportedJournalNotes();
+                        return;
+                    }
+                }
+                
                 // Fallback to API if localStorage doesn't have files
                 console.log('No files in localStorage, trying API...');
                 const url = `/api/files?transferId=${currentTransferId}`;
