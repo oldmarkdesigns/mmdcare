@@ -221,7 +221,7 @@
             
             if (files.length > 0) {
                 // Visa endast en sammanfattning ovanför, detaljer visas efter uppladdning
-                fileSelectionStatus.textContent = files.length === 1 ? `${files[0].name}` : `${files.length} filer valda`;
+                fileSelectionStatus.textContent = files.length === 1 ? '1 fil vald' : `${files.length} filer valda`;
             } else {
                 fileSelectionStatus.textContent = 'Ingen fil vald';
             }
