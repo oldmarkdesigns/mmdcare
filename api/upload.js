@@ -2,6 +2,7 @@
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import { loadTransferFromBlob, saveTransferToBlob, createEmptyTransfer } from './blobStore.js';
 
 // Global storage for transfers (in-memory for local development)
 if (!global.__mmd_transfers) {
@@ -59,13 +60,11 @@ export default async function handler(req, res) {
         return res.status(400).json({ error: 'No file uploaded' });
       }
 
-      // Get or create transfer
-      let transfer = global.__mmd_transfers.get(transferId);
+      // Get or create transfer (Blob-backed)
+      let transfer = await loadTransferFromBlob(transferId);
       if (!transfer) {
-        console.log('Transfer not found, creating new transfer for ID:', transferId);
-        transfer = { status: 'open', files: [], createdAt: Date.now() };
-        global.__mmd_transfers.set(transferId, transfer);
-        console.log('Created new transfer for ID:', transferId);
+        console.log('Transfer not found in Blob, creating new transfer for ID:', transferId);
+        transfer = createEmptyTransfer();
       }
 
       // Store file metadata
@@ -77,9 +76,9 @@ export default async function handler(req, res) {
         transferId: transferId
       };
       
-      // Add file to transfer
+      // Add file to transfer and persist
       transfer.files.push(meta);
-      global.__mmd_transfers.set(transferId, transfer);
+      await saveTransferToBlob(transferId, transfer);
       
       console.log('File uploaded successfully:', meta);
       console.log('Transfer now has', transfer.files.length, 'files');

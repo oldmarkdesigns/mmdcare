@@ -1,5 +1,7 @@
 // Local API endpoint for transfer completion
-export default function handler(req, res) {
+import { loadTransferFromBlob, saveTransferToBlob, createEmptyTransfer } from './blobStore.js';
+
+export default async function handler(req, res) {
   // Enable CORS
   res.setHeader('Access-Control-Allow-Origin', '*');
   res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
@@ -25,8 +27,8 @@ export default function handler(req, res) {
       return res.status(400).json({ error: 'No transfer ID provided' });
     }
 
-    // Get transfer from global storage
-    const transfer = global.__mmd_transfers?.get(transferId);
+    // Get transfer from Blob storage
+    const transfer = await loadTransferFromBlob(transferId);
     console.log('Found transfer:', transfer);
     
     const closed = transfer && transfer.status === 'closed';
@@ -47,15 +49,13 @@ export default function handler(req, res) {
 
     try {
       // Get or create transfer
-      let transfer = global.__mmd_transfers?.get(transferId);
+      let transfer = await loadTransferFromBlob(transferId);
       if (!transfer) {
-        console.log('Transfer not found for completion POST, creating new record and marking closed:', transferId);
-        transfer = { status: 'closed', files: [], createdAt: Date.now() };
-      } else {
-        transfer.status = 'closed';
+        console.log('Transfer not found for completion POST (Blob), creating new record and marking closed:', transferId);
+        transfer = createEmptyTransfer();
       }
-      
-      global.__mmd_transfers.set(transferId, transfer);
+      transfer.status = 'closed';
+      await saveTransferToBlob(transferId, transfer);
       console.log('Updated transfer status to closed for:', transferId);
       console.log('Final transfer object:', transfer);
 
