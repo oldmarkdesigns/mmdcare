@@ -72,13 +72,20 @@ export default async function handler(req, res) {
       const fileContent = fs.readFileSync(file.filepath);
       const fileBlobKey = `files/${transferId}/${file.originalFilename}`;
       
-      await put(fileBlobKey, fileContent, {
+      console.log('=== STORING FILE IN BLOB ===');
+      console.log('File path:', file.filepath);
+      console.log('File size:', fileContent.length);
+      console.log('Blob key:', fileBlobKey);
+      console.log('MIME type:', file.mimetype);
+      
+      const blobResult = await put(fileBlobKey, fileContent, {
         contentType: file.mimetype,
         access: 'public',
         allowOverwrite: true,
       });
       
-      console.log('File stored in Blob storage:', fileBlobKey);
+      console.log('File stored in Blob storage successfully:', fileBlobKey);
+      console.log('Blob URL:', blobResult.url);
 
       // Store file metadata
       const meta = {

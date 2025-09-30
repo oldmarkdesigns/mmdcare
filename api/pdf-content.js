@@ -45,15 +45,23 @@ export default async function handler(req, res) {
 
       // Get the actual PDF file from Blob storage
       const pdfBlobKey = `files/${transferId}/${filename}`;
+      console.log('=== RETRIEVING PDF FROM BLOB ===');
       console.log('Looking for PDF file at key:', pdfBlobKey);
+      console.log('Transfer ID:', transferId);
+      console.log('Filename:', filename);
       
       let pdfBlob;
       try {
         pdfBlob = await get(pdfBlobKey);
         console.log('PDF blob found:', !!pdfBlob);
+        if (pdfBlob) {
+          console.log('PDF blob URL:', pdfBlob.url);
+          console.log('PDF blob size:', pdfBlob.size);
+        }
       } catch (error) {
         console.error('Error getting PDF blob:', error);
-        return res.status(404).json({ error: 'PDF file not found in storage' });
+        console.error('Error details:', error.message);
+        return res.status(404).json({ error: 'PDF file not found in storage', key: pdfBlobKey, details: error.message });
       }
       
       if (!pdfBlob) {
