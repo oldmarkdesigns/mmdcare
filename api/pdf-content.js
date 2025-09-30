@@ -2,6 +2,7 @@
 import { loadTransferFromBlob } from './blobStore.js';
 import { get } from '@vercel/blob';
 import pdf from 'pdf-parse';
+import { Buffer } from 'buffer';
 
 export default async function handler(req, res) {
   // Enable CORS
@@ -74,9 +75,17 @@ export default async function handler(req, res) {
       
       // Parse the PDF content
       console.log('Parsing PDF content...');
-      const pdfData = await pdf(Buffer.from(pdfBuffer));
-      console.log('PDF parsed successfully, text length:', pdfData.text.length);
-      console.log('PDF text preview:', pdfData.text.substring(0, 200));
+      let pdfData;
+      try {
+        pdfData = await pdf(Buffer.from(pdfBuffer));
+        console.log('PDF parsed successfully, text length:', pdfData.text.length);
+        console.log('PDF text preview:', pdfData.text.substring(0, 200));
+      } catch (parseError) {
+        console.error('PDF parsing failed:', parseError);
+        console.log('Creating fallback content due to parsing error');
+        const fallbackContent = createFallbackContent(pdfFile);
+        return res.status(200).json(fallbackContent);
+      }
       
       if (!pdfData.text || pdfData.text.trim().length === 0) {
         console.log('PDF text is empty, creating fallback content');
