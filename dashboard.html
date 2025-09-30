@@ -176,23 +176,7 @@
                 
             } else {
                 console.log('No transfer ID found in localStorage');
-                // For testing, let's also check if we can create a new transfer
-                console.log('Creating new transfer for testing...');
-                try {
-                    const response = await fetch('http://192.168.196.174:8000/transfers', {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' }
-                    });
-                    if (response.ok) {
-                        const data = await response.json();
-                        currentTransferId = data.transferId;
-                        localStorage.setItem('currentTransferId', currentTransferId);
-                        console.log('Created new transfer ID:', currentTransferId);
-                        startFileEventStream();
-                    }
-                } catch (error) {
-                    console.error('Failed to create transfer:', error);
-                }
+                console.log('Please use the QR code from the login page to upload files');
             }
         }
 
@@ -204,11 +188,12 @@
 
             console.log('Loading files for transfer ID:', currentTransferId);
             try {
-                const response = await fetch(`http://192.168.196.174:8000/transfer/${currentTransferId}`);
-                console.log('Response status:', response.status);
+                // Load files from mobile app instead of localhost server
+                const response = await fetch(`https://mmdcaremobile.vercel.app/api/files?transferId=${currentTransferId}`);
+                console.log('Mobile app response status:', response.status);
                 if (response.ok) {
                     const data = await response.json();
-                    console.log('Loaded files data:', data);
+                    console.log('Loaded files data from mobile app:', data);
                     uploadedFiles = data.files || [];
                     console.log('Uploaded files array:', uploadedFiles);
                     saveFilesToStorage(); // Save to localStorage
@@ -217,10 +202,10 @@
                     // Load imported journal notes if any PDF files exist
                     await loadImportedJournalNotes();
                 } else {
-                    console.error('Failed to load files, status:', response.status);
+                    console.error('Failed to load files from mobile app, status:', response.status);
                 }
             } catch (error) {
-                console.error('Failed to load uploaded files:', error);
+                console.error('Failed to load uploaded files from mobile app:', error);
             }
         }
 
@@ -241,12 +226,18 @@
                 // Create a card for each PDF file
                 for (const pdfFile of pdfFiles) {
                     try {
-                        const response = await fetch(`http://192.168.196.174:8000/pdf-content/${currentTransferId}/${encodeURIComponent(pdfFile.name)}`);
+                        // Load PDF content from mobile app
+                        const response = await fetch(`https://mmdcaremobile.vercel.app/api/pdf-content?transferId=${currentTransferId}&filename=${encodeURIComponent(pdfFile.name)}`);
                         
                         if (response.ok) {
                             const parsedData = await response.json();
                             const pdfCard = createPDFJournalCard(pdfFile, parsedData);
                             journalContent.appendChild(pdfCard);
+                        } else {
+                            console.error(`Failed to load PDF content for ${pdfFile.name}, status:`, response.status);
+                            // Create a basic card even if content loading fails
+                            const basicCard = createBasicPDFCard(pdfFile);
+                            journalContent.appendChild(basicCard);
                         }
                     } catch (error) {
                         console.error(`Failed to load PDF content for ${pdfFile.name}:`, error);
@@ -468,36 +459,35 @@
         function startFileEventStream() {
             if (!currentTransferId) return;
 
-            // Close any existing event source
-            if (eventSource) {
-                eventSource.close();
-            }
-
-            eventSource = new EventSource(`http://192.168.196.174:8000/events/${currentTransferId}`);
+            // Note: EventSource is not available for cross-origin requests in serverless
+            // We'll rely on the polling mechanism from the login page instead
+            console.log('EventSource not available for cross-origin serverless apps - using polling instead');
             
-            eventSource.onmessage = function(event) {
-                const data = JSON.parse(event.data);
-                console.log('Dashboard received event:', data);
-                
-                if (data.type === 'file') {
-                    uploadedFiles.unshift(data.file); // Add to beginning
-                    saveFilesToStorage(); // Save to localStorage
-                    updateFileDisplay();
-                    showFileNotification(data.file);
-                    
-                    // Reload journal notes if a PDF was uploaded
-                    if (data.file.mimetype === 'application/pdf' || data.file.name.toLowerCase().endsWith('.pdf')) {
-                        loadImportedJournalNotes();
+            // Start polling for new files every 10 seconds
+            const pollForFiles = async () => {
+                try {
+                    const response = await fetch(`https://mmdcaremobile.vercel.app/api/files?transferId=${currentTransferId}`);
+                    if (response.ok) {
+                        const data = await response.json();
+                        const newFiles = data.files || [];
+                        
+                        // Check if we have new files
+                        if (newFiles.length > uploadedFiles.length) {
+                            console.log('New files detected, refreshing display');
+                            uploadedFiles = newFiles;
+                            saveFilesToStorage();
+                            updateFileDisplay();
+                            await loadImportedJournalNotes();
+                        }
                     }
-                } else if (data.type === 'status' && data.status === 'closed') {
-                    eventSource.close();
-                    console.log('Transfer completed');
+                } catch (error) {
+                    console.error('Failed to poll for new files:', error);
                 }
             };
             
-            eventSource.onerror = function(event) {
-                console.error('File event stream failed:', event);
-            };
+            // Poll immediately and then every 10 seconds
+            pollForFiles();
+            setInterval(pollForFiles, 10000);
         }
 
         function updateFileDisplay() {
