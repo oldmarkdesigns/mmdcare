@@ -2,6 +2,7 @@
 import formidable from 'formidable';
 import fs from 'fs';
 import path from 'path';
+import { put } from '@vercel/blob';
 import { loadTransferFromBlob, saveTransferToBlob, createEmptyTransfer } from './blobStore.js';
 
 // Global storage for transfers (in-memory for local development)
@@ -66,6 +67,18 @@ export default async function handler(req, res) {
         console.log('Transfer not found in Blob, creating new transfer for ID:', transferId);
         transfer = createEmptyTransfer();
       }
+
+      // Store the actual file content in Blob storage
+      const fileContent = fs.readFileSync(file.filepath);
+      const fileBlobKey = `files/${transferId}/${file.originalFilename}`;
+      
+      await put(fileBlobKey, fileContent, {
+        contentType: file.mimetype,
+        access: 'public',
+        allowOverwrite: true,
+      });
+      
+      console.log('File stored in Blob storage:', fileBlobKey);
 
       // Store file metadata
       const meta = {
