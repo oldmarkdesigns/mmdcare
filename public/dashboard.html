@@ -834,6 +834,11 @@
                     return;
                 }
                 
+                // Test API endpoint availability first
+                console.log('Testing API endpoint availability...');
+                const testResponse = await fetch('/api/debug');
+                console.log('API test response status:', testResponse.status);
+                
                 // Check mobile app for files
                 const url = `/api/files?transferId=${currentTransferId}`;
                 console.log('Fetching from:', url);
@@ -849,7 +854,8 @@
                         ✅ Transfer ID: ${currentTransferId}<br>
                         📁 Files on mobile: ${data.files.length}<br>
                         📁 Files locally: ${uploadedFiles.length}<br>
-                        🔄 Status: ${data.status}
+                        🔄 Status: ${data.status}<br>
+                        🧪 API Test: ${testResponse.status}
                     `;
                     
                     if (data.files.length > 0) {
