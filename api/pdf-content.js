@@ -52,18 +52,23 @@ export default async function handler(req, res) {
       
       let pdfBlob;
       try {
-        // Use the blobStore helper function instead of direct @vercel/blob calls
-        console.log('Trying to get PDF blob...');
-        pdfBlob = await get(pdfBlobKey);
-        console.log('PDF blob found:', !!pdfBlob);
-        if (pdfBlob) {
-          console.log('PDF blob URL:', pdfBlob.url);
-          console.log('PDF blob size:', pdfBlob.size);
+        // Try using head() first to get the URL, then fetch directly
+        console.log('Trying to get PDF blob using head()...');
+        const headResult = await head(pdfBlobKey);
+        console.log('Head result:', headResult);
+        
+        if (headResult && headResult.url) {
+          console.log('Got blob URL from head():', headResult.url);
+          pdfBlob = {
+            url: headResult.url,
+            size: headResult.size
+          };
+        } else {
+          throw new Error('No URL returned from head()');
         }
       } catch (error) {
         console.error('Error getting PDF blob:', error);
         console.error('Error details:', error.message);
-        console.error('Error stack:', error.stack);
         
         // Try alternative approach - check if file exists in transfer metadata
         console.log('Checking if file exists in transfer metadata...');
