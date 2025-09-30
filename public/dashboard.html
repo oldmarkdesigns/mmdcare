@@ -208,6 +208,7 @@
                     console.log('Loaded files data from API:', data);
                     uploadedFiles = data.files || [];
                     console.log('Number of files loaded from API:', uploadedFiles.length);
+                    console.log('Files details:', uploadedFiles);
                     
                     saveFilesToStorage(); // Save to localStorage
                     updateFileDisplay();
@@ -624,24 +625,34 @@
         }
 
         function categorizeFilesByType(files) {
+            console.log('=== CATEGORIZING FILES ===');
+            console.log('Input files:', files);
+            
             const categories = {
                 excel: [],
                 pdf: []
             };
 
             files.forEach(file => {
+                console.log('Processing file:', file.name, 'mimetype:', file.mimetype);
+                
                 if (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
                     file.name.toLowerCase().endsWith('.xlsx')) {
+                    console.log('File categorized as Excel:', file.name);
                     categories.excel.push(file);
                 } else if (file.mimetype === 'application/pdf' || 
                            file.name.toLowerCase().endsWith('.pdf')) {
+                    console.log('File categorized as PDF:', file.name);
                     categories.pdf.push(file);
                 } else {
                     // Default to PDF for unknown types
+                    console.log('File categorized as PDF (default):', file.name);
                     categories.pdf.push(file);
                 }
             });
 
+            console.log('Final categories:', categories);
+            console.log('=== END CATEGORIZING FILES ===');
             return categories;
         }
 
