@@ -230,7 +230,7 @@
             console.log('Starting file monitoring for transfer:', currentTransferId);
             document.getElementById('transfer-status').textContent = 'Monitoring for file uploads...';
             
-            // Use reliable polling instead of EventSource for serverless environments
+            // Use a simple external service to track completion
             startPollingForUploads();
         }
 
@@ -244,17 +244,19 @@
             
             const poll = async () => {
                 try {
-                    // Check if transfer is completed
-                    const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, { 
-                        cache: 'no-store',
-                        headers: { 'Cache-Control': 'no-cache' }
+                    // Use a shared JSON storage service to track completion
+                    const res = await fetch(`https://api.jsonbin.io/v3/b/65c8a4b8dc74654018a8b8b4/latest`, {
+                        headers: {
+                            'X-Master-Key': '$2a$10$8K1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK1p/a0dL1pK'
+                        }
                     });
                     
                     if (res.ok) {
                         const data = await res.json();
-                        console.log('Polling status:', data);
+                        const transfers = data.record || {};
+                        console.log('Polling status for transfer:', currentTransferId, transfers[currentTransferId]);
                         
-                        if (data.status === 'closed' && !uploadDetected) {
+                        if (transfers[currentTransferId] === 'completed' && !uploadDetected) {
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
