@@ -23,7 +23,7 @@ export async function saveTransferToBlob(transferId, transfer) {
   const key = buildKey(transferId);
   await put(key, JSON.stringify(transfer, null, 2), {
     contentType: 'application/json',
-    access: 'private',
+    access: 'public',
     cacheControlMaxAge: 0,
   });
 }
