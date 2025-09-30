@@ -4,6 +4,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const contentHeader = document.querySelector('.content-header');
     const sidebar = document.querySelector('.sidebar');
     
+    // Check if required elements exist
+    if (!contentHeader || !sidebar) {
+        console.log('Required elements not found, skipping mobile menu setup');
+        return;
+    }
+    
     // Create mobile menu button
     const mobileMenuButton = document.createElement('button');
     mobileMenuButton.className = 'mobile-menu-button';
@@ -18,9 +24,14 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-right: 16px;
     `;
     
-    // Insert mobile menu button
+    // Insert mobile menu button safely
     const headerTitle = contentHeader.querySelector('h1');
-    contentHeader.insertBefore(mobileMenuButton, headerTitle);
+    if (headerTitle && headerTitle.parentNode === contentHeader) {
+        contentHeader.insertBefore(mobileMenuButton, headerTitle);
+    } else {
+        // Fallback: append to the beginning of contentHeader
+        contentHeader.insertBefore(mobileMenuButton, contentHeader.firstChild);
+    }
     
     // Toggle sidebar on mobile
     mobileMenuButton.addEventListener('click', function() {
