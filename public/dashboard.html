@@ -293,37 +293,48 @@
                 return `<h4>Importerad Journalanteckning</h4><p>${content}</p>`;
             }
             
-            // If content is structured (new format), show full content as one block
+            // If content is structured (new format), show sections with proper hierarchy
             if (typeof content === 'object' && content !== null) {
                 let html = '<h4>Importerad Journalanteckning</h4>';
                 
-                // Combine all content into one readable text
-                let fullContent = '';
-                
-                // Define section order and Swedish labels
-                const sectionOrder = [
-                    { key: 'anamnes', label: 'Anamnes' },
-                    { key: 'status', label: 'Status' },
-                    { key: 'undersokningar', label: 'Undersökningar' },
-                    { key: 'bedomning', label: 'Bedömning' },
-                    { key: 'rekommendationer', label: 'Rekommendationer' },
-                    { key: 'medicin', label: 'Medicin/Behandling' }
-                ];
-                
-                // Add structured sections to full content
-                sectionOrder.forEach(section => {
-                    if (content[section.key]) {
-                        fullContent += `<strong>${section.label}:</strong> ${content[section.key]}\n\n`;
+                // Check if it's the new structured format with sections array
+                if (content.sections && Array.isArray(content.sections)) {
+                    // New structured format with sections
+                    content.sections.forEach(section => {
+                        html += `<div class="journal-section">`;
+                        html += `<h5 class="section-heading">${section.heading}</h5>`;
+                        html += `<p class="section-content">${section.content}</p>`;
+                        html += `</div>`;
+                    });
+                } else {
+                    // Old key-based format - combine all content into one readable text
+                    let fullContent = '';
+                    
+                    // Define section order and Swedish labels
+                    const sectionOrder = [
+                        { key: 'anamnes', label: 'Anamnes' },
+                        { key: 'status', label: 'Status' },
+                        { key: 'undersokningar', label: 'Undersökningar' },
+                        { key: 'bedomning', label: 'Bedömning' },
+                        { key: 'rekommendationer', label: 'Rekommendationer' },
+                        { key: 'medicin', label: 'Medicin/Behandling' }
+                    ];
+                    
+                    // Add structured sections to full content
+                    sectionOrder.forEach(section => {
+                        if (content[section.key]) {
+                            fullContent += `<strong>${section.label}:</strong> ${content[section.key]}\n\n`;
+                        }
+                    });
+                    
+                    // Add other content if any
+                    if (content.other && content.other.length > 0) {
+                        fullContent += `<strong>Övrig information:</strong> ${content.other.join(' ')}\n\n`;
                     }
-                });
-                
-                // Add other content if any
-                if (content.other && content.other.length > 0) {
-                    fullContent += `<strong>Övrig information:</strong> ${content.other.join(' ')}\n\n`;
+                    
+                    // Display as single paragraph with line breaks
+                    html += `<div class="journal-full-content"><p>${fullContent.replace(/\n\n/g, '</p><p>')}</p></div>`;
                 }
-                
-                // Display as single paragraph with line breaks
-                html += `<div class="journal-full-content"><p>${fullContent.replace(/\n\n/g, '</p><p>')}</p></div>`;
                 
                 return html;
             }
