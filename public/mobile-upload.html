@@ -85,11 +85,50 @@
             font-weight: 500;
             display: inline-flex;           /* Placera ikon och text horisontellt */
             align-items: center;
+            justify-content: center;        /* Centrera ikon + text */
             gap: 8px;                        /* Avstånd mellan ikon och text */
+            width: 100%;
         }
         .file-status {
             color: #6b7280;
             font-size: 14px;
+        }
+        .selected-files {
+            margin-top: 8px;
+            width: 100%;
+        }
+        .selected-header {
+            background: #f3f4f6;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            cursor: pointer;
+            user-select: none;
+            font-weight: 600;
+            color: #374151;
+        }
+        .chevron {
+            transition: transform .2s ease;
+        }
+        .expanded .chevron {
+            transform: rotate(90deg);
+        }
+        .selected-list {
+            margin-top: 8px;
+            display: none;
+        }
+        .selected-list.show { display: block; }
+        .selected-file-card {
+            background: #ffffff;
+            border: 1px solid #e5e7eb;
+            border-radius: 10px;
+            padding: 10px 12px;
+            margin-bottom: 8px;
+            font-size: 14px;
+            color: #374151;
         }
         
         .hint {
@@ -143,6 +182,7 @@
             </button>
             <span id="fileSelectionStatus" class="file-status">Ingen fil vald</span>
         </div>
+        <div id="selectedFilesContainer" class="selected-files"></div>
         <input id="fileInput" type="file" multiple accept=".pdf,application/pdf,.xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" />
         <button id="uploadBtn">Ladda upp filer</button>
         <div id="status" class="status"></div>
@@ -153,6 +193,7 @@
         const fileInput = document.getElementById('fileInput');
         const chooseBtn = document.getElementById('chooseBtn');
         const fileSelectionStatus = document.getElementById('fileSelectionStatus');
+        const selectedFilesContainer = document.getElementById('selectedFilesContainer');
         const uploadBtn = document.getElementById('uploadBtn');
         const status = document.getElementById('status');
         const fileList = document.getElementById('fileList');
@@ -176,6 +217,7 @@
         fileInput.addEventListener('change', function() {
             const files = Array.from(this.files);
             fileList.innerHTML = '';
+            renderSelectedFiles(files);
             
             if (files.length > 0) {
                 // Visa endast en sammanfattning ovanför, detaljer visas efter uppladdning
@@ -184,6 +226,42 @@
                 fileSelectionStatus.textContent = 'Ingen fil vald';
             }
         });
+
+        function renderSelectedFiles(files) {
+            selectedFilesContainer.innerHTML = '';
+            if (files.length === 0) return;
+            if (files.length === 1) {
+                const f = files[0];
+                const card = document.createElement('div');
+                card.className = 'selected-file-card';
+                card.innerHTML = `<strong>${f.name}</strong><br>Storlek: ${Math.round(f.size/1024)} KB · Typ: ${f.type || 'okänd'}`;
+                selectedFilesContainer.appendChild(card);
+                return;
+            }
+
+            // Header
+            const header = document.createElement('div');
+            header.className = 'selected-header';
+            header.innerHTML = `<span>Uppladdade filer (${files.length})</span><span class="chevron">›</span>`;
+            selectedFilesContainer.appendChild(header);
+
+            // List
+            const list = document.createElement('div');
+            list.className = 'selected-list';
+            files.forEach(f => {
+                const card = document.createElement('div');
+                card.className = 'selected-file-card';
+                card.innerHTML = `<strong>${f.name}</strong><br>Storlek: ${Math.round(f.size/1024)} KB · Typ: ${f.type || 'okänd'}`;
+                list.appendChild(card);
+            });
+            selectedFilesContainer.appendChild(list);
+
+            // Toggle behavior
+            header.addEventListener('click', () => {
+                const expanded = list.classList.toggle('show');
+                header.classList.toggle('expanded', expanded);
+            });
+        }
 
         // Upload files
         uploadBtn.addEventListener('click', async () => {
