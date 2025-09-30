@@ -204,17 +204,28 @@ function extractTitle(pdfText, filename) {
 }
 
 function extractDoctor(pdfText) {
-  // Look for doctor patterns
+  // Look for doctor patterns - more comprehensive for Swedish medical documents
   const doctorPatterns = [
-    /(?:dr\.?|doctor|doktor|läkare|physician)\s+([a-zA-ZåäöÅÄÖ\s]+)/i,
-    /(?:undersökande|examining|attending)\s+(?:läkare|doctor|physician):\s*([a-zA-ZåäöÅÄÖ\s]+)/i,
-    /(?:signerat|signed|signature):\s*([a-zA-ZåäöÅÄÖ\s]+)/i
+    // Pattern for "Antecknad av [Name] (Läkare)"
+    /(?:antecknad|noted|signed)\s+av\s+([a-zA-ZåäöÅÄÖ\s]+?)\s*\([^)]*läkare[^)]*\)/i,
+    // Pattern for "Dr. [Name]" or "Doktor [Name]"
+    /(?:dr\.?|doctor|doktor|läkare|physician)\s+([a-zA-ZåäöÅÄÖ\s]+?)(?:\s|$|,|\.)/i,
+    // Pattern for "Undersökande läkare: [Name]"
+    /(?:undersökande|examining|attending)\s+(?:läkare|doctor|physician):\s*([a-zA-ZåäöÅÄÖ\s]+?)(?:\s|$|,|\.)/i,
+    // Pattern for "Signerat: [Name]"
+    /(?:signerat|signed|signature):\s*([a-zA-ZåäöÅÄÖ\s]+?)(?:\s|$|,|\.)/i,
+    // Pattern for names after "av" (by)
+    /av\s+([A-ZÅÄÖ][a-zåäö]+\s+[A-ZÅÄÖ][a-zåäö]+(?:\s+[A-ZÅÄÖ][a-zåäö]+)*)/i
   ];
   
   for (const pattern of doctorPatterns) {
     const match = pdfText.match(pattern);
-    if (match && match[1] && match[1].trim().length > 2) {
-      return `Dr. ${match[1].trim()}`;
+    if (match && match[1]) {
+      const doctorName = match[1].trim();
+      // Clean up the name and validate it
+      if (doctorName.length > 2 && doctorName.length < 50 && !doctorName.includes('(') && !doctorName.includes(')')) {
+        return doctorName.includes('Dr.') ? doctorName : `Dr. ${doctorName}`;
+      }
     }
   }
   
@@ -254,21 +265,51 @@ function generateSummary(pdfText) {
     return 'PDF-dokument importerat och analyserat.';
   }
   
-  // Extract first few sentences or key information
-  const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 10);
+  // Look for key medical information to create a better summary
+  const summaryPatterns = [
+    // Extract patient age and gender
+    /(\d+)-årig\s+(man|kvinna|person)/i,
+    // Extract main symptoms or complaints
+    /(?:symptom|besvär|klagomål|problem)[:\s]*([^.!?]+)/i,
+    // Extract diagnosis or findings
+    /(?:diagnos|fynd|bedömning)[:\s]*([^.!?]+)/i,
+    // Extract treatment or recommendations
+    /(?:behandling|rekommendation|åtgärd)[:\s]*([^.!?]+)/i
+  ];
   
-  if (sentences.length === 0) {
-    // If no sentences found, take first 200 characters
-    const preview = cleanText.substring(0, 200);
-    return preview + (cleanText.length > 200 ? '...' : '');
+  let summaryParts = [];
+  
+  // Try to extract structured information
+  for (const pattern of summaryPatterns) {
+    const match = cleanText.match(pattern);
+    if (match && match[1]) {
+      const info = match[1].trim();
+      if (info.length > 5 && info.length < 100) {
+        summaryParts.push(info);
+      }
+    }
   }
   
-  // Take first 2-3 meaningful sentences
-  const summarySentences = sentences.slice(0, 3).map(s => s.trim()).filter(s => s.length > 0);
+  // If we found structured information, use it
+  if (summaryParts.length > 0) {
+    return summaryParts.join('. ') + '.';
+  }
+  
+  // Fallback: Extract first few meaningful sentences
+  const sentences = cleanText.split(/[.!?]+/).filter(s => s.trim().length > 15);
+  
+  if (sentences.length === 0) {
+    // If no sentences found, take first 150 characters
+    const preview = cleanText.substring(0, 150);
+    return preview + (cleanText.length > 150 ? '...' : '');
+  }
+  
+  // Take first 2 meaningful sentences, but make sure they're not too long
+  const summarySentences = sentences.slice(0, 2).map(s => s.trim()).filter(s => s.length > 0 && s.length < 200);
   
   if (summarySentences.length === 0) {
-    const preview = cleanText.substring(0, 200);
-    return preview + (cleanText.length > 200 ? '...' : '');
+    const preview = cleanText.substring(0, 150);
+    return preview + (cleanText.length > 150 ? '...' : '');
   }
   
   return summarySentences.join('. ') + '.';
@@ -276,60 +317,76 @@ function generateSummary(pdfText) {
 
 function parseIntoSections(pdfText) {
   const sections = [];
-  const lines = pdfText.split('\n').map(line => line.trim()).filter(line => line.length > 0);
+  const cleanText = pdfText.replace(/\s+/g, ' ').trim();
   
-  let currentSection = null;
-  let currentContent = [];
+  // Swedish medical document section patterns
+  const sectionPatterns = [
+    { pattern: /(?:AKTUELL\s+ANAMNES|CURRENT\s+ANAMNESIS|ANAMNES)/i, title: 'Anamnes' },
+    { pattern: /(?:STATUS|FYND|FINDINGS|UNDERSÖKNING|EXAMINATION)/i, title: 'Status' },
+    { pattern: /(?:DIAGNOS|DIAGNOSIS|BEDÖMNING|ASSESSMENT)/i, title: 'Diagnos' },
+    { pattern: /(?:BEHANDLING|TREATMENT|REKOMMENDATION|RECOMMENDATION)/i, title: 'Behandling' },
+    { pattern: /(?:SLUTSATS|CONCLUSION|SAMMANFATTNING|SUMMARY)/i, title: 'Slutsats' },
+    { pattern: /(?:UPPFÖLJNING|FOLLOW-UP|KONTROLL)/i, title: 'Uppföljning' }
+  ];
   
-  for (const line of lines) {
-    // Check if line looks like a section header
-    if (isSectionHeader(line)) {
-      // Save previous section
-      if (currentSection && currentContent.length > 0) {
-        sections.push({
-          heading: currentSection,
-          content: currentContent.join('\n')
-        });
-      }
-      
-      // Start new section
-      currentSection = line;
-      currentContent = [];
-    } else {
-      // Add to current section content
-      currentContent.push(line);
+  let lastIndex = 0;
+  let foundSections = [];
+  
+  // Find all section boundaries
+  for (const section of sectionPatterns) {
+    const match = cleanText.search(section.pattern);
+    if (match > lastIndex) {
+      foundSections.push({
+        index: match,
+        title: section.title,
+        pattern: section.pattern
+      });
     }
   }
   
-  // Save last section
-  if (currentSection && currentContent.length > 0) {
-    sections.push({
-      heading: currentSection,
-      content: currentContent.join('\n')
-    });
+  // Sort sections by position
+  foundSections.sort((a, b) => a.index - b.index);
+  
+  // Create sections
+  for (let i = 0; i < foundSections.length; i++) {
+    const currentSection = foundSections[i];
+    const nextSection = foundSections[i + 1];
+    
+    const startIndex = currentSection.index;
+    const endIndex = nextSection ? nextSection.index : cleanText.length;
+    
+    let sectionContent = cleanText.substring(startIndex, endIndex).trim();
+    
+    // Clean up the content - remove the section header from the content
+    sectionContent = sectionContent.replace(currentSection.pattern, '').trim();
+    
+    if (sectionContent.length > 10) {
+      sections.push({
+        heading: currentSection.title,
+        content: sectionContent
+      });
+    }
   }
   
-  // If no sections found, try to create logical sections from the content
+  // If no structured sections found, try to create logical sections from the content
   if (sections.length === 0) {
-    const cleanText = pdfText.replace(/\s+/g, ' ').trim();
-    
-    // Try to split by common medical document patterns
-    const medicalPatterns = [
-      /(?:anamnes|history|bakgrund|background)/i,
-      /(?:status|fynd|findings|undersökning|examination)/i,
-      /(?:diagnos|diagnosis|bedömning|assessment)/i,
-      /(?:behandling|treatment|rekommendation|recommendation)/i
+    // Look for common Swedish medical terms and create sections
+    const medicalTerms = [
+      { term: /(?:besöksanteckning|visit note|journalanteckning)/i, title: 'Besöksanteckning' },
+      { term: /(?:patient|personnummer|födelsedatum)/i, title: 'Patientinformation' },
+      { term: /(?:symptom|besvär|klagomål)/i, title: 'Symptom' },
+      { term: /(?:undersökning|examination|status)/i, title: 'Undersökning' },
+      { term: /(?:behandling|medicin|recept)/i, title: 'Behandling' }
     ];
     
     let lastIndex = 0;
-    for (const pattern of medicalPatterns) {
-      const match = cleanText.search(pattern);
+    for (const term of medicalTerms) {
+      const match = cleanText.search(term.term);
       if (match > lastIndex && match < cleanText.length - 50) {
-        // Found a section
         const sectionText = cleanText.substring(lastIndex, match).trim();
         if (sectionText.length > 20) {
           sections.push({
-            heading: 'Innehåll',
+            heading: 'Information',
             content: sectionText
           });
         }
@@ -351,7 +408,7 @@ function parseIntoSections(pdfText) {
     // If still no sections, create a single content section
     if (sections.length === 0) {
       sections.push({
-        heading: 'Innehåll',
+        heading: 'Journalanteckning',
         content: cleanText
       });
     }
