@@ -102,6 +102,13 @@
                             <div class="file-categories" id="file-categories">
                                 <!-- File categories will be populated here -->
                             </div>
+                            <!-- Debug buttons -->
+                            <div style="margin-top: 16px; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
+                                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Debug Tools</h4>
+                                <button onclick="debugFileTransfer()" style="margin-right: 8px; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Check Files</button>
+                                <button onclick="clearAllFiles()" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Clear Files</button>
+                                <div id="debug-info" style="margin-top: 8px; font-size: 12px; color: #6b7280;"></div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -773,6 +780,52 @@
             localStorage.removeItem('uploadedFiles');
             updateFileDisplay();
             console.log('Cleared all files');
+        }
+
+        async function debugFileTransfer() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = 'Checking file transfer status...';
+            
+            try {
+                console.log('=== DEBUG FILE TRANSFER ===');
+                console.log('Current transfer ID:', currentTransferId);
+                console.log('Local uploaded files:', uploadedFiles);
+                
+                if (!currentTransferId) {
+                    debugInfo.innerHTML = '❌ No transfer ID found';
+                    return;
+                }
+                
+                // Check mobile app for files
+                const url = `https://mmdcaremobile.vercel.app/api/files?transferId=${currentTransferId}`;
+                console.log('Fetching from:', url);
+                
+                const response = await fetch(url);
+                console.log('Response status:', response.status);
+                
+                if (response.ok) {
+                    const data = await response.json();
+                    console.log('Mobile app response:', data);
+                    
+                    debugInfo.innerHTML = `
+                        ✅ Transfer ID: ${currentTransferId}<br>
+                        📁 Files on mobile: ${data.files.length}<br>
+                        📁 Files locally: ${uploadedFiles.length}<br>
+                        🔄 Status: ${data.status}
+                    `;
+                    
+                    if (data.files.length > 0) {
+                        debugInfo.innerHTML += `<br>📋 Files: ${data.files.map(f => f.name).join(', ')}`;
+                    }
+                } else {
+                    const errorText = await response.text();
+                    console.error('Error response:', errorText);
+                    debugInfo.innerHTML = `❌ Error: ${response.status} - ${errorText}`;
+                }
+            } catch (error) {
+                console.error('Debug error:', error);
+                debugInfo.innerHTML = `❌ Error: ${error.message}`;
+            }
         }
 
         function showLogoutOverlay() {
