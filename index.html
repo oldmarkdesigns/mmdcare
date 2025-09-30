@@ -199,7 +199,8 @@
         async function generateFreshQRCode() {
             try {
                 // Create a new transfer session
-                const response = await fetch('http://192.168.196.174:8000/transfers', {
+                const serverUrl = window.location.origin;
+                const response = await fetch(`${serverUrl}/transfers`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' }
                 });
@@ -210,7 +211,7 @@
                     console.log('Generated fresh transfer ID:', currentTransferId);
                     
                     // Update QR code with new transfer ID
-                    const qrUrl = `https://quickchart.io/qr?text=http://192.168.196.174:8000/upload?transferId=${currentTransferId}&size=200`;
+                    const qrUrl = `https://quickchart.io/qr?text=${serverUrl}/upload?transferId=${currentTransferId}&size=200`;
                     document.getElementById('qr-code').src = qrUrl;
                     
                     // Start monitoring for this new transfer
@@ -231,7 +232,8 @@
                 eventSource.close();
             }
             
-            eventSource = new EventSource(`http://192.168.196.174:8000/events/${currentTransferId}`);
+            const serverUrl = window.location.origin;
+            eventSource = new EventSource(`${serverUrl}/events/${currentTransferId}`);
             
             eventSource.onmessage = function(event) {
                 const data = JSON.parse(event.data);

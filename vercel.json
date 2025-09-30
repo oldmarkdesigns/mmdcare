@@ -1,0 +1,18 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "transfer-server.js",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "transfer-server.js"
+    }
+  ],
+  "env": {
+    "NODE_ENV": "production"
+  }
+}

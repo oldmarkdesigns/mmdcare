@@ -45,11 +45,17 @@ jspm_packages/
 
 # dotenv environment variables file
 .env
+.env.test
+.env.production
+
+# parcel-bundler cache
+.cache
+.parcel-cache
 
 # next.js build output
 .next
 
-# Nuxt.js build output
+# nuxt.js build output
 .nuxt
 
 # vuepress build output

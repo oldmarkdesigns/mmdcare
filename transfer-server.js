@@ -660,7 +660,10 @@ setInterval(() => {
 
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, '0.0.0.0', () => {
-  console.log(`MMDConnect Transfer Server running on http://localhost:${PORT}`);
-  console.log(`Network access: http://192.168.35.169:${PORT}`);
-  console.log(`Test page: http://192.168.35.169:${PORT}/receive`);
+  console.log(`MMDConnect Transfer Server running on port ${PORT}`);
+  console.log(`Environment: ${process.env.NODE_ENV || 'development'}`);
+  if (process.env.NODE_ENV !== 'production') {
+    console.log(`Local access: http://localhost:${PORT}`);
+    console.log(`Test page: http://localhost:${PORT}/receive`);
+  }
 });
