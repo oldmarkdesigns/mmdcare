@@ -173,9 +173,6 @@
             </div>
                 <p style="font-size: 12px; color: #999; margin-top: 8px; font-style: italic;">Scan to share health documents</p>
                 <p id="transfer-status" style="font-size: 12px; color: #666; margin-top: 4px;">Waiting for file uploads...</p>
-                <button id="test-redirect-btn" onclick="redirectToOverview()" style="margin-top: 10px; padding: 6px 12px; background: #059669; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Test: Go to Dashboard</button>
-                <button id="test-polling-btn" onclick="testPolling()" style="margin-top: 5px; padding: 6px 12px; background: #1d4ed8; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Test: Check Storage</button>
-                <button id="test-completion-btn" onclick="testCompletion()" style="margin-top: 5px; padding: 6px 12px; background: #8b5cf6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Test: Check Completion</button>
             </div>
 
             <!-- BankID Section -->
@@ -296,53 +293,6 @@
             poll(); // Initial poll
         }
 
-        // Test function to manually check mobile app
-        async function testPolling() {
-            if (!currentTransferId) {
-                alert('No transfer ID available');
-                return;
-            }
-            
-            try {
-                console.log('Manual test - checking mobile app for transfer:', currentTransferId);
-                const res = await fetch(`/api/complete?transferId=${currentTransferId}`, {
-                    method: 'GET',
-                    cache: 'no-store'
-                });
-                
-                console.log('Manual test - mobile app response status:', res.status);
-                
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log('Manual test - mobile app response:', data);
-                    alert(`Transfer ${currentTransferId} status: ${data.status || 'unknown'}`);
-                } else {
-                    alert(`Mobile app fetch failed: ${res.status}`);
-                }
-            } catch (e) {
-                console.error('Manual test failed:', e);
-                alert('Manual test failed: ' + e.message);
-            }
-        }
-
-        // Test function to check completion status specifically
-        async function testCompletion() {
-            if (!currentTransferId) {
-                alert('No transfer ID available');
-                return;
-            }
-            
-            try {
-                console.log('Testing completion status for transfer:', currentTransferId);
-                const response = await fetch(`/api/complete?transferId=${currentTransferId}`);
-                const data = await response.json();
-                console.log('Completion test result:', data);
-                alert(`Completion Status: ${data.status}`);
-            } catch (error) {
-                console.error('Completion test error:', error);
-                alert('Completion test failed: ' + error.message);
-            }
-        }
 
         function redirectToOverview() {
             // Store the current transfer ID for the dashboard to use
@@ -351,12 +301,6 @@
             window.location.href = 'dashboard.html';
         }
 
-        // Debug function to reset login state (remove this in production)
-        function resetLoginState() {
-            localStorage.removeItem('hasSeenLogin');
-            console.log('Login state reset. Reload the page to see login screen.');
-            alert('Login state reset! Reload the page to see the login screen.');
-        }
 
         // Clean up on page unload
         window.addEventListener('beforeunload', function() {

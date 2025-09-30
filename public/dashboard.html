@@ -102,14 +102,6 @@
                             <div class="file-categories" id="file-categories">
                                 <!-- File categories will be populated here -->
                             </div>
-                            <!-- Debug buttons -->
-                            <div style="margin-top: 16px; padding: 16px; background: #f3f4f6; border-radius: 8px; border: 1px solid #e5e7eb;">
-                                <h4 style="margin: 0 0 12px 0; font-size: 14px; color: #374151;">Debug Tools</h4>
-                                <button onclick="debugFileTransfer()" style="margin-right: 8px; padding: 8px 12px; background: #3b82f6; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Check Files</button>
-                                <button onclick="debugMobileState()" style="margin-right: 8px; padding: 8px 12px; background: #10b981; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Debug Mobile</button>
-                                <button onclick="clearAllFiles()" style="padding: 8px 12px; background: #ef4444; color: white; border: none; border-radius: 4px; cursor: pointer; font-size: 12px;">Clear Files</button>
-                                <div id="debug-info" style="margin-top: 8px; font-size: 12px; color: #6b7280;"></div>
-                            </div>
                         </div>
                     </div>
                 </div>
@@ -820,110 +812,6 @@
             console.log('Cleared all files');
         }
 
-        async function debugFileTransfer() {
-            const debugInfo = document.getElementById('debug-info');
-            debugInfo.innerHTML = 'Checking file transfer status...';
-            
-            try {
-                console.log('=== DEBUG FILE TRANSFER ===');
-                console.log('Current transfer ID:', currentTransferId);
-                console.log('Local uploaded files:', uploadedFiles);
-                
-                if (!currentTransferId) {
-                    debugInfo.innerHTML = '❌ No transfer ID found';
-                    return;
-                }
-                
-                // Test API endpoint availability first
-                console.log('Testing API endpoint availability...');
-                const testResponse = await fetch('/api/debug');
-                console.log('API test response status:', testResponse.status);
-                
-                // Check mobile app for files
-                const url = `/api/files?transferId=${currentTransferId}`;
-                console.log('Fetching from:', url);
-                
-                const response = await fetch(url);
-                console.log('Response status:', response.status);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Mobile app response:', data);
-                    
-                    debugInfo.innerHTML = `
-                        ✅ Transfer ID: ${currentTransferId}<br>
-                        📁 Files on mobile: ${data.files.length}<br>
-                        📁 Files locally: ${uploadedFiles.length}<br>
-                        🔄 Status: ${data.status}<br>
-                        🧪 API Test: ${testResponse.status}
-                    `;
-                    
-                    if (data.files.length > 0) {
-                        debugInfo.innerHTML += `<br>📋 Files: ${data.files.map(f => f.name).join(', ')}`;
-                    }
-                } else {
-                    const errorText = await response.text();
-                    console.error('Error response:', errorText);
-                    debugInfo.innerHTML = `❌ Error: ${response.status} - ${errorText}`;
-                }
-            } catch (error) {
-                console.error('Debug error:', error);
-                debugInfo.innerHTML = `❌ Error: ${error.message}`;
-            }
-        }
-
-        async function debugMobileState() {
-            const debugInfo = document.getElementById('debug-info');
-            debugInfo.innerHTML = 'Checking mobile app global state...';
-            
-            try {
-                console.log('=== DEBUG MOBILE STATE ===');
-                
-                // Check mobile app's global state
-                const url = `/api/debug?transferId=${currentTransferId}`;
-                console.log('Fetching debug info from:', url);
-                
-                const response = await fetch(url);
-                console.log('Debug response status:', response.status);
-                
-                if (response.ok) {
-                    const data = await response.json();
-                    console.log('Mobile app debug response:', data);
-                    
-                    let debugHtml = `
-                        🔍 Mobile App Debug Info:<br>
-                        📊 Global State Size: ${data.globalStateSize}<br>
-                        📁 Storage file exists: ${data.storageFileExists || 'N/A'}<br>
-                        🧠 Memory fallback size: ${data.memoryFallbackSize || 0}<br>
-                        ⏰ Timestamp: ${data.timestamp || 'N/A'}<br>
-                    `;
-                    
-                    if (data.storageFileContent) {
-                        debugHtml += `📄 Storage content: <pre style="font-size: 10px; max-height: 100px; overflow: auto; background: #f5f5f5; padding: 5px;">${data.storageFileContent}</pre>`;
-                    }
-                    
-                    if (data.memoryFallback && Object.keys(data.memoryFallback).length > 0) {
-                        debugHtml += `🧠 Memory fallback: <pre style="font-size: 10px; max-height: 100px; overflow: auto; background: #e8f4fd; padding: 5px;">${JSON.stringify(data.memoryFallback, null, 2)}</pre>`;
-                    }
-                    
-                    if (data.allTransfers && data.allTransfers.length > 0) {
-                        debugHtml += `🆔 All Transfer IDs: ${data.allTransfers.map(([id, transfer]) => id).join(', ')}<br>`;
-                        debugHtml += `📁 Current Transfer: <pre style="font-size: 10px; max-height: 100px; overflow: auto; background: #f5f5f5; padding: 5px;">${data.transfer ? JSON.stringify(data.transfer, null, 2) : 'Not found'}</pre>`;
-                    } else {
-                        debugHtml += `📋 No transfers found`;
-                    }
-                    
-                    debugInfo.innerHTML = debugHtml;
-                } else {
-                    const errorText = await response.text();
-                    console.error('Debug error response:', errorText);
-                    debugInfo.innerHTML = `❌ Debug Error: ${response.status} - ${errorText}`;
-                }
-            } catch (error) {
-                console.error('Debug mobile state error:', error);
-                debugInfo.innerHTML = `❌ Debug Error: ${error.message}`;
-            }
-        }
 
         function showLogoutOverlay() {
             const overlay = document.getElementById('logout-overlay');
