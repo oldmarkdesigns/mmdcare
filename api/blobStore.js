@@ -25,6 +25,7 @@ export async function saveTransferToBlob(transferId, transfer) {
     contentType: 'application/json',
     access: 'public',
     cacheControlMaxAge: 0,
+    allowOverwrite: true,
   });
 }
 
