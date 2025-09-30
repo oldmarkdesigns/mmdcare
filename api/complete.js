@@ -10,6 +10,12 @@ export default function handler(req, res) {
     return;
   }
 
+  // Initialize global storage if it doesn't exist
+  if (!global.__mmd_transfers) {
+    global.__mmd_transfers = new Map();
+    console.log('Initialized global.__mmd_transfers');
+  }
+
   if (req.method === 'GET') {
     const { transferId } = req.query;
     console.log('=== LOCAL COMPLETION GET REQUEST ===');

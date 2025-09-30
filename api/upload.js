@@ -6,6 +6,7 @@ import path from 'path';
 // Global storage for transfers (in-memory for local development)
 if (!global.__mmd_transfers) {
   global.__mmd_transfers = new Map();
+  console.log('Initialized global.__mmd_transfers in upload.js');
 }
 
 export const config = {
