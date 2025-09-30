@@ -246,44 +246,36 @@
             
             const poll = async () => {
                 try {
-                    console.log('Polling mobile app for completion...');
                     // Check the mobile app's complete endpoint directly
                     const res = await fetch(`https://mmdcaremobile.vercel.app/api/complete?transferId=${currentTransferId}`, {
                         method: 'GET',
                         cache: 'no-store'
                     });
                     
-                    console.log('Mobile app response status:', res.status);
-                    
                     if (res.ok) {
                         const data = await res.json();
-                        console.log('Mobile app response:', data);
                         
                         if (data.status === 'closed' && !uploadDetected) {
                             uploadDetected = true;
                             clearInterval(pollIntervalId);
                             pollIntervalId = null;
                             
-                            console.log('Upload detected! Redirecting to dashboard...');
+                            console.log('✅ Upload detected! Redirecting to dashboard...');
                             document.getElementById('transfer-status').textContent = '✅ Upload completed! Redirecting to dashboard...';
                             document.getElementById('transfer-status').style.color = '#059669';
                             
                             setTimeout(() => {
                                 redirectToOverview();
                             }, 1500);
-                        } else {
-                            console.log('Transfer not completed yet, continuing to poll...');
                         }
-                    } else {
-                        console.log('Mobile app not responding yet, continuing to poll...');
                     }
                 } catch (e) {
-                    console.log('Polling failed (this is normal initially):', e.message);
+                    // Silent polling - only log errors if they persist
                 }
             };
             
-            // Poll every 2 seconds for faster response
-            pollIntervalId = setInterval(poll, 2000);
+            // Poll every 5 seconds to reduce console spam
+            pollIntervalId = setInterval(poll, 5000);
             poll(); // Initial poll
         }
 
