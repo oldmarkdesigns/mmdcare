@@ -270,6 +270,19 @@
             });
             
             console.log(`✓ Created ${cardsCreated} dynamic cards out of ${rawData.length} items`);
+            
+            // Final check - log the container's computed styles
+            const containerStyles = window.getComputedStyle(metricsContainer);
+            console.log('Container styles:', {
+                display: containerStyles.display,
+                gridTemplateColumns: containerStyles.gridTemplateColumns,
+                gap: containerStyles.gap,
+                width: containerStyles.width,
+                height: containerStyles.height
+            });
+            
+            // Log the actual DOM structure
+            console.log('Container HTML:', metricsContainer.innerHTML.substring(0, 200) + '...');
         }
         
         function createDynamicCard(title, value) {
@@ -317,6 +330,13 @@
             metricsContainer.appendChild(card);
             console.log(`✓ Card created and appended for ${title}: ${value} ${unit}`);
             console.log(`Container now has ${metricsContainer.children.length} cards`);
+            
+            // Force a reflow to ensure the card is visible
+            card.offsetHeight;
+            
+            // Check if the card is actually visible
+            const rect = card.getBoundingClientRect();
+            console.log(`Card visibility check: width=${rect.width}, height=${rect.height}, visible=${rect.width > 0 && rect.height > 0}`);
         }
         
         function showEmptyState() {

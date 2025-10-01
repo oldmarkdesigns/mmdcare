@@ -1357,6 +1357,15 @@ body {
     width: 100%;
 }
 
+/* Dynamic Metrics Container */
+#dynamic-metrics-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-bottom: 32px;
+    width: 100%;
+}
+
 .metric-card {
     background: #fcfcfc;
     border-radius: 8px;
