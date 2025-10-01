@@ -271,6 +271,16 @@
             
             console.log(`✓ Created ${cardsCreated} dynamic cards out of ${rawData.length} items`);
             
+            // Add a test card to verify CSS is working
+            if (cardsCreated === 0) {
+                console.log('No cards created, adding test card');
+                const testCard = document.createElement('div');
+                testCard.className = 'metric-card card-animate';
+                testCard.style.border = '2px solid red';
+                testCard.innerHTML = '<h3>TEST CARD</h3><div>Test Value</div>';
+                metricsContainer.appendChild(testCard);
+            }
+            
             // Final check - log the container's computed styles
             const containerStyles = window.getComputedStyle(metricsContainer);
             console.log('Container styles:', {
@@ -320,12 +330,37 @@
                 statusColor = '#10b981'; // Green
             }
             
-            card.innerHTML = `
-                <h3 class="metric-title">${title}</h3>
-                <div class="metric-value">${value || '-'}</div>
-                <div class="metric-unit">${unit || '-'}</div>
-                <div class="metric-status" style="color: ${statusColor}; background: transparent;">${status}</div>
-            `;
+            // Create elements manually instead of using innerHTML
+            const titleEl = document.createElement('h3');
+            titleEl.className = 'metric-title';
+            titleEl.textContent = title;
+            
+            const valueEl = document.createElement('div');
+            valueEl.className = 'metric-value';
+            valueEl.textContent = value || '-';
+            
+            const unitEl = document.createElement('div');
+            unitEl.className = 'metric-unit';
+            unitEl.textContent = unit || '-';
+            
+            const statusEl = document.createElement('div');
+            statusEl.className = 'metric-status';
+            statusEl.textContent = status;
+            statusEl.style.color = statusColor;
+            statusEl.style.background = 'transparent';
+            
+            // Append elements to card
+            card.appendChild(titleEl);
+            card.appendChild(valueEl);
+            card.appendChild(unitEl);
+            card.appendChild(statusEl);
+            
+            console.log('Card content created manually:', {
+                title: titleEl.textContent,
+                value: valueEl.textContent,
+                unit: unitEl.textContent,
+                status: statusEl.textContent
+            });
             
             metricsContainer.appendChild(card);
             console.log(`✓ Card created and appended for ${title}: ${value} ${unit}`);
