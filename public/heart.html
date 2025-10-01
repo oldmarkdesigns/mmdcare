@@ -226,12 +226,8 @@
                 showEmptyState();
             }
             
-            // Initialize charts with Excel data (only if heartData exists)
-            if (excelData.heartData) {
-                initializeChartsWithData(excelData.heartData);
-            } else {
-                console.log('No heartData available for charts');
-            }
+            // Skip chart initialization since we removed all static charts
+            console.log('Skipping chart initialization - no static charts remain');
         }
         
         function createDynamicCardsFromExcelData(rawData, dynamicData) {
@@ -241,8 +237,11 @@
             
             // Clear existing cards
             const metricsContainer = document.getElementById('dynamic-metrics-container');
+            console.log('Metrics container found:', !!metricsContainer);
+            
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
+                console.log('Cleared existing cards');
             } else {
                 console.error('Dynamic metrics container not found');
                 return;
@@ -256,16 +255,21 @@
                 return;
             }
             
+            console.log(`Processing ${rawData.length} raw data items`);
+            
             // Create a card for each item in rawData
+            let cardsCreated = 0;
             rawData.forEach((item, index) => {
                 if (item && typeof item === 'string' && item.trim() !== '') {
-                    console.log(`Creating card for: ${item}`);
+                    console.log(`Creating card ${index + 1}/${rawData.length}: ${item}`);
                     const value = dynamicData && dynamicData[item] ? dynamicData[item] : null;
+                    console.log(`Value for ${item}:`, value);
                     createDynamicCard(item, value);
+                    cardsCreated++;
                 }
             });
             
-            console.log(`✓ Created ${rawData.length} dynamic cards`);
+            console.log(`✓ Created ${cardsCreated} dynamic cards out of ${rawData.length} items`);
         }
         
         function createDynamicCard(title, value) {
@@ -311,7 +315,8 @@
             `;
             
             metricsContainer.appendChild(card);
-            console.log(`✓ Card created for ${title}: ${value} ${unit}`);
+            console.log(`✓ Card created and appended for ${title}: ${value} ${unit}`);
+            console.log(`Container now has ${metricsContainer.children.length} cards`);
         }
         
         function showEmptyState() {
