@@ -1358,7 +1358,7 @@ body {
 }
 
 .metric-card {
-    background: #fcfcfc;
+    background: transparent;
     border-radius: 8px;
     padding: 16px 12px;
     box-shadow: none;
@@ -1402,6 +1402,7 @@ body {
     border-radius: 12px;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    background: transparent;
 }
 
 .metric-status.good {

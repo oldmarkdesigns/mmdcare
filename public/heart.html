@@ -276,14 +276,97 @@
             console.log('=== UPDATING UI WITH EXCEL DATA ===');
             console.log('Heart data received:', heartData);
             
-            // Update metric cards with dynamic titles and values
-            updateMetricCard('Hjärtfrekvens', heartData.heartRate, 'bpm', getHeartRateStatus(heartData.heartRate));
-            updateMetricCard('Systoliskt blodtryck', heartData.systolicBP, 'mmHg', getBPStatus(heartData.systolicBP, 'systolic'));
-            updateMetricCard('Diastoliskt blodtryck', heartData.diastolicBP, 'mmHg', getBPStatus(heartData.diastolicBP, 'diastolic'));
-            updateMetricCard('Kolesterol (LDL)', heartData.cholesterolLDL, 'mmol/L', getCholesterolStatus(heartData.cholesterolLDL));
+            // Create dynamic cards based on Excel data
+            createDynamicCardsFromExcelData(heartData);
             
             // Initialize charts with Excel data
             initializeChartsWithData(heartData);
+        }
+        
+        function createDynamicCardsFromExcelData(heartData) {
+            console.log('=== CREATING DYNAMIC CARDS FROM EXCEL DATA ===');
+            
+            // Clear existing cards
+            const metricsContainer = document.querySelector('.metrics-grid');
+            if (metricsContainer) {
+                metricsContainer.innerHTML = '';
+            }
+            
+            // Create cards for each health metric found in Excel
+            const healthMetrics = [
+                {
+                    key: 'heartRate',
+                    title: 'Hjärtfrekvens',
+                    unit: 'bpm',
+                    value: heartData.heartRate,
+                    getStatus: (val) => getHeartRateStatus(val)
+                },
+                {
+                    key: 'systolicBP',
+                    title: 'Systoliskt blodtryck',
+                    unit: 'mmHg',
+                    value: heartData.systolicBP,
+                    getStatus: (val) => getBPStatus(val, 'systolic')
+                },
+                {
+                    key: 'diastolicBP',
+                    title: 'Diastoliskt blodtryck',
+                    unit: 'mmHg',
+                    value: heartData.diastolicBP,
+                    getStatus: (val) => getBPStatus(val, 'diastolic')
+                },
+                {
+                    key: 'cholesterolLDL',
+                    title: 'Kolesterol (LDL)',
+                    unit: 'mmol/L',
+                    value: heartData.cholesterolLDL,
+                    getStatus: (val) => getCholesterolStatus(val)
+                }
+            ];
+            
+            // Only create cards for metrics that have data
+            healthMetrics.forEach(metric => {
+                if (metric.value !== null && metric.value !== undefined) {
+                    console.log(`Creating card for ${metric.title}: ${metric.value} ${metric.unit}`);
+                    createDynamicCard(metric.title, metric.value, metric.unit, metric.getStatus(metric.value));
+                } else {
+                    console.log(`No data for ${metric.title}, skipping card`);
+                }
+            });
+        }
+        
+        function createDynamicCard(title, value, unit, status) {
+            console.log(`Creating dynamic card: ${title} = ${value} ${unit} (${status})`);
+            
+            const metricsContainer = document.querySelector('.metrics-grid');
+            if (!metricsContainer) {
+                console.error('Metrics container not found');
+                return;
+            }
+            
+            // Create card element
+            const card = document.createElement('div');
+            card.className = 'metric-card card-animate';
+            
+            // Determine status color
+            let statusColor = '#9ca3af'; // Default gray
+            if (status === 'Normal') {
+                statusColor = '#10b981'; // Green
+            } else if (status === 'Högt') {
+                statusColor = '#ef4444'; // Red
+            } else if (status === 'Lågt') {
+                statusColor = '#3b82f6'; // Blue
+            }
+            
+            card.innerHTML = `
+                <h3 class="metric-title">${title}</h3>
+                <div class="metric-value">${value}</div>
+                <div class="metric-unit">${unit}</div>
+                <div class="metric-status" style="color: ${statusColor};">${status}</div>
+            `;
+            
+            metricsContainer.appendChild(card);
+            console.log(`✓ Card created for ${title}`);
         }
         
         function updateMetricCard(title, value, unit, status) {
