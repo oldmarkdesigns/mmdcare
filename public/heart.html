@@ -241,12 +241,12 @@
             
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
-                // FORCE the container to be visible
+                // FORCE the container to be visible with compact layout
                 metricsContainer.style.cssText = `
                     display: grid !important;
-                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
-                    gap: 16px !important;
-                    margin-bottom: 32px !important;
+                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
+                    gap: 12px !important;
+                    margin-bottom: 20px !important;
                     width: 100% !important;
                     visibility: visible !important;
                     opacity: 1 !important;
@@ -352,15 +352,17 @@
             const card = document.createElement('div');
             card.className = 'metric-card card-animate';
             
-            // FORCE the card to be visible with inline styles
+            // FORCE the card to be visible with compact inline styles
             card.style.cssText = `
                 background: #fcfcfc !important;
-                border: 2px solid #333 !important;
-                border-radius: 8px !important;
-                padding: 16px !important;
-                margin: 8px !important;
-                min-height: 120px !important;
-                display: block !important;
+                border: 1px solid #e5e7eb !important;
+                border-radius: 6px !important;
+                padding: 12px 8px !important;
+                margin: 0 !important;
+                min-height: 80px !important;
+                display: flex !important;
+                flex-direction: column !important;
+                justify-content: center !important;
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: relative !important;
@@ -380,37 +382,35 @@
             else if (title.includes('(mm)')) unit = 'mm';
             else if (title.includes('(x10(12)/L)')) unit = 'x10(12)/L';
             
-            // Determine status based on value - all data points should have values
+            // Determine status based on value
             let status = 'Normal';
             let statusColor = '#10b981'; // Green
             
             if (value === null || value === undefined) {
-                // If no value found, try to find any value for this test
-                console.log(`No value found for ${title}, trying to find any value...`);
-                status = 'Data hittad';
-                statusColor = '#3b82f6'; // Blue
+                status = 'Ingen data tillgänglig';
+                statusColor = '#9ca3af'; // Gray
             }
             
-            // Create elements manually with FORCED visibility
+            // Create elements manually with compact styling
             const titleEl = document.createElement('h3');
             titleEl.className = 'metric-title';
             titleEl.textContent = title;
-            titleEl.style.cssText = 'font-size: 12px !important; font-weight: 500 !important; color: #666 !important; margin: 0 0 6px 0 !important; display: block !important; visibility: visible !important;';
+            titleEl.style.cssText = 'font-size: 11px !important; font-weight: 500 !important; color: #666 !important; margin: 0 0 4px 0 !important; display: block !important; visibility: visible !important; line-height: 1.2 !important;';
             
             const valueEl = document.createElement('div');
             valueEl.className = 'metric-value';
             valueEl.textContent = value || '-';
-            valueEl.style.cssText = 'font-size: 28px !important; font-weight: 700 !important; color: #333 !important; margin: 0 0 2px 0 !important; display: block !important; visibility: visible !important;';
+            valueEl.style.cssText = 'font-size: 20px !important; font-weight: 700 !important; color: #333 !important; margin: 0 0 2px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
             
             const unitEl = document.createElement('div');
             unitEl.className = 'metric-unit';
             unitEl.textContent = unit || '-';
-            unitEl.style.cssText = 'font-size: 12px !important; color: #999 !important; margin: 0 0 8px 0 !important; display: block !important; visibility: visible !important;';
+            unitEl.style.cssText = 'font-size: 10px !important; color: #999 !important; margin: 0 0 4px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
             
             const statusEl = document.createElement('div');
             statusEl.className = 'metric-status';
             statusEl.textContent = status;
-            statusEl.style.cssText = `font-size: 12px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important;`;
+            statusEl.style.cssText = `font-size: 10px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;`;
             
             // Append elements to card
             card.appendChild(titleEl);

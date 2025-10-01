@@ -1368,12 +1368,15 @@ body {
 
 .metric-card {
     background: #fcfcfc;
-    border-radius: 8px;
-    padding: 16px 12px;
+    border-radius: 6px;
+    padding: 12px 8px;
     box-shadow: none;
     border: none;
     text-align: center;
-    transition: transform 0.2s ease;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
 }
 
 .metric-card:hover {
