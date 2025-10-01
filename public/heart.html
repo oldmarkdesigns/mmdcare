@@ -196,6 +196,8 @@
         
         // Load Excel data on page load
         document.addEventListener('DOMContentLoaded', async function() {
+            console.log('=== HEART PAGE LOADED ===');
+            console.log('Version: 2.0 - Dynamic Cards System');
             await loadExcelData();
         });
         
@@ -245,8 +247,8 @@
                 console.log('Loading Excel data from file:', excelFile.name);
                 console.log('API URL:', `/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}`);
                 
-                // Fetch Excel data from API
-                const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}`);
+                // Fetch Excel data from API with cache busting
+                const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}&t=${Date.now()}`);
                 
                 console.log('API response status:', response.status);
                 console.log('API response headers:', Object.fromEntries(response.headers.entries()));
@@ -294,11 +296,19 @@
                 metricsContainer.innerHTML = '';
             }
             
+            // Check if rawData exists and is an array
+            if (!rawData || !Array.isArray(rawData)) {
+                console.error('rawData is not available or not an array:', rawData);
+                console.log('Falling back to empty state');
+                initializeWithMockData();
+                return;
+            }
+            
             // Create a card for each item in rawData
             rawData.forEach((item, index) => {
                 if (item && typeof item === 'string' && item.trim() !== '') {
                     console.log(`Creating card for: ${item}`);
-                    const value = dynamicData[item] || null;
+                    const value = dynamicData && dynamicData[item] ? dynamicData[item] : null;
                     createDynamicCard(item, value);
                 }
             });
