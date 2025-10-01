@@ -89,28 +89,28 @@
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Hjärtfrekvens</h3>
                     <div class="metric-value">-</div>
-                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-unit">bpm</div>
                     <div class="metric-status">-</div>
                 </div>
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Systoliskt blodtryck</h3>
                     <div class="metric-value">-</div>
-                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-unit">mmHg</div>
                     <div class="metric-status">-</div>
                 </div>
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Diastoliskt blodtryck</h3>
                     <div class="metric-value">-</div>
-                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-unit">mmHg</div>
                     <div class="metric-status">-</div>
                 </div>
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Kolesterol (LDL)</h3>
                     <div class="metric-value">-</div>
-                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-unit">mmol/L</div>
                     <div class="metric-status">-</div>
                 </div>
             </div>
@@ -200,12 +200,14 @@
         });
         
         async function loadExcelData() {
+            console.log('=== LOADING EXCEL DATA ===');
             try {
                 // Get current transfer ID from the dashboard
                 const transferId = localStorage.getItem('currentTransferId');
+                console.log('Transfer ID from localStorage:', transferId);
                 
                 if (!transferId) {
-                    console.log('No transfer ID found, using mock data');
+                    console.log('No transfer ID found, showing empty state');
                     initializeWithMockData();
                     return;
                 }

@@ -21,6 +21,8 @@ export default async function handler(req, res) {
     console.log('=== EXCEL CONTENT GET REQUEST ===');
     console.log('Transfer ID:', transferId);
     console.log('Filename:', filename);
+    console.log('Request URL:', req.url);
+    console.log('Request headers:', req.headers);
     
     if (!transferId || !filename) {
       return res.status(400).json({ error: 'Missing transferId or filename' });
