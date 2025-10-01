@@ -84,35 +84,9 @@
                 </button>
             </div>
 
-            <!-- Health Metrics Cards -->
-            <div class="metrics-grid">
-                <div class="metric-card card-animate">
-                    <h3 class="metric-title">Hjärtfrekvens</h3>
-                    <div class="metric-value">-</div>
-                    <div class="metric-unit">bpm</div>
-                    <div class="metric-status">-</div>
-                </div>
-
-                <div class="metric-card card-animate">
-                    <h3 class="metric-title">Systoliskt blodtryck</h3>
-                    <div class="metric-value">-</div>
-                    <div class="metric-unit">mmHg</div>
-                    <div class="metric-status">-</div>
-                </div>
-
-                <div class="metric-card card-animate">
-                    <h3 class="metric-title">Diastoliskt blodtryck</h3>
-                    <div class="metric-value">-</div>
-                    <div class="metric-unit">mmHg</div>
-                    <div class="metric-status">-</div>
-                </div>
-
-                <div class="metric-card card-animate">
-                    <h3 class="metric-title">Kolesterol (LDL)</h3>
-                    <div class="metric-value">-</div>
-                    <div class="metric-unit">mmol/L</div>
-                    <div class="metric-status">-</div>
-                </div>
+            <!-- Dynamic Health Metrics Cards -->
+            <div class="metrics-grid" id="dynamic-metrics-container">
+                <!-- Cards will be dynamically created here based on Excel data -->
             </div>
 
             <!-- Health Data Charts -->
@@ -210,7 +184,7 @@
                 
                 if (!transferId) {
                     console.log('No transfer ID found, showing empty state');
-                    initializeWithMockData();
+                    showEmptyState();
                     return;
                 }
                 
@@ -221,7 +195,7 @@
                 
                 if (!filesResponse.ok) {
                     console.log('Failed to fetch files from transfer, using mock data');
-                    initializeWithMockData();
+                    showEmptyState();
                     return;
                 }
                 
@@ -238,7 +212,7 @@
                 
                 if (excelFiles.length === 0) {
                     console.log('No Excel files found in transfer, using mock data');
-                    initializeWithMockData();
+                    showEmptyState();
                     return;
                 }
                 
@@ -257,7 +231,7 @@
                     console.error('Failed to fetch Excel data:', response.status);
                     const errorText = await response.text();
                     console.error('Error details:', errorText);
-                    initializeWithMockData();
+                    showEmptyState();
                     return;
                 }
                 
@@ -291,16 +265,19 @@
             console.log('Dynamic data:', dynamicData);
             
             // Clear existing cards
-            const metricsContainer = document.querySelector('.metrics-grid');
+            const metricsContainer = document.getElementById('dynamic-metrics-container');
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
+            } else {
+                console.error('Dynamic metrics container not found');
+                return;
             }
             
             // Check if rawData exists and is an array
             if (!rawData || !Array.isArray(rawData)) {
                 console.error('rawData is not available or not an array:', rawData);
-                console.log('Falling back to empty state');
-                initializeWithMockData();
+                console.log('Showing empty state - no Excel data available');
+                showEmptyState();
                 return;
             }
             
@@ -312,14 +289,16 @@
                     createDynamicCard(item, value);
                 }
             });
+            
+            console.log(`✓ Created ${rawData.length} dynamic cards`);
         }
         
         function createDynamicCard(title, value) {
             console.log(`Creating dynamic card: ${title} = ${value}`);
             
-            const metricsContainer = document.querySelector('.metrics-grid');
+            const metricsContainer = document.getElementById('dynamic-metrics-container');
             if (!metricsContainer) {
-                console.error('Metrics container not found');
+                console.error('Dynamic metrics container not found');
                 return;
             }
             
@@ -360,83 +339,26 @@
             console.log(`✓ Card created for ${title}: ${value} ${unit}`);
         }
         
-        function updateMetricCard(title, value, unit, status) {
-            const cards = document.querySelectorAll('.metric-card');
-            for (const card of cards) {
-                const cardTitle = card.querySelector('.metric-title');
-                if (cardTitle && cardTitle.textContent === title) {
-                    const valueElement = card.querySelector('.metric-value');
-                    const unitElement = card.querySelector('.metric-unit');
-                    const statusElement = card.querySelector('.metric-status');
-                    
-                    if (value === null || value === undefined) {
-                        valueElement.textContent = '-';
-                        valueElement.style.fontSize = '2rem';
-                        valueElement.style.color = '#9ca3af';
-                        unitElement.textContent = 'Ingen data tillänglig';
-                        unitElement.style.fontSize = '0.9rem';
-                        unitElement.style.color = '#6b7280';
-                        statusElement.textContent = '-';
-                        statusElement.className = 'metric-status';
-                        statusElement.style.color = '#9ca3af';
-                    } else {
-                        valueElement.textContent = value;
-                        valueElement.style.fontSize = '';
-                        valueElement.style.color = '';
-                        unitElement.textContent = unit;
-                        unitElement.style.fontSize = '';
-                        unitElement.style.color = '';
-                        statusElement.textContent = status.text;
-                        statusElement.className = `metric-status ${status.class}`;
-                        statusElement.style.background = 'transparent';
-                        
-                        // Set specific colors based on status
-                        if (status.text === 'Normal' || status.text === 'Optimalt') {
-                            statusElement.style.color = '#10b981'; // Green
-                        } else if (status.text === 'Högt' || status.text === 'Avvikande') {
-                            statusElement.style.color = '#ef4444'; // Red
-                        } else if (status.text === 'Lågt' || status.text === 'Något låg') {
-                            statusElement.style.color = '#3b82f6'; // Blue
-                        } else {
-                            statusElement.style.color = '#9ca3af'; // Gray
-                        }
-                    }
-                    break;
-                }
+        function showEmptyState() {
+            console.log('=== SHOWING EMPTY STATE ===');
+            const metricsContainer = document.getElementById('dynamic-metrics-container');
+            if (metricsContainer) {
+                metricsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Ingen data tillänglig</h3>
+                        <p>Ladda upp en Excel-fil för att visa hjärtdata</p>
+                    </div>
+                `;
             }
         }
         
-        function getHeartRateStatus(hr) {
-            if (!hr) return { text: '-', class: '' };
-            if (hr >= 60 && hr <= 100) return { text: 'Normal', class: 'good' };
-            if (hr >= 50 && hr < 60) return { text: 'Något låg', class: 'warning' };
-            if (hr > 100 && hr <= 120) return { text: 'Något hög', class: 'warning' };
-            return { text: 'Avvikande', class: 'bad' };
-        }
+        // Removed updateMetricCard function - no longer needed with dynamic cards
         
-        function getBPStatus(bp, type) {
-            if (!bp) return { text: '-', class: '' };
-            if (type === 'systolic') {
-                if (bp < 120) return { text: 'Optimalt', class: 'good' };
-                if (bp <= 129) return { text: 'Normal', class: 'good' };
-                if (bp <= 139) return { text: 'Förhöjd', class: 'warning' };
-                return { text: 'Högt', class: 'bad' };
-            } else {
-                if (bp < 80) return { text: 'Optimalt', class: 'good' };
-                if (bp <= 84) return { text: 'Normal', class: 'good' };
-                if (bp <= 89) return { text: 'Förhöjd', class: 'warning' };
-                return { text: 'Högt', class: 'bad' };
-            }
-        }
+        // Removed getHeartRateStatus - no longer needed with dynamic cards
         
-        function getCholesterolStatus(ldl) {
-            if (!ldl) return { text: '-', class: '' };
-            const ldlValue = parseFloat(ldl);
-            if (ldlValue < 3.0) return { text: 'Optimalt', class: 'good' };
-            if (ldlValue <= 4.0) return { text: 'Normal', class: 'good' };
-            if (ldlValue <= 5.0) return { text: 'Förhöjd', class: 'warning' };
-            return { text: 'Högt', class: 'bad' };
-        }
+        // Removed getBPStatus - no longer needed with dynamic cards
+        
+        // Removed getCholesterolStatus - no longer needed with dynamic cards
         
         function initializeChartsWithData(heartData) {
             // Heart Rate Over Time - only show if we have data
@@ -461,19 +383,10 @@
             initializeHRVChart([]);
         }
         
-        function initializeWithMockData() {
-            console.log('No Excel data available - showing empty state');
-            initializeChartsWithData({
-                heartRate: null,
-                systolicBP: null,
-                diastolicBP: null,
-                cholesterolLDL: null,
-                heartRateOverTime: []
-            });
-        }
+        // Removed initializeWithMockData - no longer needed with dynamic cards
         
         function initializeHeartRateChart(labels, data) {
-            const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
+        const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
             if (heartRateChart) heartRateChart.destroy();
             
             // If no data, show empty state
@@ -576,7 +489,7 @@
 
         // Blood Pressure Chart
         function initializeBloodPressureChart(data, hasData) {
-            const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
+        const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
             if (bloodPressureChart) bloodPressureChart.destroy();
             
             // If no data, show empty state
@@ -677,7 +590,7 @@
 
         // ECG Chart
         function initializeECGChart(data) {
-            const ecgCtx = document.getElementById('ecgChart').getContext('2d');
+        const ecgCtx = document.getElementById('ecgChart').getContext('2d');
             if (ecgChart) ecgChart.destroy();
             
             // Always show empty state for ECG (no data in Excel)
@@ -719,7 +632,7 @@
 
         // HRV Chart
         function initializeHRVChart(data) {
-            const hrvCtx = document.getElementById('hrvChart').getContext('2d');
+        const hrvCtx = document.getElementById('hrvChart').getContext('2d');
             if (hrvChart) hrvChart.destroy();
             
             // Always show empty state for HRV (no data in Excel)
