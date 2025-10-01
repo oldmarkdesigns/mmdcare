@@ -159,7 +159,37 @@ async function parseExcelContent(excelFile, workbook) {
   
   // Create dynamic data mapping from rawData
   const dynamicData = {};
-  const rawDataItems = jsonData.flat().filter(item => item && typeof item === 'string' && item.trim() !== '');
+  
+  // Filter out unwanted data points
+  const unwantedPatterns = [
+    'datum', 'date', 'tid', 'time', 'kl', 'klockan',
+    '<', '>', '≤', '≥', 'under', 'över', 'mindre', 'mer',
+    'normal', 'referens', 'ref', 'range', 'intervall',
+    'enhet', 'unit', 'värde', 'value', 'resultat', 'result',
+    'prov', 'sample', 'analys', 'analysis', 'test', 'mätning'
+  ];
+  
+  const rawDataItems = jsonData.flat().filter(item => {
+    if (!item || typeof item !== 'string') return false;
+    
+    const trimmed = item.trim().toLowerCase();
+    
+    // Skip empty items
+    if (trimmed === '') return false;
+    
+    // Skip unwanted patterns
+    for (const pattern of unwantedPatterns) {
+      if (trimmed.includes(pattern)) return false;
+    }
+    
+    // Skip items that are just numbers or symbols
+    if (/^[\d\s\.,\-<>≤≥]+$/.test(trimmed)) return false;
+    
+    // Skip items that are too short (likely not meaningful)
+    if (trimmed.length < 3) return false;
+    
+    return true;
+  });
   
   // Try to find values for each rawData item
   rawDataItems.forEach(item => {
@@ -212,11 +242,18 @@ async function parseExcelContent(excelFile, workbook) {
       }
     }
     
-    // Use the latest value (highest row number)
+    // Use the latest value (highest row number) and avoid duplicates
     if (foundValues.length > 0) {
       const latestValue = foundValues.sort((a, b) => b.row - a.row)[0];
-      dynamicData[item] = latestValue.value;
-      console.log(`✓ Using latest value for ${item}: ${latestValue.value} (from row ${latestValue.row})`);
+      
+      // Only add if we don't already have this exact value
+      const existingValues = Object.values(dynamicData);
+      if (!existingValues.includes(latestValue.value)) {
+        dynamicData[item] = latestValue.value;
+        console.log(`✓ Using latest value for ${item}: ${latestValue.value} (from row ${latestValue.row})`);
+      } else {
+        console.log(`⚠️ Skipping duplicate value for ${item}: ${latestValue.value}`);
+      }
     } else {
       console.log(`❌ No values found for ${item}`);
     }

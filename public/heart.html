@@ -269,15 +269,47 @@
             
             console.log(`Processing ${rawData.length} raw data items`);
             
-            // Create a card for each item in rawData
+            // Create a card for each item in rawData, but filter out unwanted items
             let cardsCreated = 0;
+            const unwantedPatterns = [
+                'datum', 'date', 'tid', 'time', 'kl', 'klockan',
+                '<', '>', '≤', '≥', 'under', 'över', 'mindre', 'mer',
+                'normal', 'referens', 'ref', 'range', 'intervall',
+                'enhet', 'unit', 'värde', 'value', 'resultat', 'result'
+            ];
+            
             rawData.forEach((item, index) => {
                 if (item && typeof item === 'string' && item.trim() !== '') {
-                    console.log(`Creating card ${index + 1}/${rawData.length}: ${item}`);
-                    const value = dynamicData && dynamicData[item] ? dynamicData[item] : null;
-                    console.log(`Value for ${item}:`, value);
-                    createDynamicCard(item, value);
-                    cardsCreated++;
+                    const trimmed = item.trim().toLowerCase();
+                    
+                    // Skip unwanted patterns
+                    let shouldSkip = false;
+                    for (const pattern of unwantedPatterns) {
+                        if (trimmed.includes(pattern)) {
+                            shouldSkip = true;
+                            break;
+                        }
+                    }
+                    
+                    // Skip items that are just numbers or symbols
+                    if (/^[\d\s\.,\-<>≤≥]+$/.test(trimmed)) {
+                        shouldSkip = true;
+                    }
+                    
+                    // Skip items that are too short
+                    if (trimmed.length < 3) {
+                        shouldSkip = true;
+                    }
+                    
+                    if (!shouldSkip) {
+                        console.log(`Creating card ${index + 1}/${rawData.length}: ${item}`);
+                        const value = dynamicData && dynamicData[item] ? dynamicData[item] : null;
+                        console.log(`Value for ${item}:`, value);
+                        createDynamicCard(item, value);
+                        cardsCreated++;
+                    } else {
+                        console.log(`Skipping unwanted item: ${item}`);
+                    }
                 }
             });
             
