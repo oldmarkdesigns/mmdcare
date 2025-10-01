@@ -205,12 +205,12 @@
                 console.log('Excel data loaded successfully:', JSON.stringify(excelData, null, 2));
                 
                 // Update UI with Excel data
-                updateUIWithExcelData(excelData.heartData);
+                updateUIWithExcelData(excelData);
                 
             } catch (error) {
                 console.error('Error loading Excel data:', error);
                 console.error('Error stack:', error.stack);
-                initializeWithMockData();
+                showEmptyState();
             }
         }
         
@@ -219,10 +219,19 @@
             console.log('Excel data received:', excelData);
             
             // Create dynamic cards from rawData and dynamicData
-            createDynamicCardsFromExcelData(excelData.rawData, excelData.dynamicData);
+            if (excelData.rawData && excelData.dynamicData) {
+                createDynamicCardsFromExcelData(excelData.rawData, excelData.dynamicData);
+            } else {
+                console.log('No rawData or dynamicData available');
+                showEmptyState();
+            }
             
-            // Initialize charts with Excel data
-            initializeChartsWithData(excelData.heartData);
+            // Initialize charts with Excel data (only if heartData exists)
+            if (excelData.heartData) {
+                initializeChartsWithData(excelData.heartData);
+            } else {
+                console.log('No heartData available for charts');
+            }
         }
         
         function createDynamicCardsFromExcelData(rawData, dynamicData) {
@@ -327,11 +336,20 @@
         // Removed getCholesterolStatus - no longer needed with dynamic cards
         
         function initializeChartsWithData(heartData) {
+            console.log('=== INITIALIZING CHARTS WITH DATA ===');
+            console.log('Heart data:', heartData);
+            
+            // Check if heartData exists
+            if (!heartData) {
+                console.log('No heartData available for charts');
+                return;
+            }
+            
             // Heart Rate Over Time - only show if we have data
-            const hrLabels = heartData.heartRateOverTime.length > 0 
+            const hrLabels = (heartData.heartRateOverTime && heartData.heartRateOverTime.length > 0) 
                 ? heartData.heartRateOverTime.map(d => d.time)
                 : [];
-            const hrData = heartData.heartRateOverTime.length > 0
+            const hrData = (heartData.heartRateOverTime && heartData.heartRateOverTime.length > 0)
                 ? heartData.heartRateOverTime.map(d => d.value)
                 : [];
             
@@ -341,6 +359,8 @@
                 heartData.systolicBP || 0,
                 heartData.diastolicBP || 0
             ] : [];
+            
+            console.log('Chart data - HR labels:', hrLabels.length, 'HR data:', hrData.length, 'BP data:', bpData.length);
             
             // Initialize all charts
             initializeHeartRateChart(hrLabels, hrData);
