@@ -158,6 +158,7 @@ async function parseExcelContent(excelFile, workbook) {
 function extractHeartData(jsonData) {
   console.log('=== EXTRACTING HEART DATA ===');
   console.log('Total rows to process:', jsonData.length);
+  console.log('Sample data:', JSON.stringify(jsonData.slice(0, 10), null, 2));
   
   // Initialize heart data structure
   const heartData = {
@@ -171,20 +172,41 @@ function extractHeartData(jsonData) {
     hrvData: []
   };
   
-  // Common Swedish/English patterns for heart-related measurements
+  // Enhanced patterns with more variations
   const patterns = {
-    heartRate: /(?:hjärtfrekvens|heart\s*rate|puls|pulse|hr)/i,
-    systolic: /(?:systolisk|systolic|sys)/i,
-    diastolic: /(?:diastolisk|diastolic|dia)/i,
-    cholesterol: /(?:kolesterol|cholesterol|ldl)/i,
-    bloodPressure: /(?:blodtryck|blood\s*pressure|bp)/i,
-    ecg: /(?:ekg|ecg|elektrokardiogram)/i,
-    hrv: /(?:hrv|hjärtfrekvensvariabilitet|heart\s*rate\s*variability)/i
+    heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b|resting[\s-]*hr|heart[\s-]*beat)/i,
+    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp)/i,
+    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp)/i,
+    cholesterol: /(?:kolesterol|cholesterol|ldl[\s-]*cholesterol|ldl\b)/i,
+    bloodPressure: /(?:blodtryck|blood[\s-]*pressure|bp\b)/i,
+    ecg: /(?:ekg|ecg|elektrokardiogram|electrocardiogram)/i,
+    hrv: /(?:hrv|hjärtfrekvensvariabilitet|heart[\s-]*rate[\s-]*variability)/i
   };
   
-  // Search through all rows and cells
+  // Helper function to find value near a label
+  const findValueNearLabel = (row, colIndex, nextRow) => {
+    // Try next cell (same row)
+    if (colIndex + 1 < row.length) {
+      const val = parseFloat(row[colIndex + 1]);
+      if (!isNaN(val)) return val;
+    }
+    // Try cell below (next row, same column)
+    if (nextRow && colIndex < nextRow.length) {
+      const val = parseFloat(nextRow[colIndex]);
+      if (!isNaN(val)) return val;
+    }
+    // Try cell below and to the right
+    if (nextRow && colIndex + 1 < nextRow.length) {
+      const val = parseFloat(nextRow[colIndex + 1]);
+      if (!isNaN(val)) return val;
+    }
+    return null;
+  };
+  
+  // Search through all rows and cells with more flexible matching
   for (let i = 0; i < jsonData.length; i++) {
     const row = jsonData[i];
+    const nextRow = i + 1 < jsonData.length ? jsonData[i + 1] : null;
     
     // Skip empty rows
     if (!row || row.length === 0) continue;
@@ -195,42 +217,54 @@ function extractHeartData(jsonData) {
       if (!cell) continue;
       
       // Check for heart rate
-      if (patterns.heartRate.test(cell) && j + 1 < row.length) {
-        const value = parseFloat(row[j + 1]);
-        console.log(`Found heart rate pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
-        if (!isNaN(value) && value > 0 && value < 300) {
+      if (patterns.heartRate.test(cell) && !heartData.heartRate) {
+        const value = findValueNearLabel(row, j, nextRow);
+        console.log(`Found heart rate pattern in cell "${cell}", value found: ${value}`);
+        if (value !== null && value > 0 && value < 300) {
           heartData.heartRate = Math.round(value);
           console.log('✓ Heart rate set to:', heartData.heartRate);
         }
       }
       
       // Check for systolic blood pressure
-      if (patterns.systolic.test(cell) && j + 1 < row.length) {
-        const value = parseFloat(row[j + 1]);
-        console.log(`Found systolic pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
-        if (!isNaN(value) && value > 0 && value < 300) {
+      if (patterns.systolic.test(cell) && !heartData.systolicBP) {
+        const value = findValueNearLabel(row, j, nextRow);
+        console.log(`Found systolic pattern in cell "${cell}", value found: ${value}`);
+        if (value !== null && value > 0 && value < 300) {
           heartData.systolicBP = Math.round(value);
           console.log('✓ Systolic BP set to:', heartData.systolicBP);
         }
       }
       
       // Check for diastolic blood pressure
-      if (patterns.diastolic.test(cell) && j + 1 < row.length) {
-        const value = parseFloat(row[j + 1]);
-        console.log(`Found diastolic pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
-        if (!isNaN(value) && value > 0 && value < 200) {
+      if (patterns.diastolic.test(cell) && !heartData.diastolicBP) {
+        const value = findValueNearLabel(row, j, nextRow);
+        console.log(`Found diastolic pattern in cell "${cell}", value found: ${value}`);
+        if (value !== null && value > 0 && value < 200) {
           heartData.diastolicBP = Math.round(value);
           console.log('✓ Diastolic BP set to:', heartData.diastolicBP);
         }
       }
       
       // Check for cholesterol (LDL)
-      if (patterns.cholesterol.test(cell) && j + 1 < row.length) {
-        const value = parseFloat(row[j + 1]);
-        console.log(`Found cholesterol pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
-        if (!isNaN(value) && value > 0 && value < 20) {
+      if (patterns.cholesterol.test(cell) && !heartData.cholesterolLDL) {
+        const value = findValueNearLabel(row, j, nextRow);
+        console.log(`Found cholesterol pattern in cell "${cell}", value found: ${value}`);
+        if (value !== null && value > 0 && value < 20) {
           heartData.cholesterolLDL = value.toFixed(1);
           console.log('✓ Cholesterol LDL set to:', heartData.cholesterolLDL);
+        }
+      }
+      
+      // Handle blood pressure in "120/80" format
+      const bpMatch = cell.match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
+      if (bpMatch && (!heartData.systolicBP || !heartData.diastolicBP)) {
+        const sys = parseInt(bpMatch[1]);
+        const dia = parseInt(bpMatch[2]);
+        if (sys > 60 && sys < 300 && dia > 40 && dia < 200) {
+          if (!heartData.systolicBP) heartData.systolicBP = sys;
+          if (!heartData.diastolicBP) heartData.diastolicBP = dia;
+          console.log(`✓ Found BP in format: ${sys}/${dia}`);
         }
       }
       

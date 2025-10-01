@@ -284,20 +284,29 @@
                 const cardTitle = card.querySelector('.metric-title');
                 if (cardTitle && cardTitle.textContent === title) {
                     const valueElement = card.querySelector('.metric-value');
+                    const unitElement = card.querySelector('.metric-unit');
                     const statusElement = card.querySelector('.metric-status');
                     
                     if (value === null || value === undefined) {
                         valueElement.textContent = '-';
                         valueElement.style.fontSize = '2rem';
-                        const unitElement = card.querySelector('.metric-unit');
-                        unitElement.textContent = 'Ingen data finns';
+                        valueElement.style.color = '#9ca3af';
+                        unitElement.textContent = 'Ingen data tillänglig';
                         unitElement.style.fontSize = '0.9rem';
+                        unitElement.style.color = '#6b7280';
                         statusElement.textContent = '-';
                         statusElement.className = 'metric-status';
+                        statusElement.style.color = '#9ca3af';
                     } else {
                         valueElement.textContent = value;
+                        valueElement.style.fontSize = '';
+                        valueElement.style.color = '';
+                        unitElement.textContent = unit;
+                        unitElement.style.fontSize = '';
+                        unitElement.style.color = '';
                         statusElement.textContent = status.text;
                         statusElement.className = `metric-status ${status.class}`;
+                        statusElement.style.color = '';
                     }
                     break;
                 }
@@ -337,34 +346,35 @@
         }
         
         function initializeChartsWithData(heartData) {
-            // Heart Rate Over Time
+            // Heart Rate Over Time - only show if we have data
             const hrLabels = heartData.heartRateOverTime.length > 0 
                 ? heartData.heartRateOverTime.map(d => d.time)
-                : ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+                : [];
             const hrData = heartData.heartRateOverTime.length > 0
                 ? heartData.heartRateOverTime.map(d => d.value)
-                : [65, 72, 78, 85, 82, 70];
+                : [];
             
-            // Blood Pressure Data
-            const bpData = [
-                heartData.systolicBP || 120,
-                heartData.diastolicBP || 80
-            ];
+            // Blood Pressure Data - only show if we have data
+            const hasBPData = heartData.systolicBP !== null || heartData.diastolicBP !== null;
+            const bpData = hasBPData ? [
+                heartData.systolicBP || 0,
+                heartData.diastolicBP || 0
+            ] : [];
             
             // Initialize all charts
             initializeHeartRateChart(hrLabels, hrData);
-            initializeBloodPressureChart(bpData);
-            initializeECGChart();
-            initializeHRVChart();
+            initializeBloodPressureChart(bpData, hasBPData);
+            initializeECGChart([]);
+            initializeHRVChart([]);
         }
         
         function initializeWithMockData() {
-            console.log('Initializing with mock data');
+            console.log('No Excel data available - showing empty state');
             initializeChartsWithData({
-                heartRate: 72,
-                systolicBP: 120,
-                diastolicBP: 80,
-                cholesterolLDL: 2.8,
+                heartRate: null,
+                systolicBP: null,
+                diastolicBP: null,
+                cholesterolLDL: null,
                 heartRateOverTime: []
             });
         }
@@ -372,6 +382,46 @@
         function initializeHeartRateChart(labels, data) {
             const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
             if (heartRateChart) heartRateChart.destroy();
+            
+            // If no data, show empty state
+            if (!data || data.length === 0) {
+                heartRateChart = new Chart(heartRateCtx, {
+                    type: 'line',
+                    data: {
+                        labels: [],
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    },
+                    plugins: [{
+                        id: 'emptyState',
+                        afterDraw: (chart) => {
+                            const ctx = chart.ctx;
+                            const width = chart.width;
+                            const height = chart.height;
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = '16px system-ui';
+                            ctx.fillStyle = '#9ca3af';
+                            ctx.fillText('Ingen data tillänglig', width / 2, height / 2);
+                            ctx.restore();
+                        }
+                    }]
+                });
+                return;
+            }
+            
             heartRateChart = new Chart(heartRateCtx, {
             type: 'line',
             data: {
@@ -432,9 +482,49 @@
         }
 
         // Blood Pressure Chart
-        function initializeBloodPressureChart(data) {
+        function initializeBloodPressureChart(data, hasData) {
             const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
             if (bloodPressureChart) bloodPressureChart.destroy();
+            
+            // If no data, show empty state
+            if (!hasData || !data || data.length === 0) {
+                bloodPressureChart = new Chart(bloodPressureCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: [],
+                        datasets: []
+                    },
+                    options: {
+                        responsive: true,
+                        maintainAspectRatio: false,
+                        plugins: {
+                            legend: { display: false },
+                            tooltip: { enabled: false }
+                        },
+                        scales: {
+                            x: { display: false },
+                            y: { display: false }
+                        }
+                    },
+                    plugins: [{
+                        id: 'emptyState',
+                        afterDraw: (chart) => {
+                            const ctx = chart.ctx;
+                            const width = chart.width;
+                            const height = chart.height;
+                            ctx.save();
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.font = '16px system-ui';
+                            ctx.fillStyle = '#9ca3af';
+                            ctx.fillText('Ingen data tillänglig', width / 2, height / 2);
+                            ctx.restore();
+                        }
+                    }]
+                });
+                return;
+            }
+            
             bloodPressureChart = new Chart(bloodPressureCtx, {
             type: 'bar',
             data: {
@@ -493,140 +583,87 @@
         }
 
         // ECG Chart
-        function initializeECGChart() {
+        function initializeECGChart(data) {
             const ecgCtx = document.getElementById('ecgChart').getContext('2d');
             if (ecgChart) ecgChart.destroy();
+            
+            // Always show empty state for ECG (no data in Excel)
             ecgChart = new Chart(ecgCtx, {
             type: 'line',
             data: {
-                labels: Array.from({length: 50}, (_, i) => i),
-                datasets: [{
-                    label: 'EKG-signal',
-                    data: generateECGData(),
-                    borderColor: '#FF4400',
-                    backgroundColor: 'rgba(255, 68, 0, 0.1)',
-                    tension: 0.1,
-                    pointRadius: 0
-                }]
+                labels: [],
+                datasets: []
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false },
+                    tooltip: { enabled: false }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            font: {
-                                size: 11,
-                                weight: '500'
-                            },
-                            maxTicksLimit: 8
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            font: {
-                                size: 11,
-                                weight: '500'
-                            },
-                            callback: function(value) {
-                                return value.toFixed(0) + ' mV';
-                            }
-                        }
-                    }
+                    x: { display: false },
+                    y: { display: false }
                 }
-            }
+            },
+            plugins: [{
+                id: 'emptyState',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const width = chart.width;
+                    const height = chart.height;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '16px system-ui';
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.fillText('Ingen data tillänglig', width / 2, height / 2);
+                    ctx.restore();
+                }
+            }]
         });
         }
 
         // HRV Chart
-        function initializeHRVChart() {
+        function initializeHRVChart(data) {
             const hrvCtx = document.getElementById('hrvChart').getContext('2d');
             if (hrvChart) hrvChart.destroy();
+            
+            // Always show empty state for HRV (no data in Excel)
             hrvChart = new Chart(hrvCtx, {
             type: 'line',
             data: {
-                labels: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
-                datasets: [{
-                    label: 'HRV (ms)',
-                    data: [45, 52, 38, 61, 48, 55, 42],
-                    borderColor: '#00E100',
-                    backgroundColor: 'rgba(0, 225, 0, 0.1)',
-                    tension: 0.4,
-                    fill: true
-                }]
+                labels: [],
+                datasets: []
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        display: false
-                    }
+                    legend: { display: false },
+                    tooltip: { enabled: false }
                 },
                 scales: {
-                    x: {
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            }
-                        }
-                    },
-                    y: {
-                        beginAtZero: true,
-                        grid: {
-                            color: 'rgba(0, 0, 0, 0.1)',
-                            drawBorder: false
-                        },
-                        ticks: {
-                            color: '#666',
-                            font: {
-                                size: 12,
-                                weight: '500'
-                            },
-                            callback: function(value) {
-                                return value + ' ms';
-                            }
-                        }
-                    }
+                    x: { display: false },
+                    y: { display: false }
                 }
-            }
+            },
+            plugins: [{
+                id: 'emptyState',
+                afterDraw: (chart) => {
+                    const ctx = chart.ctx;
+                    const width = chart.width;
+                    const height = chart.height;
+                    ctx.save();
+                    ctx.textAlign = 'center';
+                    ctx.textBaseline = 'middle';
+                    ctx.font = '16px system-ui';
+                    ctx.fillStyle = '#9ca3af';
+                    ctx.fillText('Ingen data tillänglig', width / 2, height / 2);
+                    ctx.restore();
+                }
+            }]
         });
-        }
-
-        function generateECGData() {
-            const data = [];
-            for (let i = 0; i < 50; i++) {
-                if (i % 8 === 0) {
-                    data.push(Math.random() * 20 + 10); // QRS complex
-                } else if (i % 8 === 2) {
-                    data.push(Math.random() * 15 + 5); // T wave
-                } else {
-                    data.push(Math.random() * 2); // Baseline
-                }
-            }
-            return data;
         }
 
         // Summarize heart data with GPT
