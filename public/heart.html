@@ -202,35 +202,67 @@
         
         async function loadExcelData() {
             try {
-                // Check for latest transfer with Excel file
-                const transferId = localStorage.getItem('latestTransferId');
-                const excelFilename = localStorage.getItem('latestExcelFilename');
+                // Get current transfer ID from the dashboard
+                const transferId = localStorage.getItem('currentTransferId');
                 
-                if (!transferId || !excelFilename) {
-                    console.log('No Excel file uploaded yet, using mock data');
+                if (!transferId) {
+                    console.log('No transfer ID found, using mock data');
                     initializeWithMockData();
                     return;
                 }
                 
-                console.log('Loading Excel data from transfer:', transferId, excelFilename);
+                console.log('Loading files for transfer:', transferId);
+                
+                // Fetch all files in the transfer to find Excel files
+                const filesResponse = await fetch(`/api/files?transferId=${transferId}`);
+                
+                if (!filesResponse.ok) {
+                    console.log('Failed to fetch files from transfer, using mock data');
+                    initializeWithMockData();
+                    return;
+                }
+                
+                const filesData = await filesResponse.json();
+                console.log('Files in transfer:', filesData);
+                
+                // Find Excel files in the transfer
+                const excelFiles = filesData.files.filter(file => 
+                    file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' ||
+                    file.mimetype === 'application/vnd.ms-excel' ||
+                    file.name.toLowerCase().endsWith('.xlsx') ||
+                    file.name.toLowerCase().endsWith('.xls')
+                );
+                
+                if (excelFiles.length === 0) {
+                    console.log('No Excel files found in transfer, using mock data');
+                    initializeWithMockData();
+                    return;
+                }
+                
+                // Use the first Excel file found
+                const excelFile = excelFiles[0];
+                console.log('Loading Excel data from file:', excelFile.name);
                 
                 // Fetch Excel data from API
-                const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFilename)}`);
+                const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}`);
                 
                 if (!response.ok) {
                     console.error('Failed to fetch Excel data:', response.status);
+                    const errorText = await response.text();
+                    console.error('Error details:', errorText);
                     initializeWithMockData();
                     return;
                 }
                 
                 const excelData = await response.json();
-                console.log('Excel data loaded:', excelData);
+                console.log('Excel data loaded successfully:', excelData);
                 
                 // Update UI with Excel data
                 updateUIWithExcelData(excelData.heartData);
                 
             } catch (error) {
                 console.error('Error loading Excel data:', error);
+                console.error('Error stack:', error.stack);
                 initializeWithMockData();
             }
         }

@@ -156,6 +156,9 @@ async function parseExcelContent(excelFile, workbook) {
 }
 
 function extractHeartData(jsonData) {
+  console.log('=== EXTRACTING HEART DATA ===');
+  console.log('Total rows to process:', jsonData.length);
+  
   // Initialize heart data structure
   const heartData = {
     heartRate: null,
@@ -194,32 +197,40 @@ function extractHeartData(jsonData) {
       // Check for heart rate
       if (patterns.heartRate.test(cell) && j + 1 < row.length) {
         const value = parseFloat(row[j + 1]);
+        console.log(`Found heart rate pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
         if (!isNaN(value) && value > 0 && value < 300) {
           heartData.heartRate = Math.round(value);
+          console.log('✓ Heart rate set to:', heartData.heartRate);
         }
       }
       
       // Check for systolic blood pressure
       if (patterns.systolic.test(cell) && j + 1 < row.length) {
         const value = parseFloat(row[j + 1]);
+        console.log(`Found systolic pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
         if (!isNaN(value) && value > 0 && value < 300) {
           heartData.systolicBP = Math.round(value);
+          console.log('✓ Systolic BP set to:', heartData.systolicBP);
         }
       }
       
       // Check for diastolic blood pressure
       if (patterns.diastolic.test(cell) && j + 1 < row.length) {
         const value = parseFloat(row[j + 1]);
+        console.log(`Found diastolic pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
         if (!isNaN(value) && value > 0 && value < 200) {
           heartData.diastolicBP = Math.round(value);
+          console.log('✓ Diastolic BP set to:', heartData.diastolicBP);
         }
       }
       
       // Check for cholesterol (LDL)
       if (patterns.cholesterol.test(cell) && j + 1 < row.length) {
         const value = parseFloat(row[j + 1]);
+        console.log(`Found cholesterol pattern in cell "${cell}", next cell value: ${row[j + 1]}, parsed: ${value}`);
         if (!isNaN(value) && value > 0 && value < 20) {
           heartData.cholesterolLDL = value.toFixed(1);
+          console.log('✓ Cholesterol LDL set to:', heartData.cholesterolLDL);
         }
       }
       
@@ -238,6 +249,14 @@ function extractHeartData(jsonData) {
   
   // Look for time series patterns in consecutive rows
   extractTimeSeriesData(jsonData, heartData);
+  
+  // Summary of extracted data
+  console.log('=== EXTRACTION COMPLETE ===');
+  console.log('Heart Rate:', heartData.heartRate || 'NOT FOUND');
+  console.log('Systolic BP:', heartData.systolicBP || 'NOT FOUND');
+  console.log('Diastolic BP:', heartData.diastolicBP || 'NOT FOUND');
+  console.log('Cholesterol LDL:', heartData.cholesterolLDL || 'NOT FOUND');
+  console.log('Time series data points:', heartData.heartRateOverTime.length);
   
   return heartData;
 }
