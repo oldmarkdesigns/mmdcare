@@ -1,0 +1,303 @@
+// Local API endpoint for Excel content parsing
+import { loadTransferFromBlob } from './blobStore.js';
+import { head } from '@vercel/blob';
+import * as XLSX from 'xlsx';
+import { Buffer } from 'buffer';
+
+export default async function handler(req, res) {
+  // Enable CORS
+  res.setHeader('Access-Control-Allow-Origin', '*');
+  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  if (req.method === 'GET') {
+    const { transferId, filename } = req.query;
+    
+    console.log('=== EXCEL CONTENT GET REQUEST ===');
+    console.log('Transfer ID:', transferId);
+    console.log('Filename:', filename);
+    
+    if (!transferId || !filename) {
+      return res.status(400).json({ error: 'Missing transferId or filename' });
+    }
+
+    try {
+      // Get transfer data from Blob storage
+      const transfer = await loadTransferFromBlob(transferId);
+      if (!transfer) {
+        return res.status(404).json({ error: 'Transfer not found' });
+      }
+
+      // Find the Excel file in the transfer
+      const excelFile = transfer.files.find(file => 
+        file.name === filename && 
+        (file.mimetype === 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' || 
+         file.mimetype === 'application/vnd.ms-excel' ||
+         file.name.toLowerCase().endsWith('.xlsx') ||
+         file.name.toLowerCase().endsWith('.xls'))
+      );
+
+      if (!excelFile) {
+        return res.status(404).json({ error: 'Excel file not found in transfer' });
+      }
+
+      // Get the actual Excel file from Blob storage
+      const excelBlobKey = `files/${transferId}/${filename}`;
+      console.log('=== RETRIEVING EXCEL FROM BLOB ===');
+      console.log('Looking for Excel file at key:', excelBlobKey);
+      console.log('Transfer ID:', transferId);
+      console.log('Filename:', filename);
+      
+      let excelBlob;
+      try {
+        console.log('Trying to get Excel blob using head()...');
+        const headResult = await head(excelBlobKey);
+        console.log('Head result:', headResult);
+        
+        if (headResult && headResult.url) {
+          console.log('Got blob URL from head():', headResult.url);
+          excelBlob = {
+            url: headResult.url,
+            size: headResult.size
+          };
+        } else {
+          throw new Error('No URL returned from head()');
+        }
+      } catch (error) {
+        console.error('Error getting Excel blob:', error);
+        console.error('Error details:', error.message);
+        
+        const fileExists = transfer.files.some(f => f.name === filename);
+        console.log('File exists in transfer metadata:', fileExists);
+        
+        return res.status(404).json({ 
+          error: 'Excel file not found in storage', 
+          key: excelBlobKey, 
+          details: error.message,
+          fileExistsInMetadata: fileExists
+        });
+      }
+      
+      if (!excelBlob) {
+        console.log('Excel blob is null/undefined');
+        return res.status(404).json({ error: 'Excel file not found in storage' });
+      }
+
+      // Download the Excel content
+      console.log('Downloading Excel content from URL:', excelBlob.url);
+      const excelResponse = await fetch(excelBlob.url);
+      
+      if (!excelResponse.ok) {
+        console.error('Failed to download Excel, status:', excelResponse.status);
+        return res.status(500).json({ error: 'Failed to download Excel file' });
+      }
+      
+      const excelBuffer = await excelResponse.arrayBuffer();
+      console.log('Excel buffer size:', excelBuffer.byteLength);
+      
+      // Parse the Excel content
+      console.log('Parsing Excel content...');
+      let workbook;
+      let structuredContent;
+      try {
+        workbook = XLSX.read(Buffer.from(excelBuffer), { type: 'buffer' });
+        console.log('Excel parsed successfully');
+        console.log('Sheet names:', workbook.SheetNames);
+        
+        structuredContent = await parseExcelContent(excelFile, workbook);
+      } catch (parseError) {
+        console.error('Excel parsing failed:', parseError);
+        console.log('Creating fallback content due to parsing error');
+        const fallbackContent = createFallbackContent(excelFile);
+        return res.status(200).json(fallbackContent);
+      }
+      
+      res.status(200).json(structuredContent);
+    } catch (error) {
+      console.error('Error processing Excel content:', error);
+      console.error('Error stack:', error.stack);
+      res.status(500).json({ error: 'Failed to process Excel content', details: error.message });
+    }
+  } else {
+    res.status(405).json({ error: 'Method not allowed' });
+  }
+}
+
+async function parseExcelContent(excelFile, workbook) {
+  const filename = excelFile.name;
+  const uploadedAt = new Date(excelFile.uploadedAt);
+  
+  // Get the first sheet
+  const firstSheetName = workbook.SheetNames[0];
+  const worksheet = workbook.Sheets[firstSheetName];
+  
+  // Convert to JSON for easier parsing
+  const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
+  
+  console.log('Excel data rows:', jsonData.length);
+  console.log('First few rows:', jsonData.slice(0, 5));
+  
+  // Extract heart-related data
+  const heartData = extractHeartData(jsonData);
+  
+  return {
+    filename: filename,
+    uploadedAt: uploadedAt.toISOString(),
+    sheetNames: workbook.SheetNames,
+    heartData: heartData,
+    rawData: jsonData,
+    parsedAt: new Date().toISOString()
+  };
+}
+
+function extractHeartData(jsonData) {
+  // Initialize heart data structure
+  const heartData = {
+    heartRate: null,
+    systolicBP: null,
+    diastolicBP: null,
+    cholesterolLDL: null,
+    heartRateOverTime: [],
+    bloodPressureData: [],
+    ecgData: [],
+    hrvData: []
+  };
+  
+  // Common Swedish/English patterns for heart-related measurements
+  const patterns = {
+    heartRate: /(?:hjärtfrekvens|heart\s*rate|puls|pulse|hr)/i,
+    systolic: /(?:systolisk|systolic|sys)/i,
+    diastolic: /(?:diastolisk|diastolic|dia)/i,
+    cholesterol: /(?:kolesterol|cholesterol|ldl)/i,
+    bloodPressure: /(?:blodtryck|blood\s*pressure|bp)/i,
+    ecg: /(?:ekg|ecg|elektrokardiogram)/i,
+    hrv: /(?:hrv|hjärtfrekvensvariabilitet|heart\s*rate\s*variability)/i
+  };
+  
+  // Search through all rows and cells
+  for (let i = 0; i < jsonData.length; i++) {
+    const row = jsonData[i];
+    
+    // Skip empty rows
+    if (!row || row.length === 0) continue;
+    
+    for (let j = 0; j < row.length; j++) {
+      const cell = String(row[j]).trim();
+      
+      if (!cell) continue;
+      
+      // Check for heart rate
+      if (patterns.heartRate.test(cell) && j + 1 < row.length) {
+        const value = parseFloat(row[j + 1]);
+        if (!isNaN(value) && value > 0 && value < 300) {
+          heartData.heartRate = Math.round(value);
+        }
+      }
+      
+      // Check for systolic blood pressure
+      if (patterns.systolic.test(cell) && j + 1 < row.length) {
+        const value = parseFloat(row[j + 1]);
+        if (!isNaN(value) && value > 0 && value < 300) {
+          heartData.systolicBP = Math.round(value);
+        }
+      }
+      
+      // Check for diastolic blood pressure
+      if (patterns.diastolic.test(cell) && j + 1 < row.length) {
+        const value = parseFloat(row[j + 1]);
+        if (!isNaN(value) && value > 0 && value < 200) {
+          heartData.diastolicBP = Math.round(value);
+        }
+      }
+      
+      // Check for cholesterol (LDL)
+      if (patterns.cholesterol.test(cell) && j + 1 < row.length) {
+        const value = parseFloat(row[j + 1]);
+        if (!isNaN(value) && value > 0 && value < 20) {
+          heartData.cholesterolLDL = value.toFixed(1);
+        }
+      }
+      
+      // Check for time series data (e.g., heart rate over time)
+      if (cell.match(/^\d{1,2}:\d{2}$/)) {
+        // Found a time value, check next cell for numeric value
+        if (j + 1 < row.length) {
+          const value = parseFloat(row[j + 1]);
+          if (!isNaN(value) && value > 0) {
+            heartData.heartRateOverTime.push({ time: cell, value: Math.round(value) });
+          }
+        }
+      }
+    }
+  }
+  
+  // Look for time series patterns in consecutive rows
+  extractTimeSeriesData(jsonData, heartData);
+  
+  return heartData;
+}
+
+function extractTimeSeriesData(jsonData, heartData) {
+  // Look for patterns like:
+  // Time | Value
+  // 00:00 | 65
+  // 04:00 | 72
+  
+  for (let i = 0; i < jsonData.length - 1; i++) {
+    const row = jsonData[i];
+    
+    // Check if this row might be a header
+    if (row && row.length >= 2) {
+      const header1 = String(row[0]).toLowerCase();
+      const header2 = String(row[1]).toLowerCase();
+      
+      // Check if headers suggest time series data
+      if ((header1.includes('tid') || header1.includes('time')) && 
+          (header2.includes('värde') || header2.includes('value') || header2.includes('bpm'))) {
+        
+        // Parse the following rows
+        for (let j = i + 1; j < Math.min(i + 20, jsonData.length); j++) {
+          const dataRow = jsonData[j];
+          if (dataRow && dataRow.length >= 2) {
+            const time = String(dataRow[0]).trim();
+            const value = parseFloat(dataRow[1]);
+            
+            if (time && !isNaN(value) && value > 0) {
+              heartData.heartRateOverTime.push({ time, value: Math.round(value) });
+            }
+          }
+        }
+        break;
+      }
+    }
+  }
+}
+
+function createFallbackContent(excelFile) {
+  const filename = excelFile.name;
+  const uploadedAt = new Date(excelFile.uploadedAt);
+  
+  return {
+    filename: filename,
+    uploadedAt: uploadedAt.toISOString(),
+    sheetNames: [],
+    heartData: {
+      heartRate: null,
+      systolicBP: null,
+      diastolicBP: null,
+      cholesterolLDL: null,
+      heartRateOverTime: [],
+      bloodPressureData: [],
+      ecgData: [],
+      hrvData: []
+    },
+    error: 'Excel file could not be parsed automatically',
+    parsedAt: new Date().toISOString()
+  };
+}
+

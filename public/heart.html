@@ -192,15 +192,161 @@
         });
     </script>
     <script>
-        // Heart Rate Chart
-        const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
-        new Chart(heartRateCtx, {
+        // Global variables for charts
+        let heartRateChart, bloodPressureChart, ecgChart, hrvChart;
+        
+        // Load Excel data on page load
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadExcelData();
+        });
+        
+        async function loadExcelData() {
+            try {
+                // Check for latest transfer with Excel file
+                const transferId = localStorage.getItem('latestTransferId');
+                const excelFilename = localStorage.getItem('latestExcelFilename');
+                
+                if (!transferId || !excelFilename) {
+                    console.log('No Excel file uploaded yet, using mock data');
+                    initializeWithMockData();
+                    return;
+                }
+                
+                console.log('Loading Excel data from transfer:', transferId, excelFilename);
+                
+                // Fetch Excel data from API
+                const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFilename)}`);
+                
+                if (!response.ok) {
+                    console.error('Failed to fetch Excel data:', response.status);
+                    initializeWithMockData();
+                    return;
+                }
+                
+                const excelData = await response.json();
+                console.log('Excel data loaded:', excelData);
+                
+                // Update UI with Excel data
+                updateUIWithExcelData(excelData.heartData);
+                
+            } catch (error) {
+                console.error('Error loading Excel data:', error);
+                initializeWithMockData();
+            }
+        }
+        
+        function updateUIWithExcelData(heartData) {
+            // Update metric cards
+            updateMetricCard('Hjärtfrekvens', heartData.heartRate, 'bpm', getHeartRateStatus(heartData.heartRate));
+            updateMetricCard('Systoliskt blodtryck', heartData.systolicBP, 'mmHg', getBPStatus(heartData.systolicBP, 'systolic'));
+            updateMetricCard('Diastoliskt blodtryck', heartData.diastolicBP, 'mmHg', getBPStatus(heartData.diastolicBP, 'diastolic'));
+            updateMetricCard('Kolesterol (LDL)', heartData.cholesterolLDL, 'mmol/L', getCholesterolStatus(heartData.cholesterolLDL));
+            
+            // Initialize charts with Excel data
+            initializeChartsWithData(heartData);
+        }
+        
+        function updateMetricCard(title, value, unit, status) {
+            const cards = document.querySelectorAll('.metric-card');
+            for (const card of cards) {
+                const cardTitle = card.querySelector('.metric-title');
+                if (cardTitle && cardTitle.textContent === title) {
+                    const valueElement = card.querySelector('.metric-value');
+                    const statusElement = card.querySelector('.metric-status');
+                    
+                    if (value === null || value === undefined) {
+                        valueElement.textContent = '-';
+                        valueElement.style.fontSize = '2rem';
+                        const unitElement = card.querySelector('.metric-unit');
+                        unitElement.textContent = 'Ingen data finns';
+                        unitElement.style.fontSize = '0.9rem';
+                        statusElement.textContent = '-';
+                        statusElement.className = 'metric-status';
+                    } else {
+                        valueElement.textContent = value;
+                        statusElement.textContent = status.text;
+                        statusElement.className = `metric-status ${status.class}`;
+                    }
+                    break;
+                }
+            }
+        }
+        
+        function getHeartRateStatus(hr) {
+            if (!hr) return { text: '-', class: '' };
+            if (hr >= 60 && hr <= 100) return { text: 'Normal', class: 'good' };
+            if (hr >= 50 && hr < 60) return { text: 'Något låg', class: 'warning' };
+            if (hr > 100 && hr <= 120) return { text: 'Något hög', class: 'warning' };
+            return { text: 'Avvikande', class: 'bad' };
+        }
+        
+        function getBPStatus(bp, type) {
+            if (!bp) return { text: '-', class: '' };
+            if (type === 'systolic') {
+                if (bp < 120) return { text: 'Optimalt', class: 'good' };
+                if (bp <= 129) return { text: 'Normal', class: 'good' };
+                if (bp <= 139) return { text: 'Förhöjd', class: 'warning' };
+                return { text: 'Högt', class: 'bad' };
+            } else {
+                if (bp < 80) return { text: 'Optimalt', class: 'good' };
+                if (bp <= 84) return { text: 'Normal', class: 'good' };
+                if (bp <= 89) return { text: 'Förhöjd', class: 'warning' };
+                return { text: 'Högt', class: 'bad' };
+            }
+        }
+        
+        function getCholesterolStatus(ldl) {
+            if (!ldl) return { text: '-', class: '' };
+            const ldlValue = parseFloat(ldl);
+            if (ldlValue < 3.0) return { text: 'Optimalt', class: 'good' };
+            if (ldlValue <= 4.0) return { text: 'Normal', class: 'good' };
+            if (ldlValue <= 5.0) return { text: 'Förhöjd', class: 'warning' };
+            return { text: 'Högt', class: 'bad' };
+        }
+        
+        function initializeChartsWithData(heartData) {
+            // Heart Rate Over Time
+            const hrLabels = heartData.heartRateOverTime.length > 0 
+                ? heartData.heartRateOverTime.map(d => d.time)
+                : ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'];
+            const hrData = heartData.heartRateOverTime.length > 0
+                ? heartData.heartRateOverTime.map(d => d.value)
+                : [65, 72, 78, 85, 82, 70];
+            
+            // Blood Pressure Data
+            const bpData = [
+                heartData.systolicBP || 120,
+                heartData.diastolicBP || 80
+            ];
+            
+            // Initialize all charts
+            initializeHeartRateChart(hrLabels, hrData);
+            initializeBloodPressureChart(bpData);
+            initializeECGChart();
+            initializeHRVChart();
+        }
+        
+        function initializeWithMockData() {
+            console.log('Initializing with mock data');
+            initializeChartsWithData({
+                heartRate: 72,
+                systolicBP: 120,
+                diastolicBP: 80,
+                cholesterolLDL: 2.8,
+                heartRateOverTime: []
+            });
+        }
+        
+        function initializeHeartRateChart(labels, data) {
+            const heartRateCtx = document.getElementById('heartRateChart').getContext('2d');
+            if (heartRateChart) heartRateChart.destroy();
+            heartRateChart = new Chart(heartRateCtx, {
             type: 'line',
             data: {
-                labels: ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'],
+                labels: labels,
                 datasets: [{
                     label: 'Hjärtfrekvens (bpm)',
-                    data: [65, 72, 78, 85, 82, 70],
+                    data: data,
                     borderColor: '#00E100',
                     backgroundColor: 'rgba(0, 225, 0, 0.1)',
                     tension: 0.4,
@@ -251,15 +397,18 @@
                 }
             }
         });
+        }
 
         // Blood Pressure Chart
-        const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
-        new Chart(bloodPressureCtx, {
+        function initializeBloodPressureChart(data) {
+            const bloodPressureCtx = document.getElementById('bloodPressureChart').getContext('2d');
+            if (bloodPressureChart) bloodPressureChart.destroy();
+            bloodPressureChart = new Chart(bloodPressureCtx, {
             type: 'bar',
             data: {
                 labels: ['Systoliskt', 'Diastoliskt'],
                 datasets: [{
-                    data: [120, 80],
+                    data: data,
                     backgroundColor: ['#FF6B35', '#00E100'],
                     borderColor: ['#FF6B35', '#00E100'],
                     borderWidth: 2,
@@ -309,10 +458,13 @@
                 }
             }
         });
+        }
 
         // ECG Chart
-        const ecgCtx = document.getElementById('ecgChart').getContext('2d');
-        new Chart(ecgCtx, {
+        function initializeECGChart() {
+            const ecgCtx = document.getElementById('ecgChart').getContext('2d');
+            if (ecgChart) ecgChart.destroy();
+            ecgChart = new Chart(ecgCtx, {
             type: 'line',
             data: {
                 labels: Array.from({length: 50}, (_, i) => i),
@@ -368,10 +520,13 @@
                 }
             }
         });
+        }
 
         // HRV Chart
-        const hrvCtx = document.getElementById('hrvChart').getContext('2d');
-        new Chart(hrvCtx, {
+        function initializeHRVChart() {
+            const hrvCtx = document.getElementById('hrvChart').getContext('2d');
+            if (hrvChart) hrvChart.destroy();
+            hrvChart = new Chart(hrvCtx, {
             type: 'line',
             data: {
                 labels: ['Mån', 'Tis', 'Ons', 'Tor', 'Fre', 'Lör', 'Sön'],
@@ -426,6 +581,7 @@
                 }
             }
         });
+        }
 
         function generateECGData() {
             const data = [];

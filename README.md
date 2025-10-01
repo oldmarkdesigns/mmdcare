@@ -22,11 +22,14 @@ A secure mobile file upload system for healthcare documents, allowing patients t
 ## 🛠️ Technology Stack
 
 - **Frontend**: HTML5, CSS3, JavaScript (ES6+)
-- **Backend**: Node.js with Express
-- **File Upload**: Multer for handling multipart/form-data
-- **Real-time**: Server-Sent Events (SSE)
+- **Backend**: Node.js with Vercel Serverless Functions
+- **File Upload**: Formidable for handling multipart/form-data
+- **Storage**: Vercel Blob for file storage
+- **Real-time**: Server-Sent Events (SSE) and polling
 - **QR Codes**: QuickChart.io API
 - **PDF Processing**: pdf-parse for document analysis
+- **Excel Processing**: xlsx (SheetJS) for spreadsheet parsing
+- **Charts**: Chart.js for data visualization
 
 ## 🚀 Quick Deployment
 
@@ -124,10 +127,25 @@ mmdcaremobile/
 
 ## 🏥 Healthcare Integration
 
-- **PDF parsing**: Automatic extraction of medical document content
-- **Structured data**: Parses Swedish medical documents into sections
-- **Metadata extraction**: Doctor names, dates, and document types
-- **Dashboard integration**: Seamless integration with healthcare dashboards
+### PDF Parsing
+- **Automatic extraction**: Parses medical document content automatically
+- **Structured data**: Organizes Swedish medical documents into sections
+- **Metadata extraction**: Extracts doctor names, dates, and document types
+- **Dashboard integration**: Seamlessly displays documents in the healthcare dashboard
+
+### Excel (XLSX) Parsing for Heart Data
+- **Heart metrics extraction**: Automatically identifies and extracts:
+  - Heart rate (Hjärtfrekvens / Heart Rate)
+  - Systolic blood pressure (Systoliskt blodtryck)
+  - Diastolic blood pressure (Diastoliskt blodtryck)
+  - Cholesterol LDL (Kolesterol)
+- **Time series data**: Supports heart rate measurements over time for trend analysis
+- **Visual display**: Replaces mock data in the Heart (Hjärta) page with actual patient data
+- **Smart fallback**: Shows "Ingen data finns" for missing data points while displaying available information
+- **Flexible format**: Supports both Swedish and English column headers
+- **Multi-sheet support**: Reads data from multiple sheets in the same Excel file
+
+For detailed information on Excel file format requirements, see [EXCEL_FORMAT_GUIDE.md](EXCEL_FORMAT_GUIDE.md)
 
 ## 🐛 Troubleshooting
 

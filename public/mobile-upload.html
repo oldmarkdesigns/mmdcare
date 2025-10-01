@@ -309,6 +309,13 @@
                     };
                     
                     uploadedFiles.push(fileData);
+                    
+                    // Track Excel files separately for heart data
+                    if (file.name.toLowerCase().endsWith('.xlsx') || file.name.toLowerCase().endsWith('.xls')) {
+                        localStorage.setItem('latestTransferId', transferId);
+                        localStorage.setItem('latestExcelFilename', file.name);
+                        console.log('Excel file tracked for heart data:', file.name);
+                    }
                 }
 
                 // Mark transfer as complete via API (this is what the desktop polls)
