@@ -272,18 +272,82 @@
             }
         }
         
-        function updateUIWithExcelData(heartData) {
+        function updateUIWithExcelData(excelData) {
             console.log('=== UPDATING UI WITH EXCEL DATA ===');
-            console.log('Heart data received:', heartData);
+            console.log('Excel data received:', excelData);
             
-            // Update existing cards with Excel data
-            updateMetricCard('Hjärtfrekvens', heartData.heartRate, 'bpm', getHeartRateStatus(heartData.heartRate));
-            updateMetricCard('Systoliskt blodtryck', heartData.systolicBP, 'mmHg', getBPStatus(heartData.systolicBP, 'systolic'));
-            updateMetricCard('Diastoliskt blodtryck', heartData.diastolicBP, 'mmHg', getBPStatus(heartData.diastolicBP, 'diastolic'));
-            updateMetricCard('Kolesterol (LDL)', heartData.cholesterolLDL, 'mmol/L', getCholesterolStatus(heartData.cholesterolLDL));
+            // Create dynamic cards from rawData and dynamicData
+            createDynamicCardsFromExcelData(excelData.rawData, excelData.dynamicData);
             
             // Initialize charts with Excel data
-            initializeChartsWithData(heartData);
+            initializeChartsWithData(excelData.heartData);
+        }
+        
+        function createDynamicCardsFromExcelData(rawData, dynamicData) {
+            console.log('=== CREATING DYNAMIC CARDS FROM EXCEL DATA ===');
+            console.log('Raw data:', rawData);
+            console.log('Dynamic data:', dynamicData);
+            
+            // Clear existing cards
+            const metricsContainer = document.querySelector('.metrics-grid');
+            if (metricsContainer) {
+                metricsContainer.innerHTML = '';
+            }
+            
+            // Create a card for each item in rawData
+            rawData.forEach((item, index) => {
+                if (item && typeof item === 'string' && item.trim() !== '') {
+                    console.log(`Creating card for: ${item}`);
+                    const value = dynamicData[item] || null;
+                    createDynamicCard(item, value);
+                }
+            });
+        }
+        
+        function createDynamicCard(title, value) {
+            console.log(`Creating dynamic card: ${title} = ${value}`);
+            
+            const metricsContainer = document.querySelector('.metrics-grid');
+            if (!metricsContainer) {
+                console.error('Metrics container not found');
+                return;
+            }
+            
+            // Create card element
+            const card = document.createElement('div');
+            card.className = 'metric-card card-animate';
+            
+            // Determine unit from title
+            let unit = '';
+            if (title.includes('(mmol/L)')) unit = 'mmol/L';
+            else if (title.includes('(g/L)')) unit = 'g/L';
+            else if (title.includes('(x10(9)/L)')) unit = 'x10(9)/L';
+            else if (title.includes('(fL)')) unit = 'fL';
+            else if (title.includes('(pg)')) unit = 'pg';
+            else if (title.includes('(mg/kg)')) unit = 'mg/kg';
+            else if (title.includes('(nmol/L)')) unit = 'nmol/L';
+            else if (title.includes('(mikrokat/L)')) unit = 'mikrokat/L';
+            else if (title.includes('(mm)')) unit = 'mm';
+            else if (title.includes('(x10(12)/L)')) unit = 'x10(12)/L';
+            
+            // Determine status based on value
+            let status = 'Ingen data tillänglig';
+            let statusColor = '#9ca3af';
+            
+            if (value !== null && value !== undefined) {
+                status = 'Normal';
+                statusColor = '#10b981'; // Green
+            }
+            
+            card.innerHTML = `
+                <h3 class="metric-title">${title}</h3>
+                <div class="metric-value">${value || '-'}</div>
+                <div class="metric-unit">${unit || '-'}</div>
+                <div class="metric-status" style="color: ${statusColor}; background: transparent;">${status}</div>
+            `;
+            
+            metricsContainer.appendChild(card);
+            console.log(`✓ Card created for ${title}: ${value} ${unit}`);
         }
         
         function updateMetricCard(title, value, unit, status) {

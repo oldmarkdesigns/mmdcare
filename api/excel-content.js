@@ -157,12 +157,69 @@ async function parseExcelContent(excelFile, workbook) {
   // Extract heart-related data
   const heartData = extractHeartData(jsonData);
   
+  // Create dynamic data mapping from rawData
+  const dynamicData = {};
+  const rawDataItems = jsonData.flat().filter(item => item && typeof item === 'string' && item.trim() !== '');
+  
+  // Try to find values for each rawData item
+  rawDataItems.forEach(item => {
+    console.log(`Looking for value for: ${item}`);
+    
+    // Look through all rows to find this item and its value
+    for (let i = 0; i < jsonData.length; i++) {
+      const row = jsonData[i];
+      if (!row || row.length === 0) continue;
+      
+      for (let j = 0; j < row.length; j++) {
+        const cell = String(row[j]).trim();
+        if (cell === item) {
+          // Found the item, look for value in adjacent cells
+          let value = null;
+          
+          // Try next column
+          if (j + 1 < row.length) {
+            value = parseFloat(row[j + 1]);
+            if (!isNaN(value) && value > 0) {
+              dynamicData[item] = value;
+              console.log(`✓ Found value for ${item}: ${value}`);
+              break;
+            }
+          }
+          
+          // Try previous column
+          if (value === null && j > 0) {
+            value = parseFloat(row[j - 1]);
+            if (!isNaN(value) && value > 0) {
+              dynamicData[item] = value;
+              console.log(`✓ Found value for ${item}: ${value}`);
+              break;
+            }
+          }
+          
+          // Try next row, same column
+          if (value === null && i + 1 < jsonData.length) {
+            const nextRow = jsonData[i + 1];
+            if (nextRow && j < nextRow.length) {
+              value = parseFloat(nextRow[j]);
+              if (!isNaN(value) && value > 0) {
+                dynamicData[item] = value;
+                console.log(`✓ Found value for ${item}: ${value}`);
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  });
+
   return {
     filename: filename,
     uploadedAt: uploadedAt.toISOString(),
     sheetNames: workbook.SheetNames,
     heartData: heartData,
-    rawData: jsonData,
+    rawData: rawDataItems,
+    dynamicData: dynamicData,
     parsedAt: new Date().toISOString()
   };
 }
