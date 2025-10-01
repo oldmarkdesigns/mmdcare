@@ -139,8 +139,11 @@ async function parseExcelContent(excelFile, workbook) {
   // Convert to JSON for easier parsing
   const jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, defval: '' });
   
+  console.log('=== EXCEL PARSING DEBUG ===');
   console.log('Excel data rows:', jsonData.length);
-  console.log('First few rows:', jsonData.slice(0, 5));
+  console.log('First few rows:', JSON.stringify(jsonData.slice(0, 10), null, 2));
+  console.log('All sheet names:', workbook.SheetNames);
+  console.log('Using sheet:', firstSheetName);
   
   // Extract heart-related data
   const heartData = extractHeartData(jsonData);
@@ -174,14 +177,16 @@ function extractHeartData(jsonData) {
   
   // Enhanced patterns with more variations
   const patterns = {
-    heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b|resting[\s-]*hr|heart[\s-]*beat)/i,
-    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp)/i,
-    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp)/i,
-    cholesterol: /(?:kolesterol|cholesterol|ldl[\s-]*cholesterol|ldl\b)/i,
+    heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b|resting[\s-]*hr|heart[\s-]*beat|hjärtfrekvens|hjärtfrekvens)/i,
+    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp|systolisk[\s-]*blodtryck)/i,
+    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp|diastolisk[\s-]*blodtryck)/i,
+    cholesterol: /(?:kolesterol|cholesterol|ldl[\s-]*cholesterol|ldl\b|kolesterol[\s-]*ldl)/i,
     bloodPressure: /(?:blodtryck|blood[\s-]*pressure|bp\b)/i,
     ecg: /(?:ekg|ecg|elektrokardiogram|electrocardiogram)/i,
     hrv: /(?:hrv|hjärtfrekvensvariabilitet|heart[\s-]*rate[\s-]*variability)/i
   };
+  
+  console.log('Patterns being used:', patterns);
   
   // Helper function to find value near a label
   const findValueNearLabel = (row, colIndex, nextRow) => {
@@ -215,6 +220,11 @@ function extractHeartData(jsonData) {
       const cell = String(row[j]).trim();
       
       if (!cell) continue;
+      
+      // Log every cell to see what we're working with
+      if (i < 5) { // Only log first 5 rows to avoid spam
+        console.log(`Cell [${i},${j}]: "${cell}" (type: ${typeof cell})`);
+      }
       
       // Check for heart rate
       if (patterns.heartRate.test(cell) && !heartData.heartRate) {

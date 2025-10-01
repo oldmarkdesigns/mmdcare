@@ -88,31 +88,30 @@
             <div class="metrics-grid">
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Hjärtfrekvens</h3>
-                    <div class="metric-value">72</div>
-                    <div class="metric-unit">bpm</div>
-                    <div class="metric-status good">Normal</div>
+                    <div class="metric-value">-</div>
+                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-status">-</div>
                 </div>
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Systoliskt blodtryck</h3>
-                    <div class="metric-value">120</div>
-                    <div class="metric-unit">mmHg</div>
-                    <div class="metric-status good">Optimalt</div>
+                    <div class="metric-value">-</div>
+                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-status">-</div>
                 </div>
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Diastoliskt blodtryck</h3>
-                    <div class="metric-value">80</div>
-                    <div class="metric-unit">mmHg</div>
-                    <div class="metric-status good">Optimalt</div>
+                    <div class="metric-value">-</div>
+                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-status">-</div>
                 </div>
-
 
                 <div class="metric-card card-animate">
                     <h3 class="metric-title">Kolesterol (LDL)</h3>
-                    <div class="metric-value">2.8</div>
-                    <div class="metric-unit">mmol/L</div>
-                    <div class="metric-status good">Optimalt</div>
+                    <div class="metric-value">-</div>
+                    <div class="metric-unit">Ingen data tillänglig</div>
+                    <div class="metric-status">-</div>
                 </div>
             </div>
 
@@ -242,9 +241,13 @@
                 // Use the first Excel file found
                 const excelFile = excelFiles[0];
                 console.log('Loading Excel data from file:', excelFile.name);
+                console.log('API URL:', `/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}`);
                 
                 // Fetch Excel data from API
                 const response = await fetch(`/api/excel-content?transferId=${transferId}&filename=${encodeURIComponent(excelFile.name)}`);
+                
+                console.log('API response status:', response.status);
+                console.log('API response headers:', Object.fromEntries(response.headers.entries()));
                 
                 if (!response.ok) {
                     console.error('Failed to fetch Excel data:', response.status);
@@ -255,7 +258,7 @@
                 }
                 
                 const excelData = await response.json();
-                console.log('Excel data loaded successfully:', excelData);
+                console.log('Excel data loaded successfully:', JSON.stringify(excelData, null, 2));
                 
                 // Update UI with Excel data
                 updateUIWithExcelData(excelData.heartData);
