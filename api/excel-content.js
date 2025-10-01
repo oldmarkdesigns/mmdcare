@@ -147,6 +147,13 @@ async function parseExcelContent(excelFile, workbook) {
   console.log('All sheet names:', workbook.SheetNames);
   console.log('Using sheet:', firstSheetName);
   
+  // Log the structure to understand how data is organized
+  console.log('=== EXCEL STRUCTURE ANALYSIS ===');
+  for (let i = 0; i < Math.min(5, jsonData.length); i++) {
+    const row = jsonData[i];
+    console.log(`Row ${i}:`, JSON.stringify(row, null, 2));
+  }
+  
   // Extract heart-related data
   const heartData = extractHeartData(jsonData);
   
@@ -314,40 +321,128 @@ function extractHeartData(jsonData) {
   
   // Additional search for medical test names in the raw data
   console.log('=== SEARCHING FOR MEDICAL TEST NAMES ===');
+  
+  // First, let's understand the data structure better
+  console.log('Looking for data structure patterns...');
+  
+  // Look for rows that might contain test names and values
   for (let i = 0; i < jsonData.length; i++) {
     const row = jsonData[i];
     if (!row || row.length === 0) continue;
     
+    console.log(`Analyzing row ${i}:`, row);
+    
+    // Look for LDL cholesterol in medical test names
     for (let j = 0; j < row.length; j++) {
       const cell = String(row[j]).trim();
       if (!cell) continue;
       
-      // Look for LDL cholesterol in medical test names
       if (cell.includes('LDL') && cell.includes('kolesterol') && !heartData.cholesterolLDL) {
-        console.log(`Found LDL cholesterol test: "${cell}"`);
-        // Look for value in the same row or next row
-        const value = findValueNearLabel(row, j, jsonData[i + 1]);
-        if (value !== null && value > 0 && value < 20) {
+        console.log(`Found LDL cholesterol test: "${cell}" in row ${i}, col ${j}`);
+        console.log(`Full row:`, row);
+        
+        // Try different approaches to find the value
+        let value = null;
+        
+        // Approach 1: Look in the same row, next column
+        if (j + 1 < row.length) {
+          value = parseFloat(row[j + 1]);
+          console.log(`Trying next column (${j + 1}): ${row[j + 1]} -> ${value}`);
+        }
+        
+        // Approach 2: Look in the same row, previous column
+        if ((value === null || isNaN(value)) && j > 0) {
+          value = parseFloat(row[j - 1]);
+          console.log(`Trying previous column (${j - 1}): ${row[j - 1]} -> ${value}`);
+        }
+        
+        // Approach 3: Look in the next row, same column
+        if ((value === null || isNaN(value)) && i + 1 < jsonData.length) {
+          const nextRow = jsonData[i + 1];
+          if (nextRow && j < nextRow.length) {
+            value = parseFloat(nextRow[j]);
+            console.log(`Trying next row, same column: ${nextRow[j]} -> ${value}`);
+          }
+        }
+        
+        // Approach 4: Look in the next row, next column
+        if ((value === null || isNaN(value)) && i + 1 < jsonData.length) {
+          const nextRow = jsonData[i + 1];
+          if (nextRow && j + 1 < nextRow.length) {
+            value = parseFloat(nextRow[j + 1]);
+            console.log(`Trying next row, next column: ${nextRow[j + 1]} -> ${value}`);
+          }
+        }
+        
+        if (value !== null && !isNaN(value) && value > 0 && value < 20) {
           heartData.cholesterolLDL = value.toFixed(1);
           console.log('✓ Cholesterol LDL set to:', heartData.cholesterolLDL);
+        } else {
+          console.log('❌ Could not find valid cholesterol value');
         }
       }
       
       // Look for heart rate in medical test names
       if ((cell.includes('hjärtfrekvens') || cell.includes('heart rate') || cell.includes('puls')) && !heartData.heartRate) {
-        console.log(`Found heart rate test: "${cell}"`);
-        const value = findValueNearLabel(row, j, jsonData[i + 1]);
-        if (value !== null && value > 0 && value < 300) {
+        console.log(`Found heart rate test: "${cell}" in row ${i}, col ${j}`);
+        console.log(`Full row:`, row);
+        
+        let value = null;
+        
+        // Try different approaches to find the value
+        if (j + 1 < row.length) {
+          value = parseFloat(row[j + 1]);
+          console.log(`Trying next column: ${row[j + 1]} -> ${value}`);
+        }
+        
+        if ((value === null || isNaN(value)) && j > 0) {
+          value = parseFloat(row[j - 1]);
+          console.log(`Trying previous column: ${row[j - 1]} -> ${value}`);
+        }
+        
+        if ((value === null || isNaN(value)) && i + 1 < jsonData.length) {
+          const nextRow = jsonData[i + 1];
+          if (nextRow && j < nextRow.length) {
+            value = parseFloat(nextRow[j]);
+            console.log(`Trying next row: ${nextRow[j]} -> ${value}`);
+          }
+        }
+        
+        if (value !== null && !isNaN(value) && value > 0 && value < 300) {
           heartData.heartRate = Math.round(value);
           console.log('✓ Heart rate set to:', heartData.heartRate);
+        } else {
+          console.log('❌ Could not find valid heart rate value');
         }
       }
       
       // Look for blood pressure in medical test names
       if ((cell.includes('blodtryck') || cell.includes('blood pressure')) && (!heartData.systolicBP || !heartData.diastolicBP)) {
-        console.log(`Found blood pressure test: "${cell}"`);
-        const value = findValueNearLabel(row, j, jsonData[i + 1]);
-        if (value !== null && value > 0) {
+        console.log(`Found blood pressure test: "${cell}" in row ${i}, col ${j}`);
+        console.log(`Full row:`, row);
+        
+        let value = null;
+        
+        // Try different approaches to find the value
+        if (j + 1 < row.length) {
+          value = parseFloat(row[j + 1]);
+          console.log(`Trying next column: ${row[j + 1]} -> ${value}`);
+        }
+        
+        if ((value === null || isNaN(value)) && j > 0) {
+          value = parseFloat(row[j - 1]);
+          console.log(`Trying previous column: ${row[j - 1]} -> ${value}`);
+        }
+        
+        if ((value === null || isNaN(value)) && i + 1 < jsonData.length) {
+          const nextRow = jsonData[i + 1];
+          if (nextRow && j < nextRow.length) {
+            value = parseFloat(nextRow[j]);
+            console.log(`Trying next row: ${nextRow[j]} -> ${value}`);
+          }
+        }
+        
+        if (value !== null && !isNaN(value) && value > 0) {
           // Try to parse as systolic/diastolic if it's in format like "120/80"
           const bpMatch = String(value).match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
           if (bpMatch) {
@@ -365,6 +460,8 @@ function extractHeartData(jsonData) {
               console.log('✓ Systolic BP set to:', heartData.systolicBP);
             }
           }
+        } else {
+          console.log('❌ Could not find valid blood pressure value');
         }
       }
     }
