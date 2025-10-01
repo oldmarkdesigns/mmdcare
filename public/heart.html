@@ -84,9 +84,21 @@
                 </button>
             </div>
 
-            <!-- Dynamic Health Metrics Cards -->
-            <div class="metrics-grid" id="dynamic-metrics-container">
-                <!-- Cards will be dynamically created here based on Excel data -->
+            <!-- Main Provsvar Container -->
+            <div class="file-category-expandable" id="provsvar-container">
+                <button class="category-header" onclick="toggleProvsvar()">
+                    <div class="category-title-row">
+                        <div class="category-title">Provsvar</div>
+                        <div class="category-count" id="provsvar-count">0 provsvar</div>
+                    </div>
+                    <div class="chevron" id="provsvar-chevron">›</div>
+                </button>
+                <div class="file-list-vertical" id="provsvar-content" style="display: none;">
+                    <!-- Dynamic Health Metrics Cards -->
+                    <div class="metrics-grid" id="dynamic-metrics-container">
+                        <!-- Cards will be dynamically created here based on Excel data -->
+                    </div>
+                </div>
             </div>
 
         </main>
@@ -245,10 +257,10 @@
             
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
-                // FORCE the container to be visible with two-column layout
+                // FORCE the container to be visible with three-column layout
                 metricsContainer.style.cssText = `
                     display: grid !important;
-                    grid-template-columns: 1fr 1fr !important;
+                    grid-template-columns: 1fr 1fr 1fr !important;
                     gap: 12px !important;
                     margin-bottom: 20px !important;
                     width: 100% !important;
@@ -318,6 +330,25 @@
             });
             
             console.log(`✓ Created ${cardsCreated} dynamic cards out of ${rawData.length} items`);
+            
+            // Update count and expand container
+            const countElement = document.getElementById('provsvar-count');
+            if (countElement) {
+                countElement.textContent = `${cardsCreated} provsvar`;
+            }
+            
+            // Auto-expand the container when data is loaded
+            if (cardsCreated > 0) {
+                const container = document.getElementById('provsvar-container');
+                const content = document.getElementById('provsvar-content');
+                const chevron = document.getElementById('provsvar-chevron');
+                
+                if (container && content && chevron) {
+                    container.classList.add('expanded');
+                    content.style.display = 'block';
+                    chevron.style.transform = 'rotate(90deg)';
+                }
+            }
             
             // Add a test card to verify CSS is working
             if (cardsCreated === 0) {
@@ -426,20 +457,23 @@
                 statusColor = '#9ca3af'; // Gray
             }
             
-            // Create left section (title)
+            // Create left section (title) - left aligned
             const leftSection = document.createElement('div');
-            leftSection.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start; flex: 1;';
+            leftSection.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start; flex: 1; text-align: left;';
             
             const titleEl = document.createElement('h3');
             titleEl.className = 'metric-title';
             titleEl.textContent = cleanTitle;
-            titleEl.style.cssText = 'font-size: 13px !important; font-weight: 600 !important; color: #333 !important; margin: 0 !important; display: block !important; visibility: visible !important; line-height: 1.2 !important;';
+            titleEl.style.cssText = 'font-size: 13px !important; font-weight: 600 !important; color: #333 !important; margin: 0 !important; display: block !important; visibility: visible !important; line-height: 1.2 !important; text-align: left !important;';
             
             leftSection.appendChild(titleEl);
             
-            // Create middle section (value and unit)
-            const middleSection = document.createElement('div');
-            middleSection.style.cssText = 'display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1;';
+            // Create right section (value, unit, and status) - closer together
+            const rightSection = document.createElement('div');
+            rightSection.style.cssText = 'display: flex; flex-direction: row; align-items: center; gap: 16px; flex: 0 0 auto;';
+            
+            const valueUnitContainer = document.createElement('div');
+            valueUnitContainer.style.cssText = 'display: flex; flex-direction: column; align-items: flex-end; text-align: right;';
             
             const valueEl = document.createElement('div');
             valueEl.className = 'metric-value';
@@ -451,23 +485,19 @@
             unitEl.textContent = unit || '';
             unitEl.style.cssText = 'font-size: 10px !important; color: #666 !important; margin: 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
             
-            middleSection.appendChild(valueEl);
-            middleSection.appendChild(unitEl);
-            
-            // Create right section (status)
-            const rightSection = document.createElement('div');
-            rightSection.style.cssText = 'display: flex; flex-direction: column; align-items: flex-end; text-align: right; flex: 0 0 auto;';
+            valueUnitContainer.appendChild(valueEl);
+            valueUnitContainer.appendChild(unitEl);
             
             const statusEl = document.createElement('div');
             statusEl.className = 'metric-status';
             statusEl.textContent = status;
             statusEl.style.cssText = `font-size: 11px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;`;
             
+            rightSection.appendChild(valueUnitContainer);
             rightSection.appendChild(statusEl);
             
             // Append sections to card
             card.appendChild(leftSection);
-            card.appendChild(middleSection);
             card.appendChild(rightSection);
             
             console.log('Card content created manually:', {
@@ -508,6 +538,22 @@
             }
         }
         
+        function toggleProvsvar() {
+            const container = document.getElementById('provsvar-container');
+            const content = document.getElementById('provsvar-content');
+            const chevron = document.getElementById('provsvar-chevron');
+            
+            if (container.classList.contains('expanded')) {
+                container.classList.remove('expanded');
+                content.style.display = 'none';
+                chevron.style.transform = 'rotate(0deg)';
+            } else {
+                container.classList.add('expanded');
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(90deg)';
+            }
+        }
+        
         function showEmptyState() {
             console.log('=== SHOWING EMPTY STATE ===');
             const metricsContainer = document.getElementById('dynamic-metrics-container');
@@ -518,6 +564,12 @@
                         <p>Ladda upp en Excel-fil för att visa hjärtdata</p>
                     </div>
                 `;
+            }
+            
+            // Update count
+            const countElement = document.getElementById('provsvar-count');
+            if (countElement) {
+                countElement.textContent = '0 provsvar';
             }
         }
         
