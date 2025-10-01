@@ -1358,7 +1358,7 @@ body {
 }
 
 .metric-card {
-    background: transparent;
+    background: #fcfcfc;
     border-radius: 8px;
     padding: 16px 12px;
     box-shadow: none;
@@ -1406,18 +1406,18 @@ body {
 }
 
 .metric-status.good {
-    background: rgba(0, 225, 0, 0.1);
-    color: #00E100;
+    background: transparent;
+    color: #10b981;
 }
 
 .metric-status.warning {
-    background: rgba(246, 160, 0, 0.1);
-    color: #F6A000;
+    background: transparent;
+    color: #3b82f6;
 }
 
 .metric-status.danger {
-    background: rgba(255, 68, 0, 0.1);
-    color: #FF4400;
+    background: transparent;
+    color: #ef4444;
 }
 
 
