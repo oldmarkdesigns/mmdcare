@@ -143,6 +143,10 @@
         
         async function loadExcelData() {
             console.log('=== LOADING EXCEL DATA ===');
+            
+            // Show loading state
+            showLoadingState();
+            
             try {
                 // Get current transfer ID from the dashboard
                 const transferId = localStorage.getItem('currentTransferId');
@@ -241,11 +245,11 @@
             
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
-                // FORCE the container to be visible with compact layout
+                // FORCE the container to be visible with list-style layout
                 metricsContainer.style.cssText = `
-                    display: grid !important;
-                    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)) !important;
-                    gap: 12px !important;
+                    display: flex !important;
+                    flex-direction: column !important;
+                    gap: 8px !important;
                     margin-bottom: 20px !important;
                     width: 100% !important;
                     visibility: visible !important;
@@ -352,35 +356,63 @@
             const card = document.createElement('div');
             card.className = 'metric-card card-animate';
             
-            // FORCE the card to be visible with compact inline styles
+            // FORCE the card to be visible with list-style inline styles
             card.style.cssText = `
                 background: #fcfcfc !important;
                 border: 1px solid #e5e7eb !important;
-                border-radius: 6px !important;
-                padding: 12px 8px !important;
+                border-radius: 4px !important;
+                padding: 12px 16px !important;
                 margin: 0 !important;
-                min-height: 80px !important;
+                min-height: 60px !important;
                 display: flex !important;
-                flex-direction: column !important;
-                justify-content: center !important;
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-between !important;
                 visibility: visible !important;
                 opacity: 1 !important;
                 position: relative !important;
                 z-index: 1 !important;
             `;
             
-            // Determine unit from title
+            // Clean title by removing measurements in parentheses
+            let cleanTitle = title;
             let unit = '';
-            if (title.includes('(mmol/L)')) unit = 'mmol/L';
-            else if (title.includes('(g/L)')) unit = 'g/L';
-            else if (title.includes('(x10(9)/L)')) unit = 'x10(9)/L';
-            else if (title.includes('(fL)')) unit = 'fL';
-            else if (title.includes('(pg)')) unit = 'pg';
-            else if (title.includes('(mg/kg)')) unit = 'mg/kg';
-            else if (title.includes('(nmol/L)')) unit = 'nmol/L';
-            else if (title.includes('(mikrokat/L)')) unit = 'mikrokat/L';
-            else if (title.includes('(mm)')) unit = 'mm';
-            else if (title.includes('(x10(12)/L)')) unit = 'x10(12)/L';
+            
+            // Extract unit from title and clean it
+            if (title.includes('(mmol/L)')) {
+                unit = 'mmol/L';
+                cleanTitle = title.replace(/\s*\(mmol\/L\)/g, '');
+            } else if (title.includes('(g/L)')) {
+                unit = 'g/L';
+                cleanTitle = title.replace(/\s*\(g\/L\)/g, '');
+            } else if (title.includes('(x10(9)/L)')) {
+                unit = 'x10(9)/L';
+                cleanTitle = title.replace(/\s*\(x10\(9\)\/L\)/g, '');
+            } else if (title.includes('(fL)')) {
+                unit = 'fL';
+                cleanTitle = title.replace(/\s*\(fL\)/g, '');
+            } else if (title.includes('(pg)')) {
+                unit = 'pg';
+                cleanTitle = title.replace(/\s*\(pg\)/g, '');
+            } else if (title.includes('(mg/kg)')) {
+                unit = 'mg/kg';
+                cleanTitle = title.replace(/\s*\(mg\/kg\)/g, '');
+            } else if (title.includes('(nmol/L)')) {
+                unit = 'nmol/L';
+                cleanTitle = title.replace(/\s*\(nmol\/L\)/g, '');
+            } else if (title.includes('(mikrokat/L)')) {
+                unit = 'mikrokat/L';
+                cleanTitle = title.replace(/\s*\(mikrokat\/L\)/g, '');
+            } else if (title.includes('(mm)')) {
+                unit = 'mm';
+                cleanTitle = title.replace(/\s*\(mm\)/g, '');
+            } else if (title.includes('(x10(12)/L)')) {
+                unit = 'x10(12)/L';
+                cleanTitle = title.replace(/\s*\(x10\(12\)\/L\)/g, '');
+            }
+            
+            // Clean up any remaining parentheses and extra spaces
+            cleanTitle = cleanTitle.replace(/\s*\([^)]*\)/g, '').trim();
             
             // Determine status based on value
             let status = 'Normal';
@@ -391,32 +423,43 @@
                 statusColor = '#9ca3af'; // Gray
             }
             
-            // Create elements manually with compact styling
+            // Create left section (title)
+            const leftSection = document.createElement('div');
+            leftSection.style.cssText = 'display: flex; flex-direction: column; align-items: flex-start; flex: 1;';
+            
             const titleEl = document.createElement('h3');
             titleEl.className = 'metric-title';
-            titleEl.textContent = title;
-            titleEl.style.cssText = 'font-size: 11px !important; font-weight: 500 !important; color: #666 !important; margin: 0 0 4px 0 !important; display: block !important; visibility: visible !important; line-height: 1.2 !important;';
+            titleEl.textContent = cleanTitle;
+            titleEl.style.cssText = 'font-size: 14px !important; font-weight: 600 !important; color: #333 !important; margin: 0 !important; display: block !important; visibility: visible !important; line-height: 1.3 !important;';
+            
+            leftSection.appendChild(titleEl);
+            
+            // Create right section (value, unit, status)
+            const rightSection = document.createElement('div');
+            rightSection.style.cssText = 'display: flex; flex-direction: column; align-items: flex-end; text-align: right;';
             
             const valueEl = document.createElement('div');
             valueEl.className = 'metric-value';
             valueEl.textContent = value || '-';
-            valueEl.style.cssText = 'font-size: 20px !important; font-weight: 700 !important; color: #333 !important; margin: 0 0 2px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
+            valueEl.style.cssText = 'font-size: 18px !important; font-weight: 700 !important; color: #333 !important; margin: 0 0 2px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
             
             const unitEl = document.createElement('div');
             unitEl.className = 'metric-unit';
-            unitEl.textContent = unit || '-';
-            unitEl.style.cssText = 'font-size: 10px !important; color: #999 !important; margin: 0 0 4px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
+            unitEl.textContent = unit || '';
+            unitEl.style.cssText = 'font-size: 11px !important; color: #666 !important; margin: 0 0 4px 0 !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;';
             
             const statusEl = document.createElement('div');
             statusEl.className = 'metric-status';
             statusEl.textContent = status;
-            statusEl.style.cssText = `font-size: 10px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;`;
+            statusEl.style.cssText = `font-size: 11px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important;`;
             
-            // Append elements to card
-            card.appendChild(titleEl);
-            card.appendChild(valueEl);
-            card.appendChild(unitEl);
-            card.appendChild(statusEl);
+            rightSection.appendChild(valueEl);
+            rightSection.appendChild(unitEl);
+            rightSection.appendChild(statusEl);
+            
+            // Append sections to card
+            card.appendChild(leftSection);
+            card.appendChild(rightSection);
             
             console.log('Card content created manually:', {
                 title: titleEl.textContent,
@@ -435,6 +478,25 @@
             // Check if the card is actually visible
             const rect = card.getBoundingClientRect();
             console.log(`Card visibility check: width=${rect.width}, height=${rect.height}, visible=${rect.width > 0 && rect.height > 0}`);
+        }
+        
+        function showLoadingState() {
+            console.log('=== SHOWING LOADING STATE ===');
+            const metricsContainer = document.getElementById('dynamic-metrics-container');
+            if (metricsContainer) {
+                metricsContainer.innerHTML = `
+                    <div style="text-align: center; padding: 40px; color: #666;">
+                        <div style="display: inline-block; width: 20px; height: 20px; border: 2px solid #e5e7eb; border-top: 2px solid #3b82f6; border-radius: 50%; animation: spin 1s linear infinite; margin-right: 10px;"></div>
+                        Laddar data...
+                    </div>
+                    <style>
+                        @keyframes spin {
+                            0% { transform: rotate(0deg); }
+                            100% { transform: rotate(360deg); }
+                        }
+                    </style>
+                `;
+            }
         }
         
         function showEmptyState() {

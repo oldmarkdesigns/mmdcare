@@ -1382,6 +1382,7 @@ body {
 .metric-card:hover {
     transform: none;
     box-shadow: none !important;
+    background: #fcfcfc !important;
 }
 
 .metric-title {
