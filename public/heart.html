@@ -241,7 +241,20 @@
             
             if (metricsContainer) {
                 metricsContainer.innerHTML = '';
-                console.log('Cleared existing cards');
+                // FORCE the container to be visible
+                metricsContainer.style.cssText = `
+                    display: grid !important;
+                    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)) !important;
+                    gap: 16px !important;
+                    margin-bottom: 32px !important;
+                    width: 100% !important;
+                    visibility: visible !important;
+                    opacity: 1 !important;
+                    position: relative !important;
+                    z-index: 1 !important;
+                    background: rgba(255,0,0,0.1) !important;
+                `;
+                console.log('Cleared existing cards and FORCED container visibility');
             } else {
                 console.error('Dynamic metrics container not found');
                 return;
@@ -304,9 +317,24 @@
                 return;
             }
             
-            // Create card element
+            // Create card element with FORCED visibility
             const card = document.createElement('div');
             card.className = 'metric-card card-animate';
+            
+            // FORCE the card to be visible with inline styles
+            card.style.cssText = `
+                background: #fcfcfc !important;
+                border: 2px solid #333 !important;
+                border-radius: 8px !important;
+                padding: 16px !important;
+                margin: 8px !important;
+                min-height: 120px !important;
+                display: block !important;
+                visibility: visible !important;
+                opacity: 1 !important;
+                position: relative !important;
+                z-index: 1 !important;
+            `;
             
             // Determine unit from title
             let unit = '';
@@ -330,24 +358,26 @@
                 statusColor = '#10b981'; // Green
             }
             
-            // Create elements manually instead of using innerHTML
+            // Create elements manually with FORCED visibility
             const titleEl = document.createElement('h3');
             titleEl.className = 'metric-title';
             titleEl.textContent = title;
+            titleEl.style.cssText = 'font-size: 12px !important; font-weight: 500 !important; color: #666 !important; margin: 0 0 6px 0 !important; display: block !important; visibility: visible !important;';
             
             const valueEl = document.createElement('div');
             valueEl.className = 'metric-value';
             valueEl.textContent = value || '-';
+            valueEl.style.cssText = 'font-size: 28px !important; font-weight: 700 !important; color: #333 !important; margin: 0 0 2px 0 !important; display: block !important; visibility: visible !important;';
             
             const unitEl = document.createElement('div');
             unitEl.className = 'metric-unit';
             unitEl.textContent = unit || '-';
+            unitEl.style.cssText = 'font-size: 12px !important; color: #999 !important; margin: 0 0 8px 0 !important; display: block !important; visibility: visible !important;';
             
             const statusEl = document.createElement('div');
             statusEl.className = 'metric-status';
             statusEl.textContent = status;
-            statusEl.style.color = statusColor;
-            statusEl.style.background = 'transparent';
+            statusEl.style.cssText = `font-size: 12px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important;`;
             
             // Append elements to card
             card.appendChild(titleEl);
