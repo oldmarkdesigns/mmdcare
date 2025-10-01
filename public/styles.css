@@ -1380,9 +1380,14 @@ body {
 }
 
 .metric-card:hover {
-    transform: none;
+    transform: none !important;
     box-shadow: none !important;
     background: #fcfcfc !important;
+    transition: none !important;
+}
+
+.metric-card {
+    transition: none !important;
 }
 
 .metric-title {
