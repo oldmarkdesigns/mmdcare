@@ -319,8 +319,8 @@ function extractHeartData(jsonData) {
   // Look for time series patterns in consecutive rows
   extractTimeSeriesData(jsonData, heartData);
   
-  // Additional search for medical test names in the raw data
-  console.log('=== SEARCHING FOR MEDICAL TEST NAMES ===');
+  // NEW APPROACH: Look for the actual data structure
+  console.log('=== SEARCHING FOR MEDICAL TEST NAMES AND VALUES ===');
   
   // First, let's understand the data structure better
   console.log('Looking for data structure patterns...');
@@ -462,6 +462,49 @@ function extractHeartData(jsonData) {
           }
         } else {
           console.log('❌ Could not find valid blood pressure value');
+        }
+      }
+    }
+  }
+  
+  // NEW: If we still haven't found values, try a different approach
+  // Look for the actual data rows (not just headers)
+  console.log('=== TRYING ALTERNATIVE DATA EXTRACTION ===');
+  
+  // Look for rows that contain actual data (not just test names)
+  for (let i = 1; i < jsonData.length; i++) { // Start from row 1 (skip header)
+    const row = jsonData[i];
+    if (!row || row.length === 0) continue;
+    
+    console.log(`Checking data row ${i}:`, row);
+    
+    // Look for numerical values that might be our health metrics
+    for (let j = 0; j < row.length; j++) {
+      const cell = String(row[j]).trim();
+      if (!cell) continue;
+      
+      // Try to parse as a number
+      const numValue = parseFloat(cell);
+      if (!isNaN(numValue) && numValue > 0) {
+        console.log(`Found numerical value: ${numValue} in row ${i}, col ${j}`);
+        
+        // Check if this might be a health metric based on value ranges
+        if (numValue >= 50 && numValue <= 300 && !heartData.heartRate) {
+          // Could be heart rate
+          heartData.heartRate = Math.round(numValue);
+          console.log('✓ Heart rate set to:', heartData.heartRate);
+        } else if (numValue >= 60 && numValue <= 200 && !heartData.systolicBP) {
+          // Could be systolic blood pressure
+          heartData.systolicBP = Math.round(numValue);
+          console.log('✓ Systolic BP set to:', heartData.systolicBP);
+        } else if (numValue >= 40 && numValue <= 120 && !heartData.diastolicBP) {
+          // Could be diastolic blood pressure
+          heartData.diastolicBP = Math.round(numValue);
+          console.log('✓ Diastolic BP set to:', heartData.diastolicBP);
+        } else if (numValue >= 1 && numValue <= 15 && !heartData.cholesterolLDL) {
+          // Could be cholesterol LDL
+          heartData.cholesterolLDL = numValue.toFixed(1);
+          console.log('✓ Cholesterol LDL set to:', heartData.cholesterolLDL);
         }
       }
     }

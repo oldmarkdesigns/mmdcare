@@ -273,7 +273,10 @@
         }
         
         function updateUIWithExcelData(heartData) {
-            // Update metric cards
+            console.log('=== UPDATING UI WITH EXCEL DATA ===');
+            console.log('Heart data received:', heartData);
+            
+            // Update metric cards with dynamic titles and values
             updateMetricCard('Hjärtfrekvens', heartData.heartRate, 'bpm', getHeartRateStatus(heartData.heartRate));
             updateMetricCard('Systoliskt blodtryck', heartData.systolicBP, 'mmHg', getBPStatus(heartData.systolicBP, 'systolic'));
             updateMetricCard('Diastoliskt blodtryck', heartData.diastolicBP, 'mmHg', getBPStatus(heartData.diastolicBP, 'diastolic'));
