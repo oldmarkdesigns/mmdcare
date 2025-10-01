@@ -165,7 +165,9 @@ async function parseExcelContent(excelFile, workbook) {
   rawDataItems.forEach(item => {
     console.log(`Looking for value for: ${item}`);
     
-    // Look through all rows to find this item and its value
+    let foundValues = [];
+    
+    // Look through all rows to find this item and its values
     for (let i = 0; i < jsonData.length; i++) {
       const row = jsonData[i];
       if (!row || row.length === 0) continue;
@@ -173,43 +175,50 @@ async function parseExcelContent(excelFile, workbook) {
       for (let j = 0; j < row.length; j++) {
         const cell = String(row[j]).trim();
         if (cell === item) {
-          // Found the item, look for value in adjacent cells
-          let value = null;
+          // Found the item, look for values in the column below
+          console.log(`Found ${item} at row ${i}, col ${j}`);
           
-          // Try next column
-          if (j + 1 < row.length) {
-            value = parseFloat(row[j + 1]);
-            if (!isNaN(value) && value > 0) {
-              dynamicData[item] = value;
-              console.log(`✓ Found value for ${item}: ${value}`);
-              break;
-            }
-          }
-          
-          // Try previous column
-          if (value === null && j > 0) {
-            value = parseFloat(row[j - 1]);
-            if (!isNaN(value) && value > 0) {
-              dynamicData[item] = value;
-              console.log(`✓ Found value for ${item}: ${value}`);
-              break;
-            }
-          }
-          
-          // Try next row, same column
-          if (value === null && i + 1 < jsonData.length) {
-            const nextRow = jsonData[i + 1];
-            if (nextRow && j < nextRow.length) {
-              value = parseFloat(nextRow[j]);
-              if (!isNaN(value) && value > 0) {
-                dynamicData[item] = value;
-                console.log(`✓ Found value for ${item}: ${value}`);
-                break;
+          // Look in the same column for values in subsequent rows
+          for (let k = i + 1; k < jsonData.length; k++) {
+            const valueRow = jsonData[k];
+            if (valueRow && j < valueRow.length) {
+              const cellValue = valueRow[j];
+              const numValue = parseFloat(cellValue);
+              
+              if (!isNaN(numValue) && numValue > 0) {
+                foundValues.push({
+                  value: numValue,
+                  row: k,
+                  col: j
+                });
+                console.log(`Found value ${numValue} for ${item} at row ${k}, col ${j}`);
               }
+            }
+          }
+          
+          // Also try next column (horizontal structure)
+          if (j + 1 < row.length) {
+            const nextColValue = parseFloat(row[j + 1]);
+            if (!isNaN(nextColValue) && nextColValue > 0) {
+              foundValues.push({
+                value: nextColValue,
+                row: i,
+                col: j + 1
+              });
+              console.log(`Found value ${nextColValue} for ${item} at row ${i}, col ${j + 1}`);
             }
           }
         }
       }
+    }
+    
+    // Use the latest value (highest row number)
+    if (foundValues.length > 0) {
+      const latestValue = foundValues.sort((a, b) => b.row - a.row)[0];
+      dynamicData[item] = latestValue.value;
+      console.log(`✓ Using latest value for ${item}: ${latestValue.value} (from row ${latestValue.row})`);
+    } else {
+      console.log(`❌ No values found for ${item}`);
     }
   });
 
