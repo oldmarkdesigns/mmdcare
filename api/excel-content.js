@@ -177,15 +177,31 @@ function extractHeartData(jsonData) {
     hrvData: []
   };
   
-  // Enhanced patterns with more variations
+  // Enhanced patterns to match actual medical test names from Excel files
   const patterns = {
     heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b|resting[\s-]*hr|heart[\s-]*beat|hjärtfrekvens|hjärtfrekvens)/i,
-    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp|systolisk[\s-]*blodtryck)/i,
-    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp|diastolisk[\s-]*blodtryck)/i,
-    cholesterol: /(?:kolesterol|cholesterol|ldl[\s-]*cholesterol|ldl\b|kolesterol[\s-]*ldl)/i,
+    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp|systolisk[\s-]*blodtryck|systolisk[\s-]*blodtryck)/i,
+    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp|diastolisk[\s-]*blodtryck|diastolisk[\s-]*blodtryck)/i,
+    cholesterol: /(?:kolesterol|cholesterol|ldl[\s-]*cholesterol|ldl\b|kolesterol[\s-]*ldl|ldl[\s-]*kolesterol|ldl[\s-]*cholesterol|ldl[\s-]*kolesterol|ldl[\s-]*cholesterol)/i,
     bloodPressure: /(?:blodtryck|blood[\s-]*pressure|bp\b)/i,
     ecg: /(?:ekg|ecg|elektrokardiogram|electrocardiogram)/i,
     hrv: /(?:hrv|hjärtfrekvensvariabilitet|heart[\s-]*rate[\s-]*variability)/i
+  };
+  
+  // Additional patterns for medical test names that might be in the Excel file
+  const medicalPatterns = {
+    cholesterol: /(?:ldl[\s-]*kolesterol|ldl[\s-]*cholesterol|kolesterol[\s-]*ldl|cholesterol[\s-]*ldl|ldl\b|kolesterol\b|cholesterol\b|ldl[\s-]*kolesterol|ldl[\s-]*cholesterol)/i,
+    heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b)/i,
+    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp)/i,
+    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp)/i
+  };
+  
+  // Look for specific medical test names that might be in the Excel file
+  const specificMedicalTests = {
+    cholesterol: /(?:ldl[\s-]*kolesterol|ldl[\s-]*cholesterol|kolesterol[\s-]*ldl|cholesterol[\s-]*ldl|ldl\b|kolesterol\b|cholesterol\b)/i,
+    heartRate: /(?:hjärtfrekvens|heart[\s-]*rate|puls|pulse|hr\b)/i,
+    systolic: /(?:systolisk|systolic|sys\b|övre[\s-]*blodtryck|upper[\s-]*bp)/i,
+    diastolic: /(?:diastolisk|diastolic|dia\b|nedre[\s-]*blodtryck|lower[\s-]*bp)/i
   };
   
   console.log('Patterns being used:', patterns);
@@ -229,7 +245,7 @@ function extractHeartData(jsonData) {
       }
       
       // Check for heart rate
-      if (patterns.heartRate.test(cell) && !heartData.heartRate) {
+      if ((patterns.heartRate.test(cell) || medicalPatterns.heartRate.test(cell)) && !heartData.heartRate) {
         const value = findValueNearLabel(row, j, nextRow);
         console.log(`Found heart rate pattern in cell "${cell}", value found: ${value}`);
         if (value !== null && value > 0 && value < 300) {
@@ -239,7 +255,7 @@ function extractHeartData(jsonData) {
       }
       
       // Check for systolic blood pressure
-      if (patterns.systolic.test(cell) && !heartData.systolicBP) {
+      if ((patterns.systolic.test(cell) || medicalPatterns.systolic.test(cell)) && !heartData.systolicBP) {
         const value = findValueNearLabel(row, j, nextRow);
         console.log(`Found systolic pattern in cell "${cell}", value found: ${value}`);
         if (value !== null && value > 0 && value < 300) {
@@ -249,7 +265,7 @@ function extractHeartData(jsonData) {
       }
       
       // Check for diastolic blood pressure
-      if (patterns.diastolic.test(cell) && !heartData.diastolicBP) {
+      if ((patterns.diastolic.test(cell) || medicalPatterns.diastolic.test(cell)) && !heartData.diastolicBP) {
         const value = findValueNearLabel(row, j, nextRow);
         console.log(`Found diastolic pattern in cell "${cell}", value found: ${value}`);
         if (value !== null && value > 0 && value < 200) {
@@ -258,8 +274,8 @@ function extractHeartData(jsonData) {
         }
       }
       
-      // Check for cholesterol (LDL)
-      if (patterns.cholesterol.test(cell) && !heartData.cholesterolLDL) {
+      // Check for cholesterol (LDL) - try both pattern sets
+      if ((patterns.cholesterol.test(cell) || medicalPatterns.cholesterol.test(cell)) && !heartData.cholesterolLDL) {
         const value = findValueNearLabel(row, j, nextRow);
         console.log(`Found cholesterol pattern in cell "${cell}", value found: ${value}`);
         if (value !== null && value > 0 && value < 20) {
@@ -295,6 +311,64 @@ function extractHeartData(jsonData) {
   
   // Look for time series patterns in consecutive rows
   extractTimeSeriesData(jsonData, heartData);
+  
+  // Additional search for medical test names in the raw data
+  console.log('=== SEARCHING FOR MEDICAL TEST NAMES ===');
+  for (let i = 0; i < jsonData.length; i++) {
+    const row = jsonData[i];
+    if (!row || row.length === 0) continue;
+    
+    for (let j = 0; j < row.length; j++) {
+      const cell = String(row[j]).trim();
+      if (!cell) continue;
+      
+      // Look for LDL cholesterol in medical test names
+      if (cell.includes('LDL') && cell.includes('kolesterol') && !heartData.cholesterolLDL) {
+        console.log(`Found LDL cholesterol test: "${cell}"`);
+        // Look for value in the same row or next row
+        const value = findValueNearLabel(row, j, jsonData[i + 1]);
+        if (value !== null && value > 0 && value < 20) {
+          heartData.cholesterolLDL = value.toFixed(1);
+          console.log('✓ Cholesterol LDL set to:', heartData.cholesterolLDL);
+        }
+      }
+      
+      // Look for heart rate in medical test names
+      if ((cell.includes('hjärtfrekvens') || cell.includes('heart rate') || cell.includes('puls')) && !heartData.heartRate) {
+        console.log(`Found heart rate test: "${cell}"`);
+        const value = findValueNearLabel(row, j, jsonData[i + 1]);
+        if (value !== null && value > 0 && value < 300) {
+          heartData.heartRate = Math.round(value);
+          console.log('✓ Heart rate set to:', heartData.heartRate);
+        }
+      }
+      
+      // Look for blood pressure in medical test names
+      if ((cell.includes('blodtryck') || cell.includes('blood pressure')) && (!heartData.systolicBP || !heartData.diastolicBP)) {
+        console.log(`Found blood pressure test: "${cell}"`);
+        const value = findValueNearLabel(row, j, jsonData[i + 1]);
+        if (value !== null && value > 0) {
+          // Try to parse as systolic/diastolic if it's in format like "120/80"
+          const bpMatch = String(value).match(/(\d{2,3})\s*[\/\-]\s*(\d{2,3})/);
+          if (bpMatch) {
+            const sys = parseInt(bpMatch[1]);
+            const dia = parseInt(bpMatch[2]);
+            if (sys > 60 && sys < 300 && dia > 40 && dia < 200) {
+              if (!heartData.systolicBP) heartData.systolicBP = sys;
+              if (!heartData.diastolicBP) heartData.diastolicBP = dia;
+              console.log(`✓ BP set to: ${sys}/${dia}`);
+            }
+          } else if (value > 60 && value < 300) {
+            // Assume it's systolic if no diastolic found
+            if (!heartData.systolicBP) {
+              heartData.systolicBP = Math.round(value);
+              console.log('✓ Systolic BP set to:', heartData.systolicBP);
+            }
+          }
+        }
+      }
+    }
+  }
   
   // Summary of extracted data
   console.log('=== EXTRACTION COMPLETE ===');
