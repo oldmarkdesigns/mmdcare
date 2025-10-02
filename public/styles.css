@@ -1386,12 +1386,12 @@ body {
 .metric-card:hover {
     transform: none !important;
     box-shadow: none !important;
-    background: transparent !important;
-    transition: none !important;
+    background: white !important;
+    transition: background-color 0.2s ease !important;
 }
 
 .metric-card {
-    transition: none !important;
+    transition: background-color 0.2s ease !important;
 }
 
 .metric-title {
