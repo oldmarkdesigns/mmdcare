@@ -150,6 +150,18 @@
         document.addEventListener('DOMContentLoaded', async function() {
             console.log('=== HEART PAGE LOADED ===');
             console.log('Version: 2.0 - Dynamic Cards System');
+            
+            // Auto-open provsvar container to show loading state
+            const container = document.getElementById('provsvar-container');
+            const content = document.getElementById('provsvar-content');
+            const chevron = document.getElementById('provsvar-chevron');
+            
+            if (container && content && chevron) {
+                container.classList.add('expanded');
+                content.style.display = 'block';
+                chevron.style.transform = 'rotate(90deg)';
+            }
+            
             await loadExcelData();
         });
         
@@ -389,7 +401,7 @@
             
             // Simple line layout with minimal styling
             card.style.cssText = `
-                background: transparent !important;
+                background: transparent;
                 border: none !important;
                 border-bottom: 1px solid #e5e7eb !important;
                 border-radius: 0 !important;
@@ -494,7 +506,7 @@
             const statusEl = document.createElement('div');
             statusEl.className = 'metric-status';
             statusEl.textContent = status;
-            statusEl.style.cssText = `font-size: 12px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important; min-width: 120px !important; text-align: right !important;`;
+            statusEl.style.cssText = `font-size: 12px !important; font-weight: 600 !important; color: ${statusColor} !important; background: transparent !important; display: block !important; visibility: visible !important; line-height: 1.1 !important; text-align: right !important;`;
             
             rightSection.appendChild(valueUnitContainer);
             rightSection.appendChild(statusEl);
